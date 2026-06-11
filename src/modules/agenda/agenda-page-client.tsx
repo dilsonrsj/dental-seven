@@ -22,6 +22,7 @@ import type {
 
 type AgendaPageClientProps = AgendaInitialData & {
   configureMessage?: string;
+  initialPatientId?: string;
 };
 
 export function AgendaPageClient({
@@ -29,6 +30,7 @@ export function AgendaPageClient({
   dentists,
   patients,
   configureMessage,
+  initialPatientId,
 }: AgendaPageClientProps) {
   const [appointments, setAppointments] =
     useState<AppointmentWithRelations[]>(initialAppointments);
@@ -156,6 +158,7 @@ export function AgendaPageClient({
         dentists={dentists}
         patients={patients}
         selectedDate={selectedDate}
+        initialPatientId={initialPatientId}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
         onStatusChange={handleStatusChange}

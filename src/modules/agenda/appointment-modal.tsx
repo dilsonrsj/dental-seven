@@ -18,6 +18,7 @@ type AppointmentModalProps = {
   dentists: Dentist[];
   patients: Patient[];
   selectedDate: Date;
+  initialPatientId?: string;
   onClose: () => void;
   onSubmit: (input: AppointmentFormInput) => Promise<void>;
   onStatusChange: (id: string, status: AppointmentStatus) => Promise<void>;
@@ -40,19 +41,34 @@ export function AppointmentModal({
   dentists,
   patients,
   selectedDate,
+  initialPatientId,
   onClose,
   onSubmit,
   onStatusChange,
   isSaving = false,
 }: AppointmentModalProps) {
   const [form, setForm] = useState<FormState>(() =>
-    buildInitialForm(appointment, selectedDate, dentists, patients),
+    buildAppointmentInitialForm(
+      appointment,
+      selectedDate,
+      dentists,
+      patients,
+      initialPatientId,
+    ),
   );
 
   useEffect(() => {
     if (!open) return;
-    setForm(buildInitialForm(appointment, selectedDate, dentists, patients));
-  }, [appointment, dentists, open, patients, selectedDate]);
+    setForm(
+      buildAppointmentInitialForm(
+        appointment,
+        selectedDate,
+        dentists,
+        patients,
+        initialPatientId,
+      ),
+    );
+  }, [appointment, dentists, initialPatientId, open, patients, selectedDate]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -239,14 +255,23 @@ export function AppointmentModal({
   );
 }
 
-function buildInitialForm(
+export function buildAppointmentInitialForm(
   appointment: AppointmentWithRelations | null,
   selectedDate: Date,
   dentists: Dentist[],
   patients: Patient[],
+  initialPatientId?: string,
 ): FormState {
+  const initialPatientExists = patients.some(
+    (patient) => patient.id === initialPatientId,
+  );
+
   return {
-    patient_id: appointment?.patient_id ?? patients[0]?.id ?? "",
+    patient_id:
+      appointment?.patient_id ??
+      (initialPatientExists ? initialPatientId : undefined) ??
+      patients[0]?.id ??
+      "",
     dentist_id: appointment?.dentist_id ?? dentists[0]?.id ?? "",
     starts_at: formatDateTimeInput(
       appointment ? new Date(appointment.starts_at) : selectedDate,

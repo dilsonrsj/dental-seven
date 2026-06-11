@@ -7,7 +7,18 @@ import {
 import { AgendaPageClient } from "@/modules/agenda/agenda-page-client";
 import { getWeekDays } from "@/modules/agenda/date-utils";
 
-export default async function AgendaPage() {
+type AgendaPageProps = {
+  searchParams?: Promise<{
+    patientId?: string | string[];
+  }>;
+};
+
+export default async function AgendaPage({ searchParams }: AgendaPageProps) {
+  const params = await searchParams;
+  const initialPatientId = Array.isArray(params?.patientId)
+    ? params?.patientId[0]
+    : params?.patientId;
+
   if (!(await isSupabaseConfigured())) {
     return (
       <AgendaPageClient
@@ -15,6 +26,7 @@ export default async function AgendaPage() {
         dentists={[]}
         patients={[]}
         configureMessage="Configure .env.local"
+        initialPatientId={initialPatientId}
       />
     );
   }
@@ -34,6 +46,7 @@ export default async function AgendaPage() {
       appointments={appointments}
       dentists={dentists}
       patients={patients}
+      initialPatientId={initialPatientId}
     />
   );
 }
