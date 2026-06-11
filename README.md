@@ -30,21 +30,15 @@ O acesso é protegido por senha única na rota `/entrar` (variável `DEMO_PASSWO
 
 ## Setup local
 
-### 1. Clonar e instalar dependências
+Clone o repositório e entre na pasta do projeto. Em seguida:
 
-```bash
-git clone <url-do-repositorio>
-cd dental-seven
-npm install
-```
-
-### 2. Configurar variáveis de ambiente
-
-Copie o arquivo de exemplo e preencha com os valores do seu projeto Supabase:
+### 1. Variáveis de ambiente
 
 ```bash
 cp .env.local.example .env.local
 ```
+
+Preencha `.env.local` com os valores do seu projeto Supabase:
 
 | Variável | Obrigatória | Descrição |
 |----------|-------------|-----------|
@@ -54,18 +48,19 @@ cp .env.local.example .env.local
 | `DEMO_PASSWORD` | Sim | Senha única para entrar em `/entrar` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Dev opcional | Service role — apenas se usar scripts server-side |
 
-### 3. Executar migrations no Supabase
+### 2. Migrations no Supabase
 
 No [Supabase Dashboard](https://supabase.com/dashboard) → **SQL Editor**, execute **nesta ordem**:
 
-1. Conteúdo de `supabase/migrations/001_core_schema.sql` — schema + RLS
-2. Conteúdo de `supabase/migrations/002_seed_demo.sql` — dados fictícios da demo
+1. `supabase/migrations/001_core_schema.sql` — schema + RLS
+2. `supabase/migrations/002_seed_demo.sql` — dados fictícios da demo (*Clínica Sorriso Norte*)
 
-> Execute cada arquivo por completo antes de passar ao próximo.
+> Cole e execute cada arquivo por completo antes de passar ao próximo.
 
-### 4. Iniciar o servidor de desenvolvimento
+### 3. Instalar dependências e rodar
 
 ```bash
+npm install
 npm run dev
 ```
 
@@ -87,16 +82,15 @@ DEMO_PASSWORD=demo2026
 
 ---
 
-## Scripts disponíveis
+## Scripts
 
 | Comando | Descrição |
 |---------|-----------|
 | `npm run dev` | Servidor de desenvolvimento (Turbopack) em `localhost:3000` |
 | `npm run build` | Build de produção — valida tipos e compila o app |
-| `npm run start` | Serve o build de produção localmente |
 | `npm run test` | Executa testes unitários (Vitest) |
-| `npm run test:watch` | Testes em modo watch |
-| `npm run lint` | ESLint |
+
+Outros: `npm run start` (serve o build local), `npm run test:watch`, `npm run lint`.
 
 ---
 
