@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { isDemoMockDataEnabled } from "@/lib/demo/config";
+import { demoStore } from "@/lib/demo/store";
 import {
   DEMO_CLINIC_ID,
   type AppointmentStatus,
@@ -15,6 +17,7 @@ export type WhatsappThreadWithPatient = WhatsappThread & {
 };
 
 export async function isSupabaseConfigured() {
+  if (isDemoMockDataEnabled()) return true;
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -22,7 +25,9 @@ export async function isSupabaseConfigured() {
 }
 
 export async function getThreads(): Promise<WhatsappThreadWithPatient[]> {
-  if (!(await isSupabaseConfigured())) return [];
+  if (isDemoMockDataEnabled()) {
+    return demoStore.getThreads();
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -41,7 +46,9 @@ export async function getThreads(): Promise<WhatsappThreadWithPatient[]> {
 }
 
 export async function getMessages(threadId: string): Promise<WhatsappMessage[]> {
-  if (!(await isSupabaseConfigured())) return [];
+  if (isDemoMockDataEnabled()) {
+    return demoStore.getMessages(threadId);
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -93,13 +100,15 @@ export async function sendDemoMessage(
   threadId: string,
   body: string,
 ): Promise<WhatsappMessage> {
-  if (!(await isSupabaseConfigured())) {
-    throw new Error("Configure .env.local");
-  }
-
   const messageBody = body.trim();
   if (!messageBody) {
     throw new Error("Mensagem vazia.");
+  }
+
+  if (isDemoMockDataEnabled()) {
+    const data = demoStore.sendMessage(threadId, messageBody);
+    revalidatePath("/whatsapp");
+    return data;
   }
 
   const supabase = await createClient();
@@ -133,6 +142,12 @@ async function updateAppointmentStatus(
   appointmentId: string,
   status: AppointmentStatus,
 ) {
+  if (isDemoMockDataEnabled()) {
+    demoStore.updateAppointmentStatus(appointmentId, status);
+    revalidatePath("/agenda");
+    return;
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("appointments")

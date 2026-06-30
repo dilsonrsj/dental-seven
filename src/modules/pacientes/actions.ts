@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { isDemoMockDataEnabled } from "@/lib/demo/config";
+import { demoStore } from "@/lib/demo/store";
 import { DEMO_CLINIC_ID } from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/server";
 import type { PatientAppointmentWithRelations } from "./types";
 
 export async function isSupabaseConfigured() {
+  if (isDemoMockDataEnabled()) return true;
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -13,7 +16,9 @@ export async function isSupabaseConfigured() {
 }
 
 export async function getPatients(search?: string) {
-  if (!(await isSupabaseConfigured())) return [];
+  if (isDemoMockDataEnabled()) {
+    return demoStore.getPatients(search);
+  }
 
   const supabase = await createClient();
   let query = supabase
@@ -37,7 +42,9 @@ export async function getPatients(search?: string) {
 }
 
 export async function getPatient(id: string) {
-  if (!(await isSupabaseConfigured())) return null;
+  if (isDemoMockDataEnabled()) {
+    return demoStore.getPatient(id);
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -52,8 +59,11 @@ export async function getPatient(id: string) {
 }
 
 export async function updatePatientNotes(id: string, notes: string) {
-  if (!(await isSupabaseConfigured())) {
-    throw new Error("Configure .env.local");
+  if (isDemoMockDataEnabled()) {
+    const data = demoStore.updatePatientNotes(id, notes);
+    revalidatePath(`/pacientes/${id}`);
+    revalidatePath("/pacientes");
+    return data;
   }
 
   const supabase = await createClient();
@@ -75,7 +85,9 @@ export async function updatePatientNotes(id: string, notes: string) {
 export async function getPatientAppointments(
   patientId: string,
 ): Promise<PatientAppointmentWithRelations[]> {
-  if (!(await isSupabaseConfigured())) return [];
+  if (isDemoMockDataEnabled()) {
+    return demoStore.getPatientAppointments(patientId);
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase

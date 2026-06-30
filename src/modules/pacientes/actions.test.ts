@@ -18,6 +18,7 @@ const revalidatePathMock = vi.mocked(revalidatePath);
 describe("pacientes actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("DEMO_MOCK_DATA", "false");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon-key");
   });

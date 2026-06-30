@@ -36,10 +36,16 @@ export function EntrarForm() {
         placeholder="Senha da demonstração"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        className="h-12 rounded-full border-primary/70 bg-[#141820] px-5 focus-visible:border-primary"
         required
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" size="lg" disabled={loading}>
+      <Button
+        type="submit"
+        size="lg"
+        disabled={loading}
+        className="h-12 w-full rounded-full"
+      >
         {loading ? "Entrando…" : "Acessar demo"}
       </Button>
     </form>

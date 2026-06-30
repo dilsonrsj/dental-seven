@@ -4,6 +4,10 @@ import "@/styles/globals.css";
 export const metadata: Metadata = {
   title: "Dental Seven — Demo",
   description: "Sistema para clínicas odontológicas — DR7 Performance",
+  icons: {
+    icon: "/brand/dental-seven-icon-on-dark-v2.png",
+    apple: "/brand/dental-seven-icon-on-dark-v2.png",
+  },
 };
 
 export default function RootLayout({

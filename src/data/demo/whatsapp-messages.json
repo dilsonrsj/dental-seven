@@ -1,0 +1,122 @@
+[
+  {
+    "id": "66666666-6666-6666-6666-666666666601",
+    "thread_id": "55555555-5555-5555-5555-555555555501",
+    "direction": "outbound",
+    "body": "Olá Marina! Lembramos sua consulta de retorno na quinta às 08h30. Confirma presença? (Demo)",
+    "day_offset": 2,
+    "hour": 15,
+    "minute": 0,
+    "status": "read"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666602",
+    "thread_id": "55555555-5555-5555-5555-555555555501",
+    "direction": "inbound",
+    "body": "Oi! Confirmo sim, estarei aí. Obrigada! 😊",
+    "day_offset": 2,
+    "hour": 15,
+    "minute": 12,
+    "status": "delivered"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666603",
+    "thread_id": "55555555-5555-5555-5555-555555555501",
+    "direction": "outbound",
+    "body": "Perfeito! Até quinta. Clínica Sorriso Norte — demo.",
+    "day_offset": 2,
+    "hour": 16,
+    "minute": 20,
+    "status": "read"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666604",
+    "thread_id": "55555555-5555-5555-5555-555555555502",
+    "direction": "inbound",
+    "body": "Bom dia! Tenho muita ansiedade em consultas. Tem como reservar um horário mais calmo?",
+    "day_offset": 3,
+    "hour": 9,
+    "minute": 30,
+    "status": "delivered"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666605",
+    "thread_id": "55555555-5555-5555-5555-555555555502",
+    "direction": "outbound",
+    "body": "Olá Beatriz! Claro, reservamos a primeira consulta do dia (09h) para você. Dra. Ana cuida com calma. (Demo)",
+    "day_offset": 3,
+    "hour": 10,
+    "minute": 0,
+    "status": "read"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666606",
+    "thread_id": "55555555-5555-5555-5555-555555555502",
+    "direction": "inbound",
+    "body": "Muito obrigada! Isso me deixa mais tranquila.",
+    "day_offset": 3,
+    "hour": 10,
+    "minute": 45,
+    "status": "delivered"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666607",
+    "thread_id": "55555555-5555-5555-5555-555555555503",
+    "direction": "outbound",
+    "body": "Fernanda, sua avaliação para clareamento está agendada para terça às 09h. Traga exames se tiver. (Demo)",
+    "day_offset": 1,
+    "hour": 17,
+    "minute": 0,
+    "status": "delivered"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666608",
+    "thread_id": "55555555-5555-5555-5555-555555555503",
+    "direction": "inbound",
+    "body": "Recebi! Posso remarcar para quarta no mesmo horário?",
+    "day_offset": 4,
+    "hour": 8,
+    "minute": 50,
+    "status": "delivered"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666609",
+    "thread_id": "55555555-5555-5555-5555-555555555503",
+    "direction": "outbound",
+    "body": "Sim, remarcamos para quarta 09h. Até lá! (Demo Sorriso Norte)",
+    "day_offset": 4,
+    "hour": 9,
+    "minute": 15,
+    "status": "read"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666610",
+    "thread_id": "55555555-5555-5555-5555-555555555504",
+    "direction": "inbound",
+    "body": "Boa tarde, consigo ir na terça às 15h para o clareamento?",
+    "day_offset": 1,
+    "hour": 17,
+    "minute": 45,
+    "status": "delivered"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666611",
+    "thread_id": "55555555-5555-5555-5555-555555555504",
+    "direction": "outbound",
+    "body": "Olá Rafael! Terça 15h está disponível com Dr. Carlos. Confirmamos? (Demo)",
+    "day_offset": 1,
+    "hour": 18,
+    "minute": 10,
+    "status": "read"
+  },
+  {
+    "id": "66666666-6666-6666-6666-666666666612",
+    "thread_id": "55555555-5555-5555-5555-555555555504",
+    "direction": "inbound",
+    "body": "Confirmado! Obrigado.",
+    "day_offset": 1,
+    "hour": 18,
+    "minute": 30,
+    "status": "delivered"
+  }
+]

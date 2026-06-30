@@ -2,7 +2,6 @@ import {
   getAppointments,
   getDentists,
   getPatients,
-  isSupabaseConfigured,
 } from "@/modules/agenda/actions";
 import { AgendaPageClient } from "@/modules/agenda/agenda-page-client";
 import { getWeekDays } from "@/modules/agenda/date-utils";
@@ -18,18 +17,6 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   const initialPatientId = Array.isArray(params?.patientId)
     ? params?.patientId[0]
     : params?.patientId;
-
-  if (!(await isSupabaseConfigured())) {
-    return (
-      <AgendaPageClient
-        appointments={[]}
-        dentists={[]}
-        patients={[]}
-        configureMessage="Configure .env.local"
-        initialPatientId={initialPatientId}
-      />
-    );
-  }
 
   const today = startOfTodayUtc();
   const weekDays = getWeekDays(today);

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "33333333-3333-3333-3333-333333333301",
+    "clinic_id": "11111111-1111-1111-1111-111111111111",
+    "name": "Marina Costa",
+    "phone": "(11) 98765-4321",
+    "whatsapp": "5511987654321",
+    "birth_date": "1990-03-15",
+    "notes": "Demo: paciente fictícia. Prefere horários pela manhã. Sensibilidade leve nos dentes anteriores."
+  },
+  {
+    "id": "33333333-3333-3333-3333-333333333302",
+    "clinic_id": "11111111-1111-1111-1111-111111111111",
+    "name": "João Pereira",
+    "phone": "(11) 97654-3210",
+    "whatsapp": "5511976543210",
+    "birth_date": "1985-07-22",
+    "notes": "Demo: paciente fictício. Retorno periódico a cada 6 meses. Sem alergias conhecidas."
+  },
+  {
+    "id": "33333333-3333-3333-3333-333333333303",
+    "clinic_id": "11111111-1111-1111-1111-111111111111",
+    "name": "Fernanda Lima",
+    "phone": "(11) 96543-2109",
+    "whatsapp": "5511965432109",
+    "birth_date": "1992-11-08",
+    "notes": "Demo: paciente fictícia. Interesse em clareamento. Primeira consulta na clínica."
+  },
+  {
+    "id": "33333333-3333-3333-3333-333333333304",
+    "clinic_id": "11111111-1111-1111-1111-111111111111",
+    "name": "Lucas Oliveira",
+    "phone": "(11) 95432-1098",
+    "whatsapp": "5511954321098",
+    "birth_date": "1978-01-30",
+    "notes": "Demo: paciente fictício. Aparelho removível em uso. Evitar procedimentos longos."
+  },
+  {
+    "id": "33333333-3333-3333-3333-333333333305",
+    "clinic_id": "11111111-1111-1111-1111-111111111111",
+    "name": "Beatriz Santos",
+    "phone": "(11) 94321-0987",
+    "whatsapp": "5511943210987",
+    "birth_date": "1995-05-12",
+    "notes": "Demo: paciente fictícia. Contato preferencial via WhatsApp. Ansiedade leve em consultas."
+  },
+  {
+    "id": "33333333-3333-3333-3333-333333333306",
+    "clinic_id": "11111111-1111-1111-1111-111111111111",
+    "name": "Rafael Souza",
+    "phone": "(11) 93210-9876",
+    "whatsapp": "5511932109876",
+    "birth_date": "1988-09-25",
+    "notes": "Demo: paciente fictício. Trabalha em home office — flexível no horário da tarde."
+  },
+  {
+    "id": "33333333-3333-3333-3333-333333333307",
+    "clinic_id": "11111111-1111-1111-1111-111111111111",
+    "name": "Camila Rodrigues",
+    "phone": "(11) 92109-8765",
+    "whatsapp": "5511921098765",
+    "birth_date": "1998-12-03",
+    "notes": "Demo: paciente fictícia. Estudante universitária. Disponível após 14h."
+  },
+  {
+    "id": "33333333-3333-3333-3333-333333333308",
+    "clinic_id": "11111111-1111-1111-1111-111111111111",
+    "name": "Pedro Almeida",
+    "phone": "(11) 91098-7654",
+    "whatsapp": "5511910987654",
+    "birth_date": "1982-04-18",
+    "notes": "Demo: paciente fictício. Indicado por Marina Costa (demo). Avaliação ortodôntica pendente."
+  }
+]
