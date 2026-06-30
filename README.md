@@ -14,6 +14,13 @@ O MVP entrega três módulos principais com dados fictícios de uma clínica dem
 
 O acesso é protegido por senha única na rota `/entrar` (variável `DEMO_PASSWORD`). Após login, um cookie `demo_session` libera o app.
 
+**URLs em produção (Vercel):**
+
+| Página | URL |
+|--------|-----|
+| Visão comercial | https://dental-seven-self.vercel.app/visao |
+| Demo MVP | https://dental-seven-self.vercel.app/entrar |
+
 **Stack:** Next.js 15 (App Router) · Supabase · TypeScript · Tailwind CSS
 
 **Fora do escopo v1:** auth real, multi-clínica na UI, integração n8n/WhatsApp Business, painel SuperAdmin.
@@ -111,9 +118,14 @@ Outros: `npm run start` (serve o build local), `npm run test:watch`, `npm run li
 
    > `SUPABASE_SERVICE_ROLE_KEY` não é necessária no deploy MVP se todas as rotas usarem a anon key.
 
-4. Faça o deploy. A Vercel gera uma URL `*.vercel.app` para preview.
+4. Faça o deploy. URL padrão do projeto: **`https://dental-seven-self.vercel.app`**
 
-### Domínio customizado
+   | Rota | Uso |
+   |------|-----|
+   | `/visao` | Landing comercial (pública, sem senha) |
+   | `/entrar` | Gate da demo interativa |
+
+### Domínio customizado (futuro)
 
 **URL oficial da demo:** `https://dental-seven.dr7performance.com.br`
 
@@ -165,7 +177,7 @@ dental-seven/
 - Spec MVP: [`docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md`](docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md)
 - **Preços oficiais (§3.4):** [`docs/superpowers/specs/2026-06-15-estrategia-modularidade-billing-ia.md`](docs/superpowers/specs/2026-06-15-estrategia-modularidade-billing-ia.md)
 - Kit comercial: [`docs/comercial/kit-apresentacao-cliente.md`](docs/comercial/kit-apresentacao-cliente.md)
-- Visão do produto (clientes): rota `/visao` na Vercel
+- Visão do produto (clientes): https://dental-seven-self.vercel.app/visao
 
 ---
 

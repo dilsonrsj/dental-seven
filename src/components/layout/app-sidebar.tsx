@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dr7Logo } from "@/components/brand/dr7-logo";
 import { APP_NAV_LINKS } from "./nav-links";
+import { DemoLogoutButton } from "./demo-logout-button";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -30,9 +31,12 @@ export function AppSidebar() {
           );
         })}
       </nav>
-      <footer className="flex flex-col items-center gap-2 border-t border-border p-4">
-        <Dr7Logo height={32} />
-        <span className="text-xs text-muted-foreground">DR7 Performance</span>
+      <footer className="flex flex-col items-stretch gap-3 border-t border-border p-4">
+        <DemoLogoutButton className="w-full justify-center" />
+        <div className="flex flex-col items-center gap-2">
+          <Dr7Logo height={32} />
+          <span className="text-xs text-muted-foreground">DR7 Performance</span>
+        </div>
       </footer>
     </aside>
   );

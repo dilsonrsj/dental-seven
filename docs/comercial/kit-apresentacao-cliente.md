@@ -5,7 +5,8 @@ Substitua os placeholders antes de enviar.
 
 | Placeholder | Exemplo |
 |-------------|---------|
-| `[LINK_DEMO]` | `https://dental-seven.vercel.app` |
+| `[LINK_DEMO]` | `https://dental-seven-self.vercel.app/entrar` |
+| `[LINK_VISAO]` | `https://dental-seven-self.vercel.app/visao` |
 | `[SENHA_DEMO]` | a senha definida na Vercel (`DEMO_PASSWORD`) |
 | `[SEU_NOME]` | Dilson |
 | `[WHATSAPP_DR7]` | seu contato comercial |
@@ -172,7 +173,7 @@ Secretária virtual no WhatsApp: responde dúvidas, consulta horários, agenda e
 
 - [ ] Demo no ar (Vercel) e senha testada
 - [ ] `DEMO_MOCK_DATA=true` na Vercel (dados aparecem sem Supabase)
-- [ ] Substituir `[LINK_DEMO]` e `[SENHA_DEMO]`
+- [ ] Substituir `[LINK_DEMO]`, `[LINK_VISAO]` e `[SENHA_DEMO]`
 - [ ] (Opcional) Exportar §4 deste arquivo como PDF “Dental Seven — Visão completa”
 - [ ] Agendar follow-up 2–3 dias após o envio
 
