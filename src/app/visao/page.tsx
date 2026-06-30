@@ -14,7 +14,6 @@ import {
 } from "@/lib/commercial/visao-content";
 import {
   PRICING_RULES,
-  PRICING_SPEC_GITHUB_URL,
 } from "@/lib/commercial/pricing-source";
 
 export const dynamic = "force-dynamic";
@@ -169,17 +168,6 @@ export default function VisaoPage() {
             {PRICING_RULES.dentistsIncluded.essencial} dentista. Planos Conecta+:
             até {PRICING_RULES.dentistsIncluded.conectaPlus} dentistas · dentista
             extra: {PRICING_RULES.extraDentistMonthly}/mês (a partir do 4º).
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Preços oficiais — spec comercial DR7{" "}
-            <a
-              href={PRICING_SPEC_GITHUB_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline underline-offset-2 hover:text-primary/90"
-            >
-              §3.4 Preços aprovados (15/06/2026)
-            </a>
           </p>
           <div className="grid gap-4 sm:grid-cols-2">
             {PLANS.map((plan) => (
