@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DEMO_SESSION_COOKIE, isValidDemoSession } from "@/lib/demo-session";
 
-const PUBLIC_PATHS = ["/entrar", "/api/auth/demo"];
+const PUBLIC_PATHS = ["/entrar", "/visao", "/api/auth/demo"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -162,7 +162,10 @@ dental-seven/
 
 ## Documentação adicional
 
-- Spec completa: [`docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md`](docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md)
+- Spec MVP: [`docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md`](docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md)
+- **Preços oficiais (§3.4):** [`docs/superpowers/specs/2026-06-15-estrategia-modularidade-billing-ia.md`](docs/superpowers/specs/2026-06-15-estrategia-modularidade-billing-ia.md)
+- Kit comercial: [`docs/comercial/kit-apresentacao-cliente.md`](docs/comercial/kit-apresentacao-cliente.md)
+- Visão do produto (clientes): rota `/visao` na Vercel
 
 ---
 
