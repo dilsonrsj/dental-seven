@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function EntrarForm() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,16 +18,19 @@ export function EntrarForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/demo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
     });
+
     setLoading(false);
-    if (!res.ok) {
-      setError("Senha inválida. Solicite o acesso à DR7 Performance.");
+    if (signInError) {
+      setError("E-mail ou senha inválidos.");
       return;
     }
+
     router.push("/agenda");
     router.refresh();
   }
@@ -32,22 +38,31 @@ export function EntrarForm() {
   return (
     <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
       <Input
+        type="email"
+        placeholder="E-mail"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        autoComplete="email"
+        required
+      />
+      <Input
         type="password"
-        placeholder="Senha da demonstração"
+        placeholder="Senha"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="h-12 rounded-full border-primary/70 bg-[#141820] px-5 focus-visible:border-primary"
+        autoComplete="current-password"
         required
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button
-        type="submit"
-        size="lg"
-        disabled={loading}
-        className="h-12 w-full rounded-full"
-      >
-        {loading ? "Entrando…" : "Acessar demo"}
+      <Button type="submit" size="lg" disabled={loading}>
+        {loading ? "Entrando…" : "Entrar"}
       </Button>
+      <p className="text-center text-sm text-muted-foreground">
+        Novo por aqui?{" "}
+        <Link href="/cadastro" className="text-primary hover:underline">
+          Criar conta — 7 dias grátis
+        </Link>
+      </p>
     </form>
   );
 }

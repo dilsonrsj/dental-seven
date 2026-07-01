@@ -142,40 +142,67 @@ export function PatientDetail({ patient, appointments }: PatientDetailProps) {
               Nenhuma consulta encontrada para este paciente.
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead className="border-b border-border text-muted-foreground">
-                  <tr>
-                    <th className="py-3 pr-4 font-medium">Data</th>
-                    <th className="py-3 pr-4 font-medium">Procedimento</th>
-                    <th className="py-3 pr-4 font-medium">Dentista</th>
-                    <th className="py-3 pr-4 font-medium">Status</th>
-                    <th className="py-3 font-medium">Observações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {appointments.map((appointment) => (
-                    <tr key={appointment.id}>
-                      <td className="py-3 pr-4">
+            <>
+              <div className="space-y-3 md:hidden">
+                {appointments.map((appointment) => (
+                  <div
+                    key={appointment.id}
+                    className="rounded-xl border border-border bg-background p-4"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium">
                         {formatDateTime(appointment.starts_at)}
-                      </td>
-                      <td className="py-3 pr-4">
-                        {appointment.procedure_label}
-                      </td>
-                      <td className="py-3 pr-4">
-                        {appointment.dentist?.name ?? "Não informado"}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <Badge>{statusLabels[appointment.status]}</Badge>
-                      </td>
-                      <td className="py-3 text-muted-foreground">
-                        {appointment.notes ?? "Sem observações"}
-                      </td>
+                      </p>
+                      <Badge>{statusLabels[appointment.status]}</Badge>
+                    </div>
+                    <p className="mt-2 font-medium">
+                      {appointment.procedure_label}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {appointment.dentist?.name ?? "Não informado"}
+                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {appointment.notes ?? "Sem observações"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead className="border-b border-border text-muted-foreground">
+                    <tr>
+                      <th className="py-3 pr-4 font-medium">Data</th>
+                      <th className="py-3 pr-4 font-medium">Procedimento</th>
+                      <th className="py-3 pr-4 font-medium">Dentista</th>
+                      <th className="py-3 pr-4 font-medium">Status</th>
+                      <th className="py-3 font-medium">Observações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {appointments.map((appointment) => (
+                      <tr key={appointment.id}>
+                        <td className="py-3 pr-4">
+                          {formatDateTime(appointment.starts_at)}
+                        </td>
+                        <td className="py-3 pr-4">
+                          {appointment.procedure_label}
+                        </td>
+                        <td className="py-3 pr-4">
+                          {appointment.dentist?.name ?? "Não informado"}
+                        </td>
+                        <td className="py-3 pr-4">
+                          <Badge>{statusLabels[appointment.status]}</Badge>
+                        </td>
+                        <td className="py-3 text-muted-foreground">
+                          {appointment.notes ?? "Sem observações"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

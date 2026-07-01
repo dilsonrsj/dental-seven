@@ -3,9 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { isDemoMockDataEnabled } from "@/lib/demo/config";
 import { demoStore } from "@/lib/demo/store";
-import { DEMO_CLINIC_ID, type AppointmentStatus } from "@/lib/supabase/types";
+import { getAuthContext, requireClinicId } from "@/lib/auth/context";
+import { isSubscriptionBlocking } from "@/lib/billing/subscription";
+import { type AppointmentStatus } from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/server";
 import type { AppointmentFormInput, AppointmentWithRelations } from "./types";
+
+async function assertWritable() {
+  const ctx = await getAuthContext();
+  if (
+    !ctx?.clinic ||
+    isSubscriptionBlocking(ctx.clinic.subscription_status, ctx.profile.role)
+  ) {
+    throw new Error("Assinatura inativa. Regularize em Configurações.");
+  }
+}
 
 export async function isSupabaseConfigured() {
   if (isDemoMockDataEnabled()) return true;
@@ -24,6 +36,7 @@ export async function getAppointments(
     return demoStore.getAppointments(from, to, dentistId);
   }
 
+  const clinicId = await requireClinicId();
   const supabase = await createClient();
   let query = supabase
     .from("appointments")
@@ -34,7 +47,7 @@ export async function getAppointments(
         patient:patients(*)
       `,
     )
-    .eq("clinic_id", DEMO_CLINIC_ID)
+    .eq("clinic_id", clinicId)
     .gte("starts_at", from)
     .lte("starts_at", to)
     .order("starts_at", { ascending: true });
@@ -54,11 +67,12 @@ export async function getDentists() {
     return demoStore.getDentists();
   }
 
+  const clinicId = await requireClinicId();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("dentists")
     .select("*")
-    .eq("clinic_id", DEMO_CLINIC_ID)
+    .eq("clinic_id", clinicId)
     .eq("active", true)
     .order("name", { ascending: true });
 
@@ -71,11 +85,12 @@ export async function getPatients() {
     return demoStore.getPatients();
   }
 
+  const clinicId = await requireClinicId();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("patients")
     .select("*")
-    .eq("clinic_id", DEMO_CLINIC_ID)
+    .eq("clinic_id", clinicId)
     .order("name", { ascending: true });
 
   if (error) throw new Error(error.message);
@@ -83,6 +98,13 @@ export async function getPatients() {
 }
 
 export async function upsertAppointment(input: AppointmentFormInput) {
+  if (!isDemoMockDataEnabled()) {
+    if (!(await isSupabaseConfigured())) {
+      throw new Error("Configure .env.local");
+    }
+    await assertWritable();
+  }
+
   const duration = Number(input.duration_min);
   const startsAt = parseAgendaDateTime(input.starts_at);
   const endsAt = new Date(startsAt.getTime() + duration * 60 * 1000);
@@ -103,14 +125,15 @@ export async function upsertAppointment(input: AppointmentFormInput) {
     return data;
   }
 
+  const clinicId = await requireClinicId();
   const supabase = await createClient();
-  const fullPayload = { ...payload, clinic_id: DEMO_CLINIC_ID };
+  const fullPayload = { ...payload, clinic_id: clinicId };
   const { data, error } = input.id
     ? await supabase
         .from("appointments")
         .update(fullPayload)
         .eq("id", input.id)
-        .eq("clinic_id", DEMO_CLINIC_ID)
+        .eq("clinic_id", clinicId)
         .select(
           `
             *,
@@ -150,13 +173,15 @@ export async function updateAppointmentStatus(
     revalidatePath("/agenda");
     return data;
   }
+  await assertWritable();
 
+  const clinicId = await requireClinicId();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("appointments")
     .update({ status })
     .eq("id", id)
-    .eq("clinic_id", DEMO_CLINIC_ID)
+    .eq("clinic_id", clinicId)
     .select(
       `
         *,

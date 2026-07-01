@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "Dental Seven — Demo",
+  title: "Dental Seven",
   description: "Sistema para clínicas odontológicas — DR7 Performance",
   icons: {
     icon: "/brand/dental-seven-icon-on-dark-v2.png",

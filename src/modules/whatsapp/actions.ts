@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { isDemoMockDataEnabled } from "@/lib/demo/config";
 import { demoStore } from "@/lib/demo/store";
+import { getAuthContext, requireClinicId } from "@/lib/auth/context";
+import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import {
-  DEMO_CLINIC_ID,
   type AppointmentStatus,
   type Patient,
   type WhatsappMessage,
@@ -15,6 +16,16 @@ import { createClient } from "@/lib/supabase/server";
 export type WhatsappThreadWithPatient = WhatsappThread & {
   patient: Patient | null;
 };
+
+async function assertWritable() {
+  const ctx = await getAuthContext();
+  if (
+    !ctx?.clinic ||
+    isSubscriptionBlocking(ctx.clinic.subscription_status, ctx.profile.role)
+  ) {
+    throw new Error("Assinatura inativa. Regularize em Configurações.");
+  }
+}
 
 export async function isSupabaseConfigured() {
   if (isDemoMockDataEnabled()) return true;
@@ -29,6 +40,7 @@ export async function getThreads(): Promise<WhatsappThreadWithPatient[]> {
     return demoStore.getThreads();
   }
 
+  const clinicId = await requireClinicId();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("whatsapp_threads")
@@ -38,7 +50,7 @@ export async function getThreads(): Promise<WhatsappThreadWithPatient[]> {
         patient:patients(*)
       `,
     )
-    .eq("clinic_id", DEMO_CLINIC_ID)
+    .eq("clinic_id", clinicId)
     .order("last_message_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -100,6 +112,13 @@ export async function sendDemoMessage(
   threadId: string,
   body: string,
 ): Promise<WhatsappMessage> {
+  if (!isDemoMockDataEnabled()) {
+    if (!(await isSupabaseConfigured())) {
+      throw new Error("Configure .env.local");
+    }
+    await assertWritable();
+  }
+
   const messageBody = body.trim();
   if (!messageBody) {
     throw new Error("Mensagem vazia.");
@@ -111,6 +130,7 @@ export async function sendDemoMessage(
     return data;
   }
 
+  const clinicId = await requireClinicId();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("whatsapp_messages")
@@ -130,7 +150,7 @@ export async function sendDemoMessage(
     .from("whatsapp_threads")
     .update({ last_message_at: lastMessageAt })
     .eq("id", threadId)
-    .eq("clinic_id", DEMO_CLINIC_ID);
+    .eq("clinic_id", clinicId);
 
   if (threadError) throw new Error(threadError.message);
 
@@ -148,12 +168,13 @@ async function updateAppointmentStatus(
     return;
   }
 
+  const clinicId = await requireClinicId();
   const supabase = await createClient();
   const { error } = await supabase
     .from("appointments")
     .update({ status })
     .eq("id", appointmentId)
-    .eq("clinic_id", DEMO_CLINIC_ID);
+    .eq("clinic_id", clinicId);
 
   if (error) throw new Error(error.message);
   revalidatePath("/agenda");

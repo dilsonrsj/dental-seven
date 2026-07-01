@@ -1,6 +1,10 @@
-# Dental Seven MVP
+# Dental Seven — desenvolvimento v2
 
-Sistema web para clínicas odontológicas pequenas (1–3 dentistas, sem recepção), desenvolvido pela **DR7 Performance**. Este repositório contém o **MVP de demonstração**: portfólio interativo para apresentações comerciais e link público compartilhável após reuniões.
+Sistema web para clínicas odontológicas pequenas (1–3 dentistas, sem recepção), desenvolvido pela **DR7 Performance**.
+
+**Branch atual:** `feat/v2` — auth real, planos modulares, trial 7d, billing Asaas, multi-tenant.
+
+**Demo comercial (branch `main`):** https://dental-seven-self.vercel.app — MVP com senha única para apresentações.
 
 ## O que é o Dental Seven MVP
 
@@ -23,7 +27,38 @@ O acesso é protegido por senha única na rota `/entrar` (variável `DEMO_PASSWO
 
 **Stack:** Next.js 15 (App Router) · Supabase · TypeScript · Tailwind CSS
 
-**Fora do escopo v1:** auth real, multi-clínica na UI, integração n8n/WhatsApp Business, painel SuperAdmin.
+**Fora do escopo v1:** auth real, multi-clínica na UI, prontuário eletrônico, integração n8n/WhatsApp Business, painel SuperAdmin, agente IA.
+
+---
+
+## Roadmap do produto
+
+Marcos de evolução do Dental Seven. Specs: [MVP v1](docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md) · [Estratégia comercial](docs/superpowers/specs/2026-06-15-estrategia-modularidade-billing-ia.md) · [v2](docs/superpowers/specs/2026-06-15-v2-design.md)
+
+| Versão | Entrega |
+|--------|---------|
+| **v1** ✅ | Agenda + Pacientes + WhatsApp simulado + gate senha *(concluída localmente; deploy adiado)* |
+| **v2** → | Auth + roles + planos (**Essencial / Conecta / Inteligente / Completo**) + trial 7d (sem cartão) + Asaas + paywall + cadastro pacientes + LGPD |
+| **v2.5** | **Prontuário (fase 1)** — upload de histórico externo (PDF/imagens) + Supabase Storage |
+| **v3** | Catálogo de procedimentos + BOM (insumos por procedimento) |
+| **v3.5** | **Prontuário (fase 2)** — viewer inline, registros clínicos, receita/atestado/guia com assinatura + PDF/impressão |
+| **v4** | Estoque + alertas + baixa automática ao concluir procedimento |
+| **v5** | Financeiro + fornecedores |
+| **v6** | Painel SuperAdmin DR7 + WhatsApp real (n8n + Meta Cloud API) — plano **Conecta** |
+| **v6.1** | **Agente IA** — OpenAI `gpt-4o-mini` + pgvector + n8n parametrizado — plano **Inteligente** |
+
+**Planos e preços (oficiais — §3.4):**
+
+| Plano | Mensal | Inclui |
+|-------|--------|--------|
+| **Essencial** | R$ 99 | Agenda + Pacientes (1 dentista) |
+| **Conecta** | R$ 149 | + WhatsApp |
+| **Inteligente** | R$ 279 | + Agente IA + KB |
+| **Completo** | R$ 349 | Todos os módulos + 5 GB storage |
+
+Trial 7d · sem implantação · Conecta+ até 3 dentistas · +R$ 20/dentista extra. [Spec comercial](docs/superpowers/specs/2026-06-15-estrategia-modularidade-billing-ia.md).
+
+**Módulos plugáveis (futuro):** `/modules/agenda` ✅ · `/modules/pacientes` ✅ · `/modules/whatsapp` ✅ (simulado) · `/modules/prontuario` (v2.5+) · `/modules/procedimentos` (v3) · `/modules/estoque` (v4) · `/modules/financeiro` + `/modules/fornecedores` (v5)
 
 ---
 
@@ -61,8 +96,14 @@ No [Supabase Dashboard](https://supabase.com/dashboard) → **SQL Editor**, exec
 
 1. `supabase/migrations/001_core_schema.sql` — schema + RLS
 2. `supabase/migrations/002_seed_demo.sql` — dados fictícios da demo (*Clínica Sorriso Norte*)
+3. `supabase/migrations/003_auth_profiles.sql` — profiles + Supabase Auth
+4. `supabase/migrations/004_clinic_subscription.sql` — planos e trial
+5. `supabase/migrations/005_clinic_modules.sql` — módulos plugáveis
+6. `supabase/migrations/006_rls_v2.sql` — RLS multi-tenant
 
 > Cole e execute cada arquivo por completo antes de passar ao próximo.
+
+Habilite **Email provider** em Authentication → Providers.
 
 ### 3. Instalar dependências e rodar
 
@@ -71,7 +112,16 @@ npm install
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000). Você será redirecionado para `/entrar` — use a senha definida em `DEMO_PASSWORD`.
+Abra [http://localhost:3000](http://localhost:3000). Crie uma conta em `/cadastro` ou entre em `/entrar` com e-mail e senha.
+
+Com `DEMO_MOCK_DATA=true`, o app usa dados fictícios locais sem Supabase Auth (útil para UI rápida).
+
+### Teste no celular (mesma Wi-Fi)
+
+1. Descubra o IPv4 do PC: `ipconfig` → adaptador Wi-Fi → ex.: `192.168.0.4`
+2. Inicie o dev server (`npm run dev`) — escuta em todas as interfaces (`0.0.0.0`)
+3. No celular, abra **`http://192.168.0.4:3000`** — use **`http://`**, não `https://` (dev local não tem SSL; `https` gera `ERR_SSL_PROTOCOL_ERROR`)
+4. Se não conectar, permita Node/Next.js no firewall do Windows (porta 3000)
 
 ---
 
@@ -175,6 +225,8 @@ dental-seven/
 ## Documentação adicional
 
 - Spec MVP: [`docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md`](docs/superpowers/specs/2026-06-11-dental-seven-mvp-design.md)
+- Spec v2: [`docs/superpowers/specs/2026-06-15-v2-design.md`](docs/superpowers/specs/2026-06-15-v2-design.md)
+- Plano v2: [`docs/superpowers/plans/2026-06-15-dental-seven-v2.md`](docs/superpowers/plans/2026-06-15-dental-seven-v2.md)
 - **Preços oficiais (§3.4):** [`docs/superpowers/specs/2026-06-15-estrategia-modularidade-billing-ia.md`](docs/superpowers/specs/2026-06-15-estrategia-modularidade-billing-ia.md)
 - Kit comercial: [`docs/comercial/kit-apresentacao-cliente.md`](docs/comercial/kit-apresentacao-cliente.md)
 - Visão do produto (clientes): https://dental-seven-self.vercel.app/visao

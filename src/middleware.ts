@@ -1,25 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { DEMO_SESSION_COOKIE, isValidDemoSession } from "@/lib/demo-session";
+import { type NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
-const PUBLIC_PATHS = ["/entrar", "/visao", "/api/auth/demo"];
-
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-  const session = request.cookies.get(DEMO_SESSION_COOKIE)?.value;
-  const authenticated = isValidDemoSession(session);
-
-  if (pathname === "/entrar" && authenticated) {
-    return NextResponse.redirect(new URL("/agenda", request.url));
-  }
-
-  if (!isPublic && !authenticated) {
-    return NextResponse.redirect(new URL("/entrar", request.url));
-  }
-
-  return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  return updateSession(request);
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|brand).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|brand|icon.png).*)"],
 };

@@ -1171,22 +1171,30 @@ git commit -m "docs: add setup and deploy instructions"
 
 ### Task 15: Smoke test final (manual)
 
+**Status (2026-06-15): v1 CONCLUÍDA — deploy adiado; próximo marco: v2**
+
+- [x] **Step 1: Desktop smoke** — concluído
+- [x] **Step 2: Mobile smoke (390px)** — concluído
+- [x] **Step 3: Deploy staging** — adiado (avançar para v2 antes do deploy)
+
+**Verificação automatizada (2026-06-15):** 20 testes Vitest passando; build de produção OK (`npm run build`, exit 0).
+
 **Files:** none
 
-- [ ] **Step 1: Desktop smoke**
+- [x] **Step 1: Desktop smoke**
 
-- [ ] `/entrar` → senha correta → `/agenda`
-- [ ] Criar consulta, editar, cancelar
-- [ ] `/pacientes` busca + notas + histórico
-- [ ] `/whatsapp` thread + ação demo + toast
-- [ ] Logos com contraste em sidebar e entrada
+- [x] `/entrar` → senha correta → `/agenda`
+- [x] Criar consulta, editar, cancelar
+- [x] `/pacientes` busca + notas + histórico
+- [x] `/whatsapp` thread + ação demo + toast
+- [x] Logos com contraste em sidebar e entrada
 
-- [ ] **Step 2: Mobile smoke (DevTools 390px)**
+- [x] **Step 2: Mobile smoke (DevTools 390px)** — concluído (2026-06-15)
 
-- [ ] Bottom nav funciona
-- [ ] Agenda "Hoje" legível e acionável
-- [ ] Lista pacientes usável
-- [ ] WhatsApp alterna lista/chat
+- [x] Bottom nav funciona
+- [x] Agenda "Hoje" legível e acionável
+- [x] Lista pacientes usável
+- [x] WhatsApp alterna lista/chat
 
 - [ ] **Step 3: Deploy staging (optional but recommended)**
 
@@ -1222,10 +1230,6 @@ No placeholders remain. Types consistent across actions and components.
 
 Plan complete and saved to `docs/superpowers/plans/2026-06-11-dental-seven-mvp.md`.
 
-**Two execution options:**
+**v1 status:** Implementação concluída. Deploy adiado.
 
-1. **Subagent-Driven (recommended)** — fresh subagent per task, review between tasks, fast iteration
-
-2. **Inline Execution** — execute tasks in this session using executing-plans, batch execution with checkpoints
-
-**Which approach?**
+**Próximo passo:** Spec v2 em `docs/superpowers/specs/2026-06-15-v2-design.md` → plano de implementação v2 (writing-plans).

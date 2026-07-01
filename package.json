@@ -3,16 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack -H 0.0.0.0",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "brand:logos": "node scripts/make-transparent-logos.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.511.0",
     "next": "15.5.19",
     "react": "19.1.0",
@@ -28,6 +30,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.19",
     "jsdom": "^26.1.0",
+    "sharp": "^0.35.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.1"

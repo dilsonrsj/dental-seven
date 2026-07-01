@@ -14,7 +14,7 @@ export default function EntrarPage() {
           className="h-auto max-w-[min(92vw,300px)] w-auto"
         />
         <p className="max-w-md text-sm text-muted-foreground">
-          Demonstração — explore agenda, pacientes e WhatsApp
+          Sistema para clínicas odontológicas — agenda, pacientes e atendimento
         </p>
         <EntrarForm />
         <div className="mt-8 flex flex-col items-center gap-2 opacity-90">

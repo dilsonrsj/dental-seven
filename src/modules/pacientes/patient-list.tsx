@@ -12,7 +12,6 @@ export function PatientList({ patients, search = "" }: PatientListProps) {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Pacientes demo</p>
           <h1 className="font-display text-2xl font-semibold tracking-tight">
             Pacientes
           </h1>
@@ -21,15 +20,23 @@ export function PatientList({ patients, search = "" }: PatientListProps) {
           </p>
         </div>
 
-        <form className="flex w-full gap-2 sm:max-w-md" action="/pacientes">
-          <Input
-            name="search"
-            defaultValue={search}
-            placeholder="Buscar paciente"
-            aria-label="Buscar paciente"
-          />
-          <Button type="submit">Buscar</Button>
-        </form>
+        <div className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row sm:items-center">
+          <form className="flex flex-1 gap-2" action="/pacientes">
+            <Input
+              name="search"
+              defaultValue={search}
+              placeholder="Buscar paciente"
+              aria-label="Buscar paciente"
+            />
+            <Button type="submit">Buscar</Button>
+          </form>
+          <Link
+            href="/pacientes/novo"
+            className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"
+          >
+            Novo
+          </Link>
+        </div>
       </div>
 
       {patients.length === 0 ? (

@@ -11,6 +11,13 @@ import {
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("@/lib/auth/context", () => ({
+  requireClinicId: vi.fn(async () => DEMO_CLINIC_ID),
+  getAuthContext: vi.fn(async () => ({
+    clinic: { subscription_status: "active" },
+    profile: { role: "clinic_admin" },
+  })),
+}));
 
 const createClientMock = vi.mocked(createClient);
 const revalidatePathMock = vi.mocked(revalidatePath);
