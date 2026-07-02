@@ -8,8 +8,15 @@ import { isDemoMockDataEnabled } from "@/lib/demo/config";
 import { createClient } from "@/lib/supabase/server";
 import type { PatientDocumentListItem } from "./types";
 import { assertAllowedUpload } from "./validation";
+import {
+  buildDocumentTitle,
+  type ClinicalDocumentFormInput,
+  toClinicalPdfPayload,
+} from "./clinical-document-input";
+import { buildClinicalPdf } from "./generate-clinical-pdf";
 
 const STORAGE_BUCKET = "patient-documents";
+const SIGNATURE_BUCKET = "clinic-assets";
 
 async function assertWritable() {
   const ctx = await getAuthContext();
@@ -257,4 +264,221 @@ export async function getDocumentDownloadUrl(
   if (!signed?.signedUrl) throw new Error("Não foi possível gerar o download.");
 
   return signed.signedUrl;
+}
+
+type ClinicalGenerationContext = {
+  clinicName: string;
+  patientName: string;
+  dentistName: string;
+  dentistCro: string | null;
+  dentistSpecialty: string | null;
+  signatureImageBytes: Uint8Array | null;
+};
+
+async function resolveClinicalGenerationContext(
+  patientId: string,
+): Promise<ClinicalGenerationContext> {
+  const ctx = await assertProntuarioModule();
+  const clinicId = await requireClinicId();
+  await requirePatientInClinic(patientId, clinicId);
+
+  if (!ctx.clinic) {
+    throw new Error("Clínica não encontrada.");
+  }
+
+  const dentistId = ctx.profile.dentist_id ?? ctx.dentists[0]?.id;
+  if (!dentistId) {
+    throw new Error("Nenhum dentista vinculado à clínica.");
+  }
+
+  const supabase = await createClient();
+  const [{ data: patient }, { data: dentist }] = await Promise.all([
+    supabase
+      .from("patients")
+      .select("name")
+      .eq("id", patientId)
+      .eq("clinic_id", clinicId)
+      .single(),
+    supabase
+      .from("dentists")
+      .select("name, cro, specialty, signature_storage_path")
+      .eq("id", dentistId)
+      .eq("clinic_id", clinicId)
+      .single(),
+  ]);
+
+  if (!patient || !dentist) {
+    throw new Error("Não foi possível carregar dados para o documento.");
+  }
+
+  let signatureImageBytes: Uint8Array | null = null;
+  if (dentist.signature_storage_path) {
+    const { data: signatureBlob } = await supabase.storage
+      .from(SIGNATURE_BUCKET)
+      .download(dentist.signature_storage_path);
+    if (signatureBlob) {
+      signatureImageBytes = new Uint8Array(await signatureBlob.arrayBuffer());
+    }
+  }
+
+  return {
+    clinicName: ctx.clinic.name,
+    patientName: patient.name,
+    dentistName: dentist.name,
+    dentistCro: dentist.cro,
+    dentistSpecialty: dentist.specialty,
+    signatureImageBytes,
+  };
+}
+
+export async function previewClinicalDocument(
+  patientId: string,
+  input: ClinicalDocumentFormInput,
+): Promise<{ title: string; pdfBase64: string }> {
+  if (isDemoMockDataEnabled()) {
+    throw new Error("Documentos clínicos indisponíveis no modo demo.");
+  }
+
+  await assertProntuarioModule();
+  const context = await resolveClinicalGenerationContext(patientId);
+  const payload = toClinicalPdfPayload(input, context);
+  const pdfBytes = await buildClinicalPdf(payload);
+  const title = buildDocumentTitle(input, context.patientName);
+
+  return {
+    title,
+    pdfBase64: Buffer.from(pdfBytes).toString("base64"),
+  };
+}
+
+export async function generateClinicalDocument(
+  patientId: string,
+  input: ClinicalDocumentFormInput,
+): Promise<PatientDocumentListItem> {
+  if (isDemoMockDataEnabled()) {
+    throw new Error("Documentos clínicos indisponíveis no modo demo.");
+  }
+
+  await assertWritable();
+  const ctx = await assertProntuarioModule();
+  const clinicId = await requireClinicId();
+  const context = await resolveClinicalGenerationContext(patientId);
+  const payload = toClinicalPdfPayload(input, context);
+  const pdfBytes = await buildClinicalPdf(payload);
+  const title = buildDocumentTitle(input, context.patientName);
+
+  const documentId = randomUUID();
+  const filename = `${input.template}-${documentId.slice(0, 8)}.pdf`;
+  const storagePath = buildStoragePath(clinicId, patientId, documentId, filename);
+  const supabase = await createClient();
+
+  const { error: uploadError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(storagePath, Buffer.from(pdfBytes), {
+      contentType: "application/pdf",
+      upsert: false,
+    });
+
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data, error } = await supabase
+    .from("patient_documents")
+    .insert({
+      id: documentId,
+      clinic_id: clinicId,
+      patient_id: patientId,
+      title,
+      mime_type: "application/pdf",
+      storage_path: storagePath,
+      file_size_bytes: pdfBytes.byteLength,
+      source: "generated",
+      uploaded_by: ctx.profile.id,
+    })
+    .select(
+      `
+        id,
+        clinic_id,
+        patient_id,
+        title,
+        mime_type,
+        storage_path,
+        file_size_bytes,
+        source,
+        uploaded_by,
+        created_at,
+        profiles ( full_name )
+      `,
+    )
+    .single();
+
+  if (error) {
+    await supabase.storage.from(STORAGE_BUCKET).remove([storagePath]);
+    throw new Error(error.message);
+  }
+
+  revalidatePath(`/pacientes/${patientId}/prontuario`);
+  revalidatePath(`/pacientes/${patientId}`);
+
+  return mapDocumentRow(data as DocumentRow);
+}
+
+export async function sendDocumentToWhatsAppThread(
+  patientId: string,
+  documentId: string,
+): Promise<{ threadId: string }> {
+  if (isDemoMockDataEnabled()) {
+    throw new Error("Envio simulado indisponível no modo demo.");
+  }
+
+  await assertWritable();
+  await assertProntuarioModule();
+  const clinicId = await requireClinicId();
+  await requirePatientInClinic(patientId, clinicId);
+
+  const supabase = await createClient();
+  const { data: document, error: documentError } = await supabase
+    .from("patient_documents")
+    .select("id, title, patient_id")
+    .eq("id", documentId)
+    .eq("clinic_id", clinicId)
+    .eq("patient_id", patientId)
+    .maybeSingle();
+
+  if (documentError) throw new Error(documentError.message);
+  if (!document) throw new Error("Documento não encontrado.");
+
+  const { data: thread, error: threadError } = await supabase
+    .from("whatsapp_threads")
+    .select("id")
+    .eq("clinic_id", clinicId)
+    .eq("patient_id", patientId)
+    .maybeSingle();
+
+  if (threadError) throw new Error(threadError.message);
+  if (!thread) {
+    throw new Error("Paciente sem conversa WhatsApp. Abra o módulo WhatsApp primeiro.");
+  }
+
+  const body = `Documento "${document.title}" disponível na clínica.`;
+  const { error: messageError } = await supabase.from("whatsapp_messages").insert({
+    thread_id: thread.id,
+    direction: "outbound",
+    body,
+    status: "sent",
+  });
+
+  if (messageError) throw new Error(messageError.message);
+
+  const { error: updateThreadError } = await supabase
+    .from("whatsapp_threads")
+    .update({ last_message_at: new Date().toISOString() })
+    .eq("id", thread.id)
+    .eq("clinic_id", clinicId);
+
+  if (updateThreadError) throw new Error(updateThreadError.message);
+
+  revalidatePath("/whatsapp");
+  revalidatePath(`/pacientes/${patientId}/prontuario`);
+
+  return { threadId: thread.id };
 }
