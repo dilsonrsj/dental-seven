@@ -1,9 +1,14 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, CardContent, Input, toast } from "@/components/ui";
-import { previewClinicalDocument } from "./actions";
+import {
+  generateClinicalDocument,
+  previewClinicalDocument,
+} from "./actions";
 import { ClinicalPdfPreviewModal } from "./clinical-pdf-preview-modal";
+import type { PatientDocumentListItem } from "./types";
 import type { ClinicalDocumentTemplate } from "./templates/types";
 import { TEMPLATE_MAP } from "./generate-clinical-pdf";
 
@@ -13,12 +18,15 @@ const textareaClassName =
 type ClinicalDocumentFormProps = {
   patientId: string;
   canWrite: boolean;
+  onDocumentCreated?: (document: PatientDocumentListItem) => void;
 };
 
 export function ClinicalDocumentForm({
   patientId,
   canWrite,
+  onDocumentCreated,
 }: ClinicalDocumentFormProps) {
+  const router = useRouter();
   const [template, setTemplate] = useState<ClinicalDocumentTemplate>("atestado");
   const [customTitle, setCustomTitle] = useState("");
   const [medications, setMedications] = useState("");
@@ -26,6 +34,7 @@ export function ClinicalDocumentForm({
   const [reason, setReason] = useState("");
   const [exams, setExams] = useState("");
   const [isPreviewing, setIsPreviewing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [preview, setPreview] = useState<{ title: string; pdfBase64: string } | null>(
     null,
   );
@@ -41,6 +50,24 @@ export function ClinicalDocumentForm({
     };
   }
 
+  async function handleSave() {
+    if (!canWrite) return;
+
+    try {
+      setIsSaving(true);
+      const created = await generateClinicalDocument(patientId, buildInput());
+      onDocumentCreated?.(created);
+      setPreview(null);
+      toast.success("Documento salvo no prontuário.");
+      router.refresh();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  const isBusy = isPreviewing || isSaving;
   async function handlePreview() {
     if (!canWrite) return;
 
@@ -73,8 +100,8 @@ export function ClinicalDocumentForm({
               <Button
                 key={id}
                 type="button"
-                variant={template === id ? "default" : "outline"}
-                disabled={!canWrite || isPreviewing}
+                variant={template === id ? "primary" : "outline"}
+                disabled={!canWrite || isBusy}
                 onClick={() => setTemplate(id)}
               >
                 {TEMPLATE_MAP[id].label}
@@ -90,7 +117,7 @@ export function ClinicalDocumentForm({
               value={customTitle}
               onChange={(event) => setCustomTitle(event.target.value)}
               placeholder="Deixe em branco para título automático"
-              disabled={!canWrite || isPreviewing}
+              disabled={!canWrite || isBusy}
               maxLength={200}
             />
           </label>
@@ -103,7 +130,7 @@ export function ClinicalDocumentForm({
                 onChange={(event) => setMedications(event.target.value)}
                 className={textareaClassName}
                 placeholder="Medicamentos, posologia e orientações..."
-                disabled={!canWrite || isPreviewing}
+                disabled={!canWrite || isBusy}
                 required
               />
             </label>
@@ -121,7 +148,7 @@ export function ClinicalDocumentForm({
                   max={365}
                   value={daysOff}
                   onChange={(event) => setDaysOff(event.target.value)}
-                  disabled={!canWrite || isPreviewing}
+                  disabled={!canWrite || isBusy}
                   required
                 />
               </label>
@@ -134,7 +161,7 @@ export function ClinicalDocumentForm({
                   onChange={(event) => setReason(event.target.value)}
                   className={textareaClassName}
                   placeholder="Ex.: procedimento odontológico"
-                  disabled={!canWrite || isPreviewing}
+                  disabled={!canWrite || isBusy}
                 />
               </label>
             </>
@@ -150,7 +177,7 @@ export function ClinicalDocumentForm({
                 onChange={(event) => setExams(event.target.value)}
                 className={textareaClassName}
                 placeholder="Liste os exames ou procedimentos..."
-                disabled={!canWrite || isPreviewing}
+                disabled={!canWrite || isBusy}
                 required
               />
             </label>
@@ -162,13 +189,23 @@ export function ClinicalDocumentForm({
             </p>
           )}
 
-          <Button
-            type="button"
-            disabled={!canWrite || isPreviewing}
-            onClick={() => void handlePreview()}
-          >
-            {isPreviewing ? "Gerando preview..." : "Visualizar preview"}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              disabled={!canWrite || isBusy}
+              onClick={() => void handlePreview()}
+            >
+              {isPreviewing ? "Gerando preview..." : "Visualizar preview"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!canWrite || isBusy}
+              onClick={() => void handleSave()}
+            >
+              {isSaving ? "Salvando..." : "Salvar PDF no prontuário"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -177,6 +214,8 @@ export function ClinicalDocumentForm({
         title={preview?.title ?? ""}
         pdfBase64={preview?.pdfBase64 ?? null}
         onClose={() => setPreview(null)}
+        onSave={canWrite ? () => void handleSave() : undefined}
+        isSaving={isSaving}
       />
     </>
   );

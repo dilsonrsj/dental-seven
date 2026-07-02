@@ -10,6 +10,8 @@ type ClinicalPdfPreviewModalProps = {
   title: string;
   pdfBase64: string | null;
   onClose: () => void;
+  onSave?: () => void;
+  isSaving?: boolean;
 };
 
 export function ClinicalPdfPreviewModal({
@@ -17,6 +19,8 @@ export function ClinicalPdfPreviewModal({
   title,
   pdfBase64,
   onClose,
+  onSave,
+  isSaving = false,
 }: ClinicalPdfPreviewModalProps) {
   const [mounted, setMounted] = useState(false);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
@@ -71,6 +75,16 @@ export function ClinicalPdfPreviewModal({
           <p className="text-xs text-muted-foreground">Preview do documento clínico</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {onSave && (
+            <Button
+              type="button"
+              className="h-10"
+              disabled={isSaving}
+              onClick={onSave}
+            >
+              {isSaving ? "Salvando..." : "Salvar no prontuário"}
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"

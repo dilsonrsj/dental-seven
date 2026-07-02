@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState, type DragEvent } from "react";
-import { FileImage, FileText, Upload } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
+import { FileImage, FileText, MessageCircle, Upload } from "lucide-react";
 import { Button, Card, CardContent, toast } from "@/components/ui";
 import {
   getDocumentDownloadUrl,
+  sendDocumentToWhatsAppThread,
   uploadPatientDocument,
 } from "./actions";
 import { DocumentViewerModal } from "./document-viewer-modal";
@@ -15,11 +16,13 @@ import { ALLOWED_MIME_TYPES, MAX_FILE_BYTES, isPreviewableMimeType } from "./val
 type DocumentListProps = {
   patientId: string;
   initialDocuments: PatientDocumentListItem[];
+  onDocumentsChange?: (documents: PatientDocumentListItem[]) => void;
 };
 
 export function DocumentList({
   patientId,
   initialDocuments,
+  onDocumentsChange,
 }: DocumentListProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,8 +31,24 @@ export function DocumentList({
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [sendingWhatsAppId, setSendingWhatsAppId] = useState<string | null>(null);
   const [viewerDocument, setViewerDocument] =
     useState<PatientDocumentListItem | null>(null);
+
+  useEffect(() => {
+    setDocuments(initialDocuments);
+  }, [initialDocuments]);
+
+  const updateDocuments = useCallback(
+    (updater: (current: PatientDocumentListItem[]) => PatientDocumentListItem[]) => {
+      setDocuments((current) => {
+        const next = updater(current);
+        onDocumentsChange?.(next);
+        return next;
+      });
+    },
+    [onDocumentsChange],
+  );
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -39,7 +58,7 @@ export function DocumentList({
       try {
         setIsUploading(true);
         const created = await uploadPatientDocument(patientId, formData);
-        setDocuments((current) => [created, ...current]);
+        updateDocuments((current) => [created, ...current]);
         toast.success("Documento enviado com sucesso.");
         router.refresh();
       } catch (error) {
@@ -49,7 +68,7 @@ export function DocumentList({
         if (inputRef.current) inputRef.current.value = "";
       }
     },
-    [patientId, router],
+    [patientId, router, updateDocuments],
   );
 
   async function handleDownload(documentId: string) {
@@ -61,6 +80,18 @@ export function DocumentList({
       toast.error(getErrorMessage(error));
     } finally {
       setDownloadingId(null);
+    }
+  }
+
+  async function handleSendWhatsApp(document: PatientDocumentListItem) {
+    try {
+      setSendingWhatsAppId(document.id);
+      await sendDocumentToWhatsAppThread(patientId, document.id);
+      toast.success('Mensagem simulada enviada. Abra o módulo WhatsApp para ver.');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setSendingWhatsAppId(null);
     }
   }
 
@@ -167,6 +198,7 @@ export function DocumentList({
                       <p className="truncate font-medium">{document.title}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {formatMimeLabel(document.mime_type)} ·{" "}
+                        {formatSourceLabel(document.source)} ·{" "}
                         {formatFileSize(document.file_size_bytes)} ·{" "}
                         {formatDateTime(document.created_at)}
                       </p>
@@ -196,6 +228,20 @@ export function DocumentList({
                     >
                       {downloadingId === document.id ? "Abrindo..." : "Baixar"}
                     </Button>
+                    {document.source === "generated" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="shrink-0 gap-2"
+                        disabled={sendingWhatsAppId === document.id}
+                        onClick={() => void handleSendWhatsApp(document)}
+                      >
+                        <MessageCircle className="h-4 w-4" aria-hidden />
+                        {sendingWhatsAppId === document.id
+                          ? "Enviando..."
+                          : "WhatsApp"}
+                      </Button>
+                    )}
                   </div>
                 </li>
               ))}
@@ -229,6 +275,12 @@ function formatMimeLabel(mimeType: string) {
   if (mimeType === "image/jpeg") return "JPG";
   if (mimeType === "image/png") return "PNG";
   return mimeType;
+}
+
+function formatSourceLabel(source: PatientDocumentListItem["source"]) {
+  if (source === "generated") return "Gerado";
+  if (source === "clinical") return "Clínico";
+  return "Importado";
 }
 
 function formatFileSize(bytes: number) {
