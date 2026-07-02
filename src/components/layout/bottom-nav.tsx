@@ -4,9 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { APP_NAV_LINKS } from "./nav-links";
 import { filterNavByModules } from "./filter-nav";
+import { StockAlertBadge } from "./stock-alert-badge";
 import { useClinicSession } from "@/contexts/clinic-session-context";
 
-export function BottomNav() {
+type BottomNavProps = {
+  stockAlertCount?: number;
+};
+
+export function BottomNav({ stockAlertCount = 0 }: BottomNavProps) {
   const pathname = usePathname();
   const { enabledModules } = useClinicSession();
   const links = filterNavByModules(APP_NAV_LINKS, enabledModules);
@@ -19,11 +24,18 @@ export function BottomNav() {
           <Link
             key={href}
             href={href}
-            className={`flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
+            className={`relative flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
               active ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            <Icon className="h-5 w-5" aria-hidden />
+            <span className="relative">
+              <Icon className="h-5 w-5" aria-hidden />
+              {href === "/estoque" && stockAlertCount > 0 && (
+                <span className="absolute -right-2 -top-1">
+                  <StockAlertBadge count={stockAlertCount} compact />
+                </span>
+              )}
+            </span>
             {label}
           </Link>
         );

@@ -4,6 +4,7 @@ const MODULE_BY_HREF: Record<string, string> = {
   "/agenda": "agenda",
   "/pacientes": "pacientes",
   "/procedimentos": "procedimentos",
+  "/estoque": "estoque",
   "/whatsapp": "whatsapp",
 };
 

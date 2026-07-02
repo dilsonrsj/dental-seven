@@ -6,10 +6,15 @@ import { DentalSevenLogo } from "@/components/brand/dental-seven-logo";
 import { Dr7Logo } from "@/components/brand/dr7-logo";
 import { APP_NAV_LINKS } from "./nav-links";
 import { filterNavByModules } from "./filter-nav";
+import { StockAlertBadge } from "./stock-alert-badge";
 import { useClinicSession } from "@/contexts/clinic-session-context";
 import { SignOutButton } from "./sign-out-button";
 
-export function AppSidebar() {
+type AppSidebarProps = {
+  stockAlertCount?: number;
+};
+
+export function AppSidebar({ stockAlertCount = 0 }: AppSidebarProps) {
   const pathname = usePathname();
   const { enabledModules } = useClinicSession();
   const links = filterNavByModules(APP_NAV_LINKS, enabledModules);
@@ -40,6 +45,9 @@ export function AppSidebar() {
             >
               <Icon className="h-5 w-5 shrink-0" aria-hidden />
               {label}
+              {href === "/estoque" && (
+                <StockAlertBadge count={stockAlertCount} />
+              )}
             </Link>
           );
         })}

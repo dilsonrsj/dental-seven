@@ -2,6 +2,7 @@ import {
   Calendar,
   ClipboardList,
   MessageCircle,
+  Package,
   Settings,
   Users,
   type LucideIcon,
@@ -17,6 +18,7 @@ export const APP_NAV_LINKS: NavLink[] = [
   { href: "/agenda", label: "Agenda", icon: Calendar },
   { href: "/pacientes", label: "Pacientes", icon: Users },
   { href: "/procedimentos", label: "Procedimentos", icon: ClipboardList },
+  { href: "/estoque", label: "Estoque", icon: Package },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];

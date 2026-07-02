@@ -6,6 +6,7 @@ import { PaywallOverlay } from "@/components/billing/paywall-overlay";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import { getAuthContext } from "@/lib/auth/context";
 import { shouldShowPaywall } from "@/lib/billing/subscription";
+import { countStockAlerts } from "@/modules/estoque/actions";
 import { ClinicSessionProvider } from "@/contexts/clinic-session-context";
 import { DentistFilterProvider } from "@/contexts/dentist-filter-context";
 
@@ -17,6 +18,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const showPaywall =
     ctx.clinic &&
     shouldShowPaywall(ctx.clinic.subscription_status, ctx.profile.role);
+
+  const stockAlertCount = ctx.enabledModules.includes("estoque")
+    ? await countStockAlerts()
+    : 0;
 
   return (
     <ClinicSessionProvider
@@ -41,7 +46,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                 }
               />
             )}
-            <AppSidebar />
+            <AppSidebar stockAlertCount={stockAlertCount} />
             <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
               <AppHeader />
               <main
@@ -50,7 +55,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                 {children}
               </main>
             </div>
-            <BottomNav />
+            <BottomNav stockAlertCount={stockAlertCount} />
           </div>
         </ToastProvider>
       </DentistFilterProvider>
