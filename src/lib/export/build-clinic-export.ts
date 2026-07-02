@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toCsv } from "./csv";
 
-const EXPORT_SCHEMA_VERSION = "1.4";
+const EXPORT_SCHEMA_VERSION = "1.5";
 
 const README = `Dental Seven — Exportação de dados (LGPD)
 ============================================
@@ -66,6 +66,9 @@ export async function buildClinicExport(clinicId: string): Promise<{
     { data: procedureSupplyItems },
     { data: stockMovements },
     { data: appointmentStockApplied },
+    { data: financialEntries },
+    { data: clinicMonthlySettings },
+    { data: appointmentFinanceApplied },
   ] = await Promise.all([
     admin.from("dentists").select("*").eq("clinic_id", clinicId),
     admin.from("patients").select("*").eq("clinic_id", clinicId),
@@ -79,6 +82,15 @@ export async function buildClinicExport(clinicId: string): Promise<{
     admin.from("stock_movements").select("*").eq("clinic_id", clinicId),
     admin
       .from("appointment_stock_applied")
+      .select("*")
+      .eq("clinic_id", clinicId),
+    admin.from("financial_entries").select("*").eq("clinic_id", clinicId),
+    admin
+      .from("clinic_monthly_settings")
+      .select("*")
+      .eq("clinic_id", clinicId),
+    admin
+      .from("appointment_finance_applied")
       .select("*")
       .eq("clinic_id", clinicId),
   ]);
@@ -109,6 +121,17 @@ export async function buildClinicExport(clinicId: string): Promise<{
     "stock_movements.json": JSON.stringify(stockMovements ?? [], null, 2),
     "appointment_stock_applied.json": JSON.stringify(
       appointmentStockApplied ?? [],
+      null,
+      2,
+    ),
+    "financial_entries.json": JSON.stringify(financialEntries ?? [], null, 2),
+    "clinic_monthly_settings.json": JSON.stringify(
+      clinicMonthlySettings ?? [],
+      null,
+      2,
+    ),
+    "appointment_finance_applied.json": JSON.stringify(
+      appointmentFinanceApplied ?? [],
       null,
       2,
     ),
@@ -202,6 +225,25 @@ export async function buildClinicExport(clinicId: string): Promise<{
       "body",
       "created_at",
     ]),
+    "financial_entries.csv": toCsv(financialEntries ?? [], [
+      "id",
+      "entry_type",
+      "source",
+      "amount_cents",
+      "appointment_id",
+      "procedure_id",
+      "dentist_id",
+      "description",
+      "entry_date",
+      "created_by",
+      "created_at",
+    ]),
+    "clinic_monthly_settings.csv": toCsv(clinicMonthlySettings ?? [], [
+      "clinic_id",
+      "year_month",
+      "fixed_costs_cents",
+      "updated_at",
+    ]),
   };
 
   const documentFiles: { path: string; buffer: Buffer }[] = [];
@@ -251,6 +293,9 @@ export async function buildClinicExport(clinicId: string): Promise<{
       procedure_supply_items: procedureSupplyItems?.length ?? 0,
       stock_movements: stockMovements?.length ?? 0,
       appointment_stock_applied: appointmentStockApplied?.length ?? 0,
+      financial_entries: financialEntries?.length ?? 0,
+      clinic_monthly_settings: clinicMonthlySettings?.length ?? 0,
+      appointment_finance_applied: appointmentFinanceApplied?.length ?? 0,
     },
     checksums,
   };

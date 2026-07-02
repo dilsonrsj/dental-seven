@@ -195,4 +195,57 @@ describe("toCsv", () => {
     expect(csv).toContain("-2");
     expect(csv).toContain("8");
   });
+
+  it("formats financial entry rows for export", () => {
+    const csv = toCsv(
+      [
+        {
+          id: "entry-1",
+          entry_type: "revenue",
+          source: "auto",
+          amount_cents: 15000,
+          appointment_id: "appt-1",
+          procedure_id: "proc-1",
+          dentist_id: "dentist-1",
+          description: "Limpeza",
+          entry_date: "2026-07-02",
+          created_by: "user-1",
+          created_at: "2026-07-02T14:00:00.000Z",
+        },
+      ],
+      [
+        "id",
+        "entry_type",
+        "source",
+        "amount_cents",
+        "appointment_id",
+        "procedure_id",
+        "dentist_id",
+        "description",
+        "entry_date",
+        "created_by",
+        "created_at",
+      ],
+    );
+    expect(csv).toContain("entry-1");
+    expect(csv).toContain("revenue");
+    expect(csv).toContain("15000");
+    expect(csv).toContain("Limpeza");
+  });
+
+  it("formats clinic monthly settings rows for export", () => {
+    const csv = toCsv(
+      [
+        {
+          clinic_id: "clinic-1",
+          year_month: "2026-07",
+          fixed_costs_cents: 500000,
+          updated_at: "2026-07-02T12:00:00.000Z",
+        },
+      ],
+      ["clinic_id", "year_month", "fixed_costs_cents", "updated_at"],
+    );
+    expect(csv).toContain("2026-07");
+    expect(csv).toContain("500000");
+  });
 });
