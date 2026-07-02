@@ -4,6 +4,7 @@ import {
   MessageCircle,
   Package,
   Settings,
+  Truck,
   Users,
   Wallet,
   type LucideIcon,
@@ -21,6 +22,7 @@ export const APP_NAV_LINKS: NavLink[] = [
   { href: "/procedimentos", label: "Procedimentos", icon: ClipboardList },
   { href: "/estoque", label: "Estoque", icon: Package },
   { href: "/financeiro", label: "Financeiro", icon: Wallet },
+  { href: "/fornecedores", label: "Fornecedores", icon: Truck },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];

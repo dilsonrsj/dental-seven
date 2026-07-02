@@ -8,6 +8,7 @@ describe("isClinicAppPath", () => {
     expect(isClinicAppPath("/procedimentos")).toBe(true);
     expect(isClinicAppPath("/estoque")).toBe(true);
     expect(isClinicAppPath("/financeiro")).toBe(true);
+    expect(isClinicAppPath("/fornecedores")).toBe(true);
     expect(isClinicAppPath("/configuracoes")).toBe(true);
   });
 
