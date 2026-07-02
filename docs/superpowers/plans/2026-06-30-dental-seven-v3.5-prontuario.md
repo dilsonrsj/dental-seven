@@ -76,7 +76,7 @@
 
 ## Tasks — Onda 3: Documentos clínicos
 
-- [ ] Task 9: `templates/` + `generate-clinical-pdf.ts` + Vitest
+- [x] Task 9: `templates/` + `generate-clinical-pdf.ts` + Vitest
 - [ ] Task 10: `clinical-document-form.tsx` + action `generateClinicalDocument`
 - [ ] Task 11: Preview, salvar em Storage, listar como `source: generated`
 - [ ] Task 12: `sendDocumentToWhatsAppThread` — mensagem simulada
@@ -137,10 +137,10 @@
 - Create: `src/modules/prontuario/templates/types.ts`, `receita.ts`, `atestado.ts`, `guia.ts`
 - Create: `src/modules/prontuario/generate-clinical-pdf.ts`, `generate-clinical-pdf.test.ts`
 
-- [ ] **Step 1:** `npm install pdf-lib` (commit package-lock)
-- [ ] **Step 2:** Função `buildClinicalPdf(template, payload)` retorna `Uint8Array`
-- [ ] **Step 3:** Testes: PDF não vazio, contém metadados esperados (text extract básico ou tamanho mínimo)
-- [ ] **Step 4:** Commit `feat(v3.5): geracao PDF documentos clinicos`
+- [x] **Step 1:** `npm install pdf-lib` (commit package-lock)
+- [x] **Step 2:** Função `buildClinicalPdf(template, payload)` retorna `Uint8Array`
+- [x] **Step 3:** Testes: PDF não vazio, contém metadados esperados (text extract básico ou tamanho mínimo)
+- [x] **Step 4:** Commit `feat(v3.5): geracao PDF documentos clinicos`
 
 ---
 
