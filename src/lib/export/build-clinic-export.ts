@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toCsv } from "./csv";
 
-const EXPORT_SCHEMA_VERSION = "1.2";
+const EXPORT_SCHEMA_VERSION = "1.3";
 
 const README = `Dental Seven — Exportação de dados (LGPD)
 ============================================
@@ -61,6 +61,9 @@ export async function buildClinicExport(clinicId: string): Promise<{
     { data: threads },
     { data: patientDocuments },
     { data: clinicalNotes },
+    { data: procedures },
+    { data: supplies },
+    { data: procedureSupplyItems },
   ] = await Promise.all([
     admin.from("dentists").select("*").eq("clinic_id", clinicId),
     admin.from("patients").select("*").eq("clinic_id", clinicId),
@@ -68,6 +71,9 @@ export async function buildClinicExport(clinicId: string): Promise<{
     admin.from("whatsapp_threads").select("*").eq("clinic_id", clinicId),
     admin.from("patient_documents").select("*").eq("clinic_id", clinicId),
     admin.from("patient_clinical_notes").select("*").eq("clinic_id", clinicId),
+    admin.from("procedures").select("*").eq("clinic_id", clinicId),
+    admin.from("supplies").select("*").eq("clinic_id", clinicId),
+    admin.from("procedure_supply_items").select("*").eq("clinic_id", clinicId),
   ]);
 
   const threadIds = (threads ?? []).map((t) => t.id);
@@ -90,6 +96,9 @@ export async function buildClinicExport(clinicId: string): Promise<{
     "whatsapp_messages.json": JSON.stringify(messages, null, 2),
     "patient_documents.json": JSON.stringify(patientDocuments ?? [], null, 2),
     "patient_clinical_notes.json": JSON.stringify(clinicalNotes ?? [], null, 2),
+    "procedures.json": JSON.stringify(procedures ?? [], null, 2),
+    "supplies.json": JSON.stringify(supplies ?? [], null, 2),
+    "procedure_supply_items.json": JSON.stringify(procedureSupplyItems ?? [], null, 2),
     "dentists.csv": toCsv(dentists ?? [], [
       "id",
       "name",
@@ -118,9 +127,35 @@ export async function buildClinicExport(clinicId: string): Promise<{
       "ends_at",
       "duration_min",
       "status",
+      "procedure_id",
       "procedure_label",
       "notes",
       "created_at",
+    ]),
+    "procedures.csv": toCsv(procedures ?? [], [
+      "id",
+      "name",
+      "base_price_cents",
+      "default_duration_min",
+      "is_active",
+      "created_at",
+      "updated_at",
+    ]),
+    "supplies.csv": toCsv(supplies ?? [], [
+      "id",
+      "name",
+      "unit_label",
+      "unit_cost_cents",
+      "sku",
+      "is_active",
+      "created_at",
+      "updated_at",
+    ]),
+    "procedure_supply_items.csv": toCsv(procedureSupplyItems ?? [], [
+      "id",
+      "procedure_id",
+      "supply_id",
+      "quantity",
     ]),
     "patient_documents.csv": toCsv(patientDocuments ?? [], [
       "id",
@@ -185,6 +220,9 @@ export async function buildClinicExport(clinicId: string): Promise<{
       patient_documents: patientDocuments?.length ?? 0,
       patient_document_files: documentFiles.length,
       patient_clinical_notes: clinicalNotes?.length ?? 0,
+      procedures: procedures?.length ?? 0,
+      supplies: supplies?.length ?? 0,
+      procedure_supply_items: procedureSupplyItems?.length ?? 0,
     },
     checksums,
   };
