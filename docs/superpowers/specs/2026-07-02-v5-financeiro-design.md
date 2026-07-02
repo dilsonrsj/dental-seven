@@ -2,7 +2,7 @@
 
 **Versão:** 1.0  
 **Data:** 2026-07-02  
-**Status:** Aprovado — plano em `docs/superpowers/plans/2026-07-02-dental-seven-v5-financeiro.md`  
+**Status:** Aceite concluído — implementação v5 finalizada em `feat/v2`  
 **Pré-requisito:** v3 Procedimentos e v4 Estoque concluídos na branch `feat/v2`  
 **Specs relacionadas:**  
 - `2026-06-11-dental-seven-mvp-design.md` § roadmap v5  
@@ -269,18 +269,18 @@ Sem `procedure_id` ou BOM vazio: no-op para aquele componente (sem erro).
 
 ## 10. Critérios de aceite v5
 
-- [ ] Clínica Completo com módulo `financeiro` vê **Financeiro** no menu
-- [ ] Admin vê dashboard com 4 cards do mês
-- [ ] Admin edita custos fixos mensais (total único)
-- [ ] Admin cria lançamentos manuais (receita e despesa)
-- [ ] Concluir consulta com `procedure_id` gera receita automática
-- [ ] Concluir com BOM e custos gera custo variável automático
-- [ ] Reabrir consulta estorna lançamentos automáticos
-- [ ] Dentista vê só receita das próprias consultas
-- [ ] Paywall bloqueia escrita
-- [ ] Export ZIP inclui `financial_entries` (schema 1.5)
-- [ ] Smoke `scripts/smoke-financeiro.ts` passa
-- [ ] Testes Vitest para summary, appointment-finance e validation
+- [x] Clínica Completo com módulo `financeiro` vê **Financeiro** no menu
+- [x] Admin vê dashboard com 4 cards do mês
+- [x] Admin edita custos fixos mensais (total único)
+- [x] Admin cria lançamentos manuais (receita e despesa)
+- [x] Concluir consulta com `procedure_id` gera receita automática
+- [x] Concluir com BOM e custos gera custo variável automático
+- [x] Reabrir consulta estorna lançamentos automáticos
+- [x] Dentista vê só receita das próprias consultas
+- [x] Paywall bloqueia escrita
+- [x] Export ZIP inclui `financial_entries` (schema 1.5)
+- [x] Smoke `scripts/smoke-financeiro.ts` passa
+- [x] Testes Vitest para summary, appointment-finance e validation
 
 ---
 

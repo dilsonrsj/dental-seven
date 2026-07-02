@@ -52,16 +52,16 @@
 
 ## Tasks
 
-- [ ] Task 1: Migration `013_financial_ledger` + aplicar Supabase
-- [ ] Task 2: `validation.ts` + `month-summary.ts` + testes Vitest
-- [ ] Task 3: `appointment-finance.ts` + testes Vitest
-- [ ] Task 4: Server actions — entries, settings, listagens
-- [ ] Task 5: UI `/financeiro` (dashboard admin + visão dentista)
-- [ ] Task 6: Menu Financeiro
-- [ ] Task 7: Integração agenda (hook + toast)
-- [ ] Task 8: Export LGPD schema 1.5
-- [ ] Task 9: Smoke `scripts/smoke-financeiro.ts`
-- [ ] Task 10: Marcar spec §10 aceite + commit final da fase
+- [x] Task 1: Migration `013_financial_ledger` + aplicar Supabase
+- [x] Task 2: `validation.ts` + `month-summary.ts` + testes Vitest
+- [x] Task 3: `appointment-finance.ts` + testes Vitest
+- [x] Task 4: Server actions — entries, settings, listagens
+- [x] Task 5: UI `/financeiro` (dashboard admin + visão dentista)
+- [x] Task 6: Menu Financeiro
+- [x] Task 7: Integração agenda (hook + toast)
+- [x] Task 8: Export LGPD schema 1.5
+- [x] Task 9: Smoke `scripts/smoke-financeiro.ts`
+- [x] Task 10: Marcar spec §10 aceite + commit final da fase
 
 ---
 
