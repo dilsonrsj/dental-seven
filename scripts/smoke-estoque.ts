@@ -45,6 +45,7 @@ async function ensureModuleEnabled(
   admin: ReturnType<typeof createClient>,
   moduleKey: string,
 ) {
+  type ClinicModuleRow = { enabled: boolean };
   const { data: row, error: fetchError } = await admin
     .from("clinic_modules")
     .select("enabled")
@@ -53,7 +54,8 @@ async function ensureModuleEnabled(
     .maybeSingle();
 
   if (fetchError) throw new Error(fetchError.message);
-  if (row?.enabled) {
+  const moduleRow = row as ClinicModuleRow | null;
+  if (moduleRow?.enabled) {
     console.log(`OK módulo ${moduleKey} já habilitado`);
     return;
   }
