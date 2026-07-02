@@ -1,5 +1,9 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  defaultAppPathForRole,
+  isClinicAppPath,
+} from "@/lib/auth/routes";
 
 const PUBLIC_PATHS = ["/entrar", "/cadastro", "/visao", "/api/webhooks/asaas"];
 
@@ -41,8 +45,26 @@ export async function updateSession(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
   const isAuthPage = pathname === "/entrar" || pathname === "/cadastro";
 
+  let profileRole: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    profileRole = profile?.role ?? null;
+  }
+
+  const isSuperAdmin = profileRole === "super_admin";
+
   if (user && isAuthPage) {
-    return NextResponse.redirect(new URL("/agenda", request.url));
+    return NextResponse.redirect(
+      new URL(defaultAppPathForRole(profileRole), request.url),
+    );
+  }
+
+  if (user && isSuperAdmin && isClinicAppPath(pathname)) {
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   if (!user && !isPublic && !pathname.startsWith("/api/")) {
