@@ -55,17 +55,17 @@
 
 ## Tasks
 
-- [ ] Task 1: Migration `011_procedures_catalog` + aplicar no Supabase remoto
-- [ ] Task 2: `validation.ts` + `price-utils.ts` + testes Vitest
-- [ ] Task 3: `agenda-procedure.ts` + testes Vitest
-- [ ] Task 4: Server actions — procedures e supplies
-- [ ] Task 5: Server actions — BOM
-- [ ] Task 6: Página `/procedimentos` + UI (tabs, listas, BOM)
-- [ ] Task 7: Menu Procedimentos (sidebar + bottom nav)
-- [ ] Task 8: Integração agenda — select catálogo + `procedure_id`
-- [ ] Task 9: Export LGPD schema 1.3
-- [ ] Task 10: Smoke `scripts/smoke-procedimentos.ts`
-- [ ] Task 11: Marcar spec §10 critérios de aceite + commit final da fase
+- [x] Task 1: Migration `011_procedures_catalog` + aplicar no Supabase remoto
+- [x] Task 2: `validation.ts` + `price-utils.ts` + testes Vitest
+- [x] Task 3: `agenda-procedure.ts` + testes Vitest
+- [x] Task 4: Server actions — procedures e supplies
+- [x] Task 5: Server actions — BOM
+- [x] Task 6: Página `/procedimentos` + UI (tabs, listas, BOM)
+- [x] Task 7: Menu Procedimentos (sidebar + bottom nav)
+- [x] Task 8: Integração agenda — select catálogo + `procedure_id`
+- [x] Task 9: Export LGPD schema 1.3
+- [x] Task 10: Smoke `scripts/smoke-procedimentos.ts`
+- [x] Task 11: Marcar spec §10 critérios de aceite + commit final da fase
 
 ---
 
@@ -734,4 +734,6 @@ Expected: linhas `OK` para cada etapa
 
 Plano salvo em `docs/superpowers/plans/2026-07-02-dental-seven-v3-procedimentos.md`.
 
-**Próximo:** executar Tasks 1–11 na branch `feat/v2`.
+**Status:** v3 concluída (Tasks 1–11) na branch `feat/v2`.
+
+**Próximo:** v4 Estoque — ver roadmap em `2026-06-11-dental-seven-mvp-design.md`

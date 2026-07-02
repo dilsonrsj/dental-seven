@@ -2,7 +2,7 @@
 
 **Versão:** 1.0  
 **Data:** 2026-07-02  
-**Status:** Aprovado — plano em `docs/superpowers/plans/2026-07-02-dental-seven-v3-procedimentos.md`  
+**Status:** Aprovada — aceite v3 concluído (2026-07-02)  
 **Pré-requisito:** v2.5 e v3.5 concluídas na branch `feat/v2`  
 **Specs relacionadas:**  
 - `2026-06-11-dental-seven-mvp-design.md` § roadmap v3  
@@ -225,19 +225,19 @@ Manifest `schemaVersion`: **1.3** — contadores `procedures`, `supplies`, `proc
 
 ## 10. Critérios de aceite v3
 
-- [ ] Clínica Completo com módulo `procedimentos` vê item **Procedimentos** no menu
-- [ ] Clínica sem módulo não vê menu nem dropdown na agenda (texto livre permanece)
-- [ ] Admin CRUD procedimentos (nome, preço, duração, ativo/inativo)
-- [ ] Admin CRUD insumos (nome, unidade, custo opcional, SKU, ativo/inativo)
-- [ ] Admin monta BOM com quantidade por procedimento
-- [ ] Dentista vê lista de procedimentos (read-only); não vê aba Insumos
-- [ ] Agenda: select catálogo preenche `procedure_id`, `procedure_label` e sugere duração
-- [ ] Agenda: "Outro" grava só `procedure_label` com `procedure_id` null
-- [ ] Paywall bloqueia escrita quando `expired`/`past_due`
-- [ ] RLS impede leitura/escrita cross-clinic
-- [ ] Export ZIP inclui procedures, supplies, procedure_supply_items (schema 1.3)
-- [ ] Smoke `scripts/smoke-procedimentos.ts` passa
-- [ ] Testes Vitest para validation e helpers de preço/duração/agenda
+- [x] Clínica Completo com módulo `procedimentos` vê item **Procedimentos** no menu
+- [x] Clínica sem módulo não vê menu nem dropdown na agenda (texto livre permanece)
+- [x] Admin CRUD procedimentos (nome, preço, duração, ativo/inativo)
+- [x] Admin CRUD insumos (nome, unidade, custo opcional, SKU, ativo/inativo)
+- [x] Admin monta BOM com quantidade por procedimento
+- [x] Dentista vê lista de procedimentos (read-only); não vê aba Insumos
+- [x] Agenda: select catálogo preenche `procedure_id`, `procedure_label` e sugere duração
+- [x] Agenda: "Outro" grava só `procedure_label` com `procedure_id` null
+- [x] Paywall bloqueia escrita quando `expired`/`past_due`
+- [x] RLS impede leitura/escrita cross-clinic
+- [x] Export ZIP inclui procedures, supplies, procedure_supply_items (schema 1.3)
+- [x] Smoke `scripts/smoke-procedimentos.ts` passa
+- [x] Testes Vitest para validation e helpers de preço/duração/agenda (74 testes)
 
 ---
 
@@ -246,3 +246,4 @@ Manifest `schemaVersion`: **1.3** — contadores `procedures`, `supplies`, `proc
 | Data | Alteração |
 |------|-----------|
 | 2026-07-02 | Spec inicial v3 — catálogo, BOM estruturado, vínculo agenda (brainstorming aprovado) |
+| 2026-07-02 | Aceite v3 concluído — Tasks 1–11 na `feat/v2`, smoke `scripts/smoke-procedimentos.ts` |
