@@ -57,16 +57,16 @@
 
 ## Tasks
 
-- [ ] Task 1: Migration `012_stock_ledger` + aplicar Supabase
-- [ ] Task 2: `stock-level.ts` + `validation.ts` + testes Vitest
-- [ ] Task 3: `appointment-stock.ts` + testes Vitest (baixa/estorno)
-- [ ] Task 4: Server actions — listagem, movimentos, alertas
-- [ ] Task 5: UI `/estoque` (tabela, modais, histórico)
-- [ ] Task 6: Menu Estoque + badge de alertas
-- [ ] Task 7: Integração agenda (hook + toast)
-- [ ] Task 8: Export LGPD schema 1.4
-- [ ] Task 9: Smoke `scripts/smoke-estoque.ts`
-- [ ] Task 10: Marcar spec §10 aceite + commit final da fase
+- [x] Task 1: Migration `012_stock_ledger` + aplicar Supabase
+- [x] Task 2: `stock-level.ts` + `validation.ts` + testes Vitest
+- [x] Task 3: `appointment-stock.ts` + testes Vitest (baixa/estorno)
+- [x] Task 4: Server actions — listagem, movimentos, alertas
+- [x] Task 5: UI `/estoque` (tabela, modais, histórico)
+- [x] Task 6: Menu Estoque + badge de alertas
+- [x] Task 7: Integração agenda (hook + toast)
+- [x] Task 8: Export LGPD schema 1.4
+- [x] Task 9: Smoke `scripts/smoke-estoque.ts`
+- [x] Task 10: Marcar spec §10 aceite + commit final da fase
 
 ---
 

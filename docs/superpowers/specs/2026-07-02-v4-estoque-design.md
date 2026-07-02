@@ -2,7 +2,7 @@
 
 **Versão:** 1.0  
 **Data:** 2026-07-02  
-**Status:** Aprovado — plano em `docs/superpowers/plans/2026-07-02-dental-seven-v4-estoque.md`  
+**Status:** Aprovada — aceite v4 concluído  
 **Pré-requisito:** v3 Procedimentos concluída na branch `feat/v2`  
 **Specs relacionadas:**  
 - `2026-06-11-dental-seven-mvp-design.md` § roadmap v4  
@@ -266,20 +266,20 @@ Manifest `schemaVersion`: **1.4** — contadores `stock_movements`, `supplies_wi
 
 ## 10. Critérios de aceite v4
 
-- [ ] Clínica Completo com módulo `estoque` vê item **Estoque** no menu
-- [ ] Badge no menu reflete insumos em alerta baixo ou crítico
-- [ ] Admin registra entrada, saída e ajuste manual
-- [ ] Admin define `min_quantity` só em `/estoque`
-- [ ] Dentista vê saldos e alertas; não movimenta estoque
-- [ ] Concluir consulta com `procedure_id` + BOM gera `auto_deduction`
-- [ ] Concluir sem BOM ou sem `procedure_id` não gera movimento nem erro
-- [ ] Reabrir/cancelar consulta concluída estorna baixa (`auto_reversal`)
-- [ ] Saldo negativo permitido com alerta crítico
-- [ ] Modal histórico mostra últimas movimentações do insumo
-- [ ] Paywall bloqueia escrita quando `expired`/`past_due`
-- [ ] Export ZIP inclui `stock_movements` (schema 1.4)
-- [ ] Smoke `scripts/smoke-estoque.ts` passa
-- [ ] Testes Vitest para alertas, movimentos e baixa/estorno agenda
+- [x] Clínica Completo com módulo `estoque` vê item **Estoque** no menu
+- [x] Badge no menu reflete insumos em alerta baixo ou crítico
+- [x] Admin registra entrada, saída e ajuste manual
+- [x] Admin define `min_quantity` só em `/estoque`
+- [x] Dentista vê saldos e alertas; não movimenta estoque
+- [x] Concluir consulta com `procedure_id` + BOM gera `auto_deduction`
+- [x] Concluir sem BOM ou sem `procedure_id` não gera movimento nem erro
+- [x] Reabrir/cancelar consulta concluída estorna baixa (`auto_reversal`)
+- [x] Saldo negativo permitido com alerta crítico
+- [x] Modal histórico mostra últimas movimentações do insumo
+- [x] Paywall bloqueia escrita quando `expired`/`past_due`
+- [x] Export ZIP inclui `stock_movements` (schema 1.4)
+- [x] Smoke `scripts/smoke-estoque.ts` passa
+- [x] Testes Vitest para alertas, movimentos e baixa/estorno agenda
 
 ---
 
