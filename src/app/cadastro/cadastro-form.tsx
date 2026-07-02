@@ -29,22 +29,29 @@ export function CadastroForm() {
     setLoading(true);
     setError("");
 
-    const result = await signupClinic({
-      clinicName,
-      adminName,
-      email,
-      password,
-      planKey,
-    });
+    try {
+      const result = await signupClinic({
+        clinicName,
+        adminName,
+        email,
+        password,
+        planKey,
+      });
 
-    setLoading(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      router.push("/agenda");
+      router.refresh();
+    } catch {
+      setError(
+        "Não foi possível criar a conta. Verifique SUPABASE_SERVICE_ROLE_KEY no .env.local.",
+      );
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/agenda");
-    router.refresh();
   }
 
   return (

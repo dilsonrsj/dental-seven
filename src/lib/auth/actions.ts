@@ -56,7 +56,17 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
     return { ok: false, error: "Senha deve ter pelo menos 8 caracteres." };
   }
 
-  const admin = createAdminClient();
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return {
+      ok: false,
+      error:
+        "Servidor não configurado: adicione SUPABASE_SERVICE_ROLE_KEY no .env.local.",
+    };
+  }
+
   const baseSlug = slugify(clinicName);
   let slug = baseSlug;
   let suffix = 1;
