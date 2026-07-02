@@ -45,7 +45,7 @@
 - [x] Task 1: Migration `007_patient_documents` + aplicar no Supabase remoto
 - [x] Task 2: Migration `008_storage_patient_documents` + aplicar
 - [x] Task 3: `validation.ts` + testes Vitest (mime, 10 MB)
-- [ ] Task 4: Actions `listPatientDocuments`, `uploadPatientDocument`, `getDocumentDownloadUrl`
+- [x] Task 4: Actions `listPatientDocuments`, `uploadPatientDocument`, `getDocumentDownloadUrl`
 - [ ] Task 5: Página `/pacientes/[id]/prontuario` + `document-list.tsx`
 - [ ] Task 6: Aba Prontuário na ficha (gate `enabledModules.includes('prontuario')`)
 - [ ] Task 7: Export LGPD — incluir `patient_documents` no ZIP
@@ -87,7 +87,7 @@
 - [x] **Step 2:** `assertAllowedUpload(file: { type, size })` — throw Error amigável
 - [x] **Step 3:** Testes: aceita pdf/jpeg/png; rejeita exe e >10MB
 - [x] **Step 4:** `npm run test` — passar
-- [ ] **Step 5:** Commit `feat(v2.5): validacao upload prontuario`
+- [x] **Step 5:** Commit `feat(v2.5): validacao upload prontuario`
 
 ---
 
@@ -96,11 +96,11 @@
 **Files:**
 - Create: `src/modules/prontuario/types.ts`, `actions.ts`
 
-- [ ] **Step 1:** `listPatientDocuments(patientId)` — filtra `clinic_id` da sessão
-- [ ] **Step 2:** `uploadPatientDocument(patientId, formData)` — assertWritable paywall, validação, storage upload, insert row
-- [ ] **Step 3:** `getDocumentDownloadUrl(documentId)` — signed URL 60s
-- [ ] **Step 4:** Suporte `DEMO_MOCK_DATA` — no-op ou lista mock vazia
-- [ ] **Step 5:** Commit `feat(v2.5): actions prontuario upload e listagem`
+- [x] **Step 1:** `listPatientDocuments(patientId)` — filtra `clinic_id` da sessão
+- [x] **Step 2:** `uploadPatientDocument(patientId, formData)` — assertWritable paywall, validação, storage upload, insert row
+- [x] **Step 3:** `getDocumentDownloadUrl(documentId)` — signed URL 60s
+- [x] **Step 4:** Suporte `DEMO_MOCK_DATA` — no-op ou lista mock vazia
+- [x] **Step 5:** Commit `feat(v2.5): actions prontuario upload e listagem`
 
 ---
 
