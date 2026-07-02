@@ -114,6 +114,7 @@ export async function upsertAppointment(input: AppointmentFormInput) {
     starts_at: startsAt.toISOString(),
     ends_at: endsAt.toISOString(),
     duration_min: duration,
+    procedure_id: input.procedure_id ?? null,
     procedure_label: input.procedure_label.trim() || "Consulta",
     status: input.status,
     notes: input.notes?.trim() || null,

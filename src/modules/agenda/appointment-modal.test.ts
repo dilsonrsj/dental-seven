@@ -41,6 +41,7 @@ describe("buildAppointmentInitialForm", () => {
       new Date("2026-06-11T08:00:00.000Z"),
       dentists,
       patients,
+      [],
       "patient-2",
     );
 
@@ -68,6 +69,7 @@ describe("buildAppointmentInitialForm", () => {
       new Date("2026-06-11T08:00:00.000Z"),
       dentists,
       patients,
+      [],
       "patient-2",
     );
 

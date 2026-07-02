@@ -16,6 +16,7 @@ export type AppointmentFormInput = {
   dentist_id: string;
   starts_at: string;
   duration_min: number;
+  procedure_id?: string | null;
   procedure_label: string;
   status: AppointmentStatus;
   notes?: string | null;

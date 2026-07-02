@@ -5,6 +5,8 @@ import {
 } from "@/modules/agenda/actions";
 import { AgendaPageClient } from "@/modules/agenda/agenda-page-client";
 import { getWeekDays } from "@/modules/agenda/date-utils";
+import { getAuthContext } from "@/lib/auth/context";
+import { listProcedures } from "@/modules/procedimentos/actions";
 
 type AgendaPageProps = {
   searchParams?: Promise<{
@@ -18,21 +20,30 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     ? params?.patientId[0]
     : params?.patientId;
 
+  const ctx = await getAuthContext();
+  const hasProcedimentosModule =
+    ctx?.enabledModules.includes("procedimentos") ?? false;
+
   const today = startOfTodayUtc();
   const weekDays = getWeekDays(today);
   const from = weekDays[0].toISOString();
   const to = endOfDayUtc(weekDays[6]).toISOString();
-  const [appointments, dentists, patients] = await Promise.all([
-    getAppointments(from, to),
-    getDentists(),
-    getPatients(),
-  ]);
+  const [appointments, dentists, patients, catalogProcedures] =
+    await Promise.all([
+      getAppointments(from, to),
+      getDentists(),
+      getPatients(),
+      hasProcedimentosModule
+        ? listProcedures({ activeOnly: true })
+        : Promise.resolve([]),
+    ]);
 
   return (
     <AgendaPageClient
       appointments={appointments}
       dentists={dentists}
       patients={patients}
+      catalogProcedures={catalogProcedures}
       initialPatientId={initialPatientId}
     />
   );

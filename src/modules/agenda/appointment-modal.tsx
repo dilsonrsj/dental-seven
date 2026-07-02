@@ -3,6 +3,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Button, Input, Modal } from "@/components/ui";
 import type { AppointmentStatus, Dentist, Patient } from "@/lib/supabase/types";
+import {
+  OTHER_PROCEDURE_VALUE,
+  resolveAgendaProcedureFields,
+  type AgendaCatalogProcedure,
+} from "@/modules/procedimentos/agenda-procedure";
 import type { AppointmentFormInput, AppointmentWithRelations } from "./types";
 
 const statusOptions: { value: AppointmentStatus; label: string }[] = [
@@ -17,6 +22,7 @@ type AppointmentModalProps = {
   appointment: AppointmentWithRelations | null;
   dentists: Dentist[];
   patients: Patient[];
+  catalogProcedures?: AgendaCatalogProcedure[];
   selectedDate: Date;
   initialPatientId?: string;
   onClose: () => void;
@@ -30,6 +36,8 @@ type FormState = {
   dentist_id: string;
   starts_at: string;
   duration_min: string;
+  procedure_selection: string;
+  procedure_id: string | null;
   procedure_label: string;
   status: AppointmentStatus;
   notes: string;
@@ -40,6 +48,7 @@ export function AppointmentModal({
   appointment,
   dentists,
   patients,
+  catalogProcedures = [],
   selectedDate,
   initialPatientId,
   onClose,
@@ -47,12 +56,15 @@ export function AppointmentModal({
   onStatusChange,
   isSaving = false,
 }: AppointmentModalProps) {
+  const hasCatalog = catalogProcedures.length > 0;
+
   const [form, setForm] = useState<FormState>(() =>
     buildAppointmentInitialForm(
       appointment,
       selectedDate,
       dentists,
       patients,
+      catalogProcedures,
       initialPatientId,
     ),
   );
@@ -65,20 +77,76 @@ export function AppointmentModal({
         selectedDate,
         dentists,
         patients,
+        catalogProcedures,
         initialPatientId,
       ),
     );
-  }, [appointment, dentists, initialPatientId, open, patients, selectedDate]);
+  }, [
+    appointment,
+    catalogProcedures,
+    dentists,
+    initialPatientId,
+    open,
+    patients,
+    selectedDate,
+  ]);
+
+  function handleProcedureSelectionChange(selection: string) {
+    if (!hasCatalog) return;
+
+    if (selection === OTHER_PROCEDURE_VALUE) {
+      setForm((current) => ({
+        ...current,
+        procedure_selection: selection,
+        procedure_id: null,
+      }));
+      return;
+    }
+
+    const resolved = resolveAgendaProcedureFields(
+      selection,
+      selection,
+      catalogProcedures,
+    );
+
+    setForm((current) => ({
+      ...current,
+      procedure_selection: selection,
+      procedure_id: resolved.procedure_id,
+      procedure_label: resolved.procedure_label,
+      duration_min:
+        resolved.duration_min !== undefined
+          ? String(resolved.duration_min)
+          : current.duration_min,
+    }));
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    let procedureId = form.procedure_id;
+    let procedureLabel = form.procedure_label;
+
+    if (hasCatalog) {
+      const resolved = resolveAgendaProcedureFields(
+        form.procedure_selection,
+        form.procedure_selection === OTHER_PROCEDURE_VALUE
+          ? form.procedure_label
+          : form.procedure_selection,
+        catalogProcedures,
+      );
+      procedureId = resolved.procedure_id;
+      procedureLabel = resolved.procedure_label;
+    }
+
     await onSubmit({
       id: appointment?.id,
       patient_id: form.patient_id,
       dentist_id: form.dentist_id,
       starts_at: form.starts_at,
       duration_min: Number(form.duration_min),
-      procedure_label: form.procedure_label,
+      procedure_id: hasCatalog ? procedureId : undefined,
+      procedure_label: procedureLabel,
       status: form.status,
       notes: form.notes,
     });
@@ -172,17 +240,53 @@ export function AppointmentModal({
 
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Procedimento</span>
-          <Input
-            required
-            value={form.procedure_label}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                procedure_label: event.target.value,
-              }))
-            }
-            placeholder="Consulta, limpeza, retorno..."
-          />
+          {hasCatalog ? (
+            <div className="space-y-2">
+              <select
+                required
+                value={form.procedure_selection}
+                onChange={(event) =>
+                  handleProcedureSelectionChange(event.target.value)
+                }
+                className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {catalogProcedures.map((procedure) => (
+                  <option key={procedure.id} value={procedure.id}>
+                    {procedure.name}
+                  </option>
+                ))}
+                <option value={OTHER_PROCEDURE_VALUE}>
+                  Outro (texto livre)
+                </option>
+              </select>
+
+              {form.procedure_selection === OTHER_PROCEDURE_VALUE ? (
+                <Input
+                  required
+                  value={form.procedure_label}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      procedure_label: event.target.value,
+                    }))
+                  }
+                  placeholder="Consulta, limpeza, retorno..."
+                />
+              ) : null}
+            </div>
+          ) : (
+            <Input
+              required
+              value={form.procedure_label}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  procedure_label: event.target.value,
+                }))
+              }
+              placeholder="Consulta, limpeza, retorno..."
+            />
+          )}
         </label>
 
         <label className="block space-y-1.5">
@@ -260,11 +364,25 @@ export function buildAppointmentInitialForm(
   selectedDate: Date,
   dentists: Dentist[],
   patients: Patient[],
+  catalogProcedures: AgendaCatalogProcedure[] = [],
   initialPatientId?: string,
 ): FormState {
   const initialPatientExists = patients.some(
     (patient) => patient.id === initialPatientId,
   );
+  const hasCatalog = catalogProcedures.length > 0;
+  const procedureId = appointment?.procedure_id ?? null;
+  const procedureLabel = appointment?.procedure_label ?? "Consulta";
+  const catalogMatch =
+    procedureId &&
+    catalogProcedures.find((procedure) => procedure.id === procedureId);
+
+  let procedureSelection = OTHER_PROCEDURE_VALUE;
+  if (hasCatalog) {
+    procedureSelection = catalogMatch
+      ? catalogMatch.id
+      : OTHER_PROCEDURE_VALUE;
+  }
 
   return {
     patient_id:
@@ -277,7 +395,9 @@ export function buildAppointmentInitialForm(
       appointment ? new Date(appointment.starts_at) : selectedDate,
     ),
     duration_min: String(appointment?.duration_min ?? 30),
-    procedure_label: appointment?.procedure_label ?? "Consulta",
+    procedure_selection: procedureSelection,
+    procedure_id: catalogMatch ? catalogMatch.id : null,
+    procedure_label: procedureLabel,
     status: appointment?.status ?? "pending",
     notes: appointment?.notes ?? "",
   };

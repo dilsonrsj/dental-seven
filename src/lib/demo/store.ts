@@ -205,6 +205,7 @@ export const demoStore = {
     starts_at: string;
     ends_at: string;
     duration_min: number;
+    procedure_id?: string | null;
     procedure_label: string;
     status: AppointmentStatus;
     notes?: string | null;
@@ -218,6 +219,7 @@ export const demoStore = {
       starts_at: input.starts_at,
       ends_at: input.ends_at,
       duration_min: input.duration_min,
+      procedure_id: input.procedure_id ?? null,
       procedure_label: input.procedure_label,
       status: input.status,
       notes: input.notes ?? null,

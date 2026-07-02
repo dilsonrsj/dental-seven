@@ -35,6 +35,7 @@ export interface Appointment {
   ends_at: string;
   duration_min: number;
   status: AppointmentStatus;
+  procedure_id?: string | null;
   procedure_label: string;
   notes: string | null;
 }

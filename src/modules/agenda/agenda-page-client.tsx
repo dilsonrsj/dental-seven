@@ -19,9 +19,11 @@ import type {
   AppointmentFormInput,
   AppointmentWithRelations,
 } from "./types";
+import type { ProcedureRow } from "@/modules/procedimentos/types";
 
 type AgendaPageClientProps = AgendaInitialData & {
   configureMessage?: string;
+  catalogProcedures?: ProcedureRow[];
   initialPatientId?: string;
 };
 
@@ -29,6 +31,7 @@ export function AgendaPageClient({
   appointments: initialAppointments,
   dentists,
   patients,
+  catalogProcedures = [],
   configureMessage,
   initialPatientId,
 }: AgendaPageClientProps) {
@@ -157,6 +160,7 @@ export function AgendaPageClient({
         appointment={editingAppointment}
         dentists={dentists}
         patients={patients}
+        catalogProcedures={catalogProcedures}
         selectedDate={selectedDate}
         initialPatientId={initialPatientId}
         onClose={() => setModalOpen(false)}
