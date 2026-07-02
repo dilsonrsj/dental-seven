@@ -44,12 +44,13 @@ export function DocumentViewerModal({
     }
 
     let cancelled = false;
+    const documentId = selectedDocument.id;
 
     async function loadPreview() {
       setIsLoading(true);
       setError(null);
       try {
-        const url = await getDocumentDownloadUrl(selectedDocument.id, 120);
+        const url = await getDocumentDownloadUrl(documentId, 120);
         if (!cancelled) setSignedUrl(url);
       } catch (loadError) {
         if (!cancelled) {

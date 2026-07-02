@@ -64,6 +64,11 @@ function buildStoragePath(
   return `${clinicId}/${patientId}/${documentId}/${filename}`;
 }
 
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  if (!value) return null;
+  return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
 type DocumentRow = {
   id: string;
   clinic_id: string;
@@ -75,10 +80,11 @@ type DocumentRow = {
   source: "imported" | "generated" | "clinical";
   uploaded_by: string | null;
   created_at: string;
-  profiles: { full_name: string } | null;
+  profiles: { full_name: string } | { full_name: string }[] | null;
 };
 
 function mapDocumentRow(row: DocumentRow): PatientDocumentListItem {
+  const author = firstRelation(row.profiles);
   return {
     id: row.id,
     clinic_id: row.clinic_id,
@@ -90,7 +96,7 @@ function mapDocumentRow(row: DocumentRow): PatientDocumentListItem {
     source: row.source,
     uploaded_by: row.uploaded_by,
     created_at: row.created_at,
-    uploader_name: row.profiles?.full_name ?? null,
+    uploader_name: author?.full_name ?? null,
   };
 }
 
