@@ -197,7 +197,7 @@ async function main() {
     const manifest = JSON.parse(
       (await zip.file("manifest.json")?.async("string")) ?? "{}",
     );
-    if (manifest.schemaVersion !== "1.3") {
+    if (manifest.schemaVersion !== "1.4") {
       throw new Error(`schemaVersion inesperado: ${manifest.schemaVersion}`);
     }
     console.log(

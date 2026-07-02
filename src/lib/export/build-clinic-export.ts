@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toCsv } from "./csv";
 
-const EXPORT_SCHEMA_VERSION = "1.3";
+const EXPORT_SCHEMA_VERSION = "1.4";
 
 const README = `Dental Seven — Exportação de dados (LGPD)
 ============================================
@@ -64,6 +64,8 @@ export async function buildClinicExport(clinicId: string): Promise<{
     { data: procedures },
     { data: supplies },
     { data: procedureSupplyItems },
+    { data: stockMovements },
+    { data: appointmentStockApplied },
   ] = await Promise.all([
     admin.from("dentists").select("*").eq("clinic_id", clinicId),
     admin.from("patients").select("*").eq("clinic_id", clinicId),
@@ -74,6 +76,11 @@ export async function buildClinicExport(clinicId: string): Promise<{
     admin.from("procedures").select("*").eq("clinic_id", clinicId),
     admin.from("supplies").select("*").eq("clinic_id", clinicId),
     admin.from("procedure_supply_items").select("*").eq("clinic_id", clinicId),
+    admin.from("stock_movements").select("*").eq("clinic_id", clinicId),
+    admin
+      .from("appointment_stock_applied")
+      .select("*")
+      .eq("clinic_id", clinicId),
   ]);
 
   const threadIds = (threads ?? []).map((t) => t.id);
@@ -99,6 +106,12 @@ export async function buildClinicExport(clinicId: string): Promise<{
     "procedures.json": JSON.stringify(procedures ?? [], null, 2),
     "supplies.json": JSON.stringify(supplies ?? [], null, 2),
     "procedure_supply_items.json": JSON.stringify(procedureSupplyItems ?? [], null, 2),
+    "stock_movements.json": JSON.stringify(stockMovements ?? [], null, 2),
+    "appointment_stock_applied.json": JSON.stringify(
+      appointmentStockApplied ?? [],
+      null,
+      2,
+    ),
     "dentists.csv": toCsv(dentists ?? [], [
       "id",
       "name",
@@ -147,9 +160,22 @@ export async function buildClinicExport(clinicId: string): Promise<{
       "unit_label",
       "unit_cost_cents",
       "sku",
+      "quantity_on_hand",
+      "min_quantity",
       "is_active",
       "created_at",
       "updated_at",
+    ]),
+    "stock_movements.csv": toCsv(stockMovements ?? [], [
+      "id",
+      "supply_id",
+      "movement_type",
+      "quantity",
+      "quantity_after",
+      "appointment_id",
+      "notes",
+      "created_by",
+      "created_at",
     ]),
     "procedure_supply_items.csv": toCsv(procedureSupplyItems ?? [], [
       "id",
@@ -223,6 +249,8 @@ export async function buildClinicExport(clinicId: string): Promise<{
       procedures: procedures?.length ?? 0,
       supplies: supplies?.length ?? 0,
       procedure_supply_items: procedureSupplyItems?.length ?? 0,
+      stock_movements: stockMovements?.length ?? 0,
+      appointment_stock_applied: appointmentStockApplied?.length ?? 0,
     },
     checksums,
   };

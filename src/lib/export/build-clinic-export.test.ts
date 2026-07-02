@@ -129,4 +129,70 @@ describe("toCsv", () => {
     expect(csv).toContain("bom-1");
     expect(csv).toContain("2");
   });
+
+  it("formats supply rows with stock columns for export", () => {
+    const csv = toCsv(
+      [
+        {
+          id: "supply-1",
+          name: "Luva",
+          unit_label: "par",
+          unit_cost_cents: 500,
+          sku: "LV-01",
+          quantity_on_hand: 10,
+          min_quantity: 5,
+          is_active: true,
+          created_at: "2026-07-02T12:00:00.000Z",
+          updated_at: "2026-07-02T12:00:00.000Z",
+        },
+      ],
+      [
+        "id",
+        "name",
+        "unit_label",
+        "unit_cost_cents",
+        "sku",
+        "quantity_on_hand",
+        "min_quantity",
+        "is_active",
+        "created_at",
+        "updated_at",
+      ],
+    );
+    expect(csv).toContain("quantity_on_hand");
+    expect(csv).toContain("10");
+    expect(csv).toContain("5");
+  });
+
+  it("formats stock movement rows for export", () => {
+    const csv = toCsv(
+      [
+        {
+          id: "mov-1",
+          supply_id: "supply-1",
+          movement_type: "auto_deduction",
+          quantity: -2,
+          quantity_after: 8,
+          appointment_id: "appt-1",
+          notes: null,
+          created_by: "user-1",
+          created_at: "2026-07-02T14:00:00.000Z",
+        },
+      ],
+      [
+        "id",
+        "supply_id",
+        "movement_type",
+        "quantity",
+        "quantity_after",
+        "appointment_id",
+        "notes",
+        "created_by",
+        "created_at",
+      ],
+    );
+    expect(csv).toContain("auto_deduction");
+    expect(csv).toContain("-2");
+    expect(csv).toContain("8");
+  });
 });
