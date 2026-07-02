@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Badge, Button, Card, CardContent, toast } from "@/components/ui";
 import type { AppointmentStatus, Patient } from "@/lib/supabase/types";
@@ -40,29 +39,6 @@ export function PatientDetail({ patient, appointments }: PatientDetailProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <Link
-            href="/pacientes"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            Voltar para pacientes
-          </Link>
-          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight">
-            {patient.name}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ficha demo do paciente e histórico de consultas.
-          </p>
-        </div>
-        <Link
-          href={`/agenda?patientId=${patient.id}`}
-          className="inline-flex h-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,oklch(0.63_0.15_250),oklch(0.55_0.17_250))] px-4 font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-all duration-300 hover:shadow-[0_0_40px_-10px_color-mix(in_oklab,var(--primary)_60%,transparent)]"
-        >
-          Nova consulta
-        </Link>
-      </div>
-
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <Card>
           <CardContent className="space-y-4">

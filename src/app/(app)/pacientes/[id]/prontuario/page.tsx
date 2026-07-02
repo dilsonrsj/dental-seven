@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/context";
 import { getPatient } from "@/modules/pacientes/actions";
@@ -25,26 +24,5 @@ export default async function ProntuarioPage({ params }: ProntuarioPageProps) {
 
   const documents = await listPatientDocuments(id);
 
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <Link
-            href={`/pacientes/${id}`}
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            ← Voltar para ficha
-          </Link>
-          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight">
-            Prontuário — {patient.name}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Documentos importados e histórico externo do paciente.
-          </p>
-        </div>
-      </div>
-
-      <DocumentList patientId={id} initialDocuments={documents} />
-    </div>
-  );
+  return <DocumentList patientId={id} initialDocuments={documents} />;
 }

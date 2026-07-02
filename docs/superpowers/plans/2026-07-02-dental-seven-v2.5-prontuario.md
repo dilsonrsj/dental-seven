@@ -47,7 +47,7 @@
 - [x] Task 3: `validation.ts` + testes Vitest (mime, 10 MB)
 - [x] Task 4: Actions `listPatientDocuments`, `uploadPatientDocument`, `getDocumentDownloadUrl`
 - [x] Task 5: Página `/pacientes/[id]/prontuario` + `document-list.tsx`
-- [ ] Task 6: Aba Prontuário na ficha (gate `enabledModules.includes('prontuario')`)
+- [x] Task 6: Aba Prontuário na ficha (gate `enabledModules.includes('prontuario')`)
 - [ ] Task 7: Export LGPD — incluir `patient_documents` no ZIP
 - [ ] Task 8: Smoke manual — upload na Clínica Smoke Test (plano Completo ou toggle SuperAdmin)
 - [ ] Task 9: Atualizar spec §7 critérios de aceite + commit final da fase
@@ -121,9 +121,9 @@
 **Files:**
 - Modify: `src/modules/pacientes/patient-detail.tsx` ou layout `[id]`
 
-- [ ] **Step 1:** Tabs Informações | Prontuário (só se módulo ativo)
-- [ ] **Step 2:** Link ativo conforme rota atual
-- [ ] **Step 3:** Commit `feat(v2.5): aba prontuario na ficha do paciente`
+- [x] **Step 1:** Tabs Informações | Prontuário (só se módulo ativo)
+- [x] **Step 2:** Link ativo conforme rota atual
+- [x] **Step 3:** Commit `feat(v2.5): aba prontuario na ficha do paciente`
 
 ---
 
