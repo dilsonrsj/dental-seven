@@ -57,8 +57,56 @@
 
 ---
 
+## Verificação (2026-07-02)
+
+**Branch:** `feat/v2` (2 commits à frente de `main`, ainda não pushado)
+
+| Verificação | Resultado |
+|-------------|-----------|
+| `npm run test` | 32/32 passando |
+| `npm run build` | OK |
+| Smoke signup E2E | OK — `v2smoke-full-20260702@test.dr7.app` / Clínica Smoke Test |
+| Migrations 003–006 | Aplicadas no Supabase remoto |
+| `SUPABASE_SERVICE_ROLE_KEY` | Configurada em `.env.local` |
+| `DEMO_MOCK_DATA` | `false` (Supabase real) |
+
+**Setup pós-implementação**
+
+- [x] `SUPABASE_SERVICE_ROLE_KEY` em `.env.local`
+- [x] Smoke: `/cadastro` → trial → `/agenda` → paciente → logout → re-login
+- [ ] Email provider habilitado no Supabase Auth (confirmar no dashboard)
+- [ ] Redirect URLs: `http://localhost:3000/**` + URL de produção quando deployar v2
+
+---
+
+## Critérios de aceite (spec §12)
+
+| Critério | Status |
+|----------|--------|
+| Nova clínica → trial 7d | ✅ smoke 2026-07-02 |
+| Login isolado RLS | ✅ smoke |
+| `clinic_admin` cadastra paciente | ✅ Marina Smoke |
+| Trial expirado → paywall | ✅ overlay + bloqueio UI (2026-07-02) |
+| Webhook Asaas sandbox | ✅ `PAYMENT_CONFIRMED` → `active` |
+| Exportação ZIP | ✅ buildClinicExport + rota autenticada |
+| SuperAdmin lista clínicas | ✅ `/admin` + toggle módulos |
+| Vitest billing/paywall | ✅ 32 testes |
+
+---
+
+## Fase aceite v2 (próximas tasks)
+
+- [x] Task 13: Simular `subscription_status = expired` → paywall visível + actions bloqueadas (2026-07-02)
+- [x] Task 14: POST webhook Asaas sandbox → status `active` confirmado via SQL (2026-07-02)
+- [x] Task 15: Exportação ZIP — `dental-seven-export_clinica-smoke-test_2026-07-02.zip` (3898 bytes)
+- [x] Task 16: SuperAdmin `/admin` — lista clínicas + toggle módulos (`superadmin-smoke@dr7.app`)
+- [x] Task 17: Link **Configurações** na nav (sidebar + bottom nav)
+- [x] Task 18: Spec §12 marcada → `finishing-a-development-branch`
+
+---
+
 ## Execution handoff
 
 Plano salvo em `docs/superpowers/plans/2026-06-15-dental-seven-v2.md`.
 
-Tarefas 9–12 concluídas nesta sessão. Próximo: build + smoke signup end-to-end.
+Tasks 1–12 concluídas. Fase aceite (Tasks 13–18) concluída em 2026-07-02. **Próximo:** `finishing-a-development-branch` → integrar `feat/v2` ou planejar v2.5 (prontuário).
