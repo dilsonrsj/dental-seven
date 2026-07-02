@@ -2,7 +2,7 @@
 
 **Versão:** 1.0  
 **Data:** 2026-07-02  
-**Status:** Aprovado para plano de implementação  
+**Status:** Aprovado — plano em `docs/superpowers/plans/2026-07-02-dental-seven-v5-financeiro.md`  
 **Pré-requisito:** v3 Procedimentos e v4 Estoque concluídos na branch `feat/v2`  
 **Specs relacionadas:**  
 - `2026-06-11-dental-seven-mvp-design.md` § roadmap v5  
