@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toCsv } from "./csv";
 
-const EXPORT_SCHEMA_VERSION = "1.1";
+const EXPORT_SCHEMA_VERSION = "1.2";
 
 const README = `Dental Seven — Exportação de dados (LGPD)
 ============================================
@@ -12,6 +12,7 @@ Este arquivo ZIP contém todos os dados da sua clínica na data da exportação.
 Formatos: JSON (canônico) e CSV (leitura em planilhas).
 
 A pasta documents/ inclui arquivos do prontuário (quando existirem).
+patient_clinical_notes.json contém a evolução clínica registrada no prontuário.
 
 Não inclui senhas, tokens ou dados de outras clínicas.
 `;
@@ -59,12 +60,14 @@ export async function buildClinicExport(clinicId: string): Promise<{
     { data: appointments },
     { data: threads },
     { data: patientDocuments },
+    { data: clinicalNotes },
   ] = await Promise.all([
     admin.from("dentists").select("*").eq("clinic_id", clinicId),
     admin.from("patients").select("*").eq("clinic_id", clinicId),
     admin.from("appointments").select("*").eq("clinic_id", clinicId),
     admin.from("whatsapp_threads").select("*").eq("clinic_id", clinicId),
     admin.from("patient_documents").select("*").eq("clinic_id", clinicId),
+    admin.from("patient_clinical_notes").select("*").eq("clinic_id", clinicId),
   ]);
 
   const threadIds = (threads ?? []).map((t) => t.id);
@@ -86,11 +89,15 @@ export async function buildClinicExport(clinicId: string): Promise<{
     "whatsapp_threads.json": JSON.stringify(threads ?? [], null, 2),
     "whatsapp_messages.json": JSON.stringify(messages, null, 2),
     "patient_documents.json": JSON.stringify(patientDocuments ?? [], null, 2),
+    "patient_clinical_notes.json": JSON.stringify(clinicalNotes ?? [], null, 2),
     "dentists.csv": toCsv(dentists ?? [], [
       "id",
       "name",
       "color",
       "active",
+      "cro",
+      "specialty",
+      "signature_storage_path",
       "created_at",
     ]),
     "patients.csv": toCsv(patients ?? [], [
@@ -124,6 +131,14 @@ export async function buildClinicExport(clinicId: string): Promise<{
       "file_size_bytes",
       "source",
       "uploaded_by",
+      "created_at",
+    ]),
+    "patient_clinical_notes.csv": toCsv(clinicalNotes ?? [], [
+      "id",
+      "patient_id",
+      "appointment_id",
+      "author_id",
+      "body",
       "created_at",
     ]),
   };
@@ -169,6 +184,7 @@ export async function buildClinicExport(clinicId: string): Promise<{
       whatsapp_messages: messages.length,
       patient_documents: patientDocuments?.length ?? 0,
       patient_document_files: documentFiles.length,
+      patient_clinical_notes: clinicalNotes?.length ?? 0,
     },
     checksums,
   };

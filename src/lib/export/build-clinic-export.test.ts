@@ -26,4 +26,29 @@ describe("toCsv", () => {
   it("handles empty rows", () => {
     expect(toCsv([], ["id", "name"])).toBe("id,name");
   });
+
+  it("formats clinical note rows for export", () => {
+    const csv = toCsv(
+      [
+        {
+          id: "note-1",
+          patient_id: "patient-1",
+          appointment_id: null,
+          author_id: "author-1",
+          body: "Evolução clínica",
+          created_at: "2026-07-02T12:00:00.000Z",
+        },
+      ],
+      [
+        "id",
+        "patient_id",
+        "appointment_id",
+        "author_id",
+        "body",
+        "created_at",
+      ],
+    );
+    expect(csv).toContain("note-1");
+    expect(csv).toContain("Evolução clínica");
+  });
 });

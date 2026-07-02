@@ -56,7 +56,21 @@
 - [x] Task 5: Migration `010` bucket `clinic-assets` + aplicar
 - [x] Task 6: `clinical-notes-actions.ts` + `clinical-notes.tsx`
 - [x] Task 7: Form perfil dentista (CRO, specialty, assinatura) em Configurações
-- [ ] Task 8: Export LGPD inclui `patient_clinical_notes.json`
+- [x] Task 8: Export LGPD inclui `patient_clinical_notes.json`
+
+---
+
+## Task 8: Export LGPD clinical notes
+
+**Files:**
+- Modify: `src/lib/export/build-clinic-export.ts`
+- Modify: `src/lib/export/build-clinic-export.test.ts`
+- Modify: `scripts/smoke-prontuario.ts`
+
+- [x] **Step 1:** Incluir `patient_clinical_notes.json` + CSV no ZIP
+- [x] **Step 2:** Manifest `schemaVersion` 1.2 + contagem `patient_clinical_notes`
+- [x] **Step 3:** `dentists.csv` com CRO, specialty, signature_storage_path
+- [x] **Step 4:** Commit `feat(v3.5): export LGPD clinical notes`
 
 ---
 

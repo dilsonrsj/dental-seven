@@ -4,6 +4,7 @@
  */
 import { readFileSync } from "fs";
 import { randomUUID } from "crypto";
+import JSZip from "jszip";
 import { createClient } from "@supabase/supabase-js";
 import { buildClinicExport } from "../src/lib/export/build-clinic-export";
 
@@ -91,7 +92,31 @@ async function main() {
   process.env.SUPABASE_SERVICE_ROLE_KEY = serviceKey;
   const { buffer, filename } = await buildClinicExport(CLINIC_ID);
   if (buffer.length < 100) throw new Error("ZIP export muito pequeno");
-  console.log("OK export LGPD", filename, buffer.length, "bytes");
+
+  const zip = await JSZip.loadAsync(buffer);
+  const zipFiles = Object.keys(zip.files).filter((name) => !name.endsWith("/"));
+  for (const required of [
+    "patient_documents.json",
+    "patient_clinical_notes.json",
+    "patient_clinical_notes.csv",
+  ]) {
+    if (!zipFiles.includes(required)) {
+      throw new Error(`Export ZIP sem ${required}`);
+    }
+  }
+  const manifest = JSON.parse(
+    (await zip.file("manifest.json")?.async("string")) ?? "{}",
+  );
+  if (manifest.schemaVersion !== "1.2") {
+    throw new Error(`schemaVersion inesperado: ${manifest.schemaVersion}`);
+  }
+  console.log(
+    "OK export LGPD",
+    filename,
+    buffer.length,
+    "bytes",
+    `| notas: ${manifest.counts?.patient_clinical_notes ?? 0}`,
+  );
 
   console.log("\nSMOKE_PRONTUARIO_OK");
 }
