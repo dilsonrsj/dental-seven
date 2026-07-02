@@ -49,8 +49,8 @@
 - [x] Task 5: Página `/pacientes/[id]/prontuario` + `document-list.tsx`
 - [x] Task 6: Aba Prontuário na ficha (gate `enabledModules.includes('prontuario')`)
 - [x] Task 7: Export LGPD — incluir `patient_documents` no ZIP
-- [ ] Task 8: Smoke manual — upload na Clínica Smoke Test (plano Completo ou toggle SuperAdmin)
-- [ ] Task 9: Atualizar spec §7 critérios de aceite + commit final da fase
+- [x] Task 8: Smoke manual — upload na Clínica Smoke Test (plano Completo ou toggle SuperAdmin)
+- [x] Task 9: Atualizar spec §7 critérios de aceite + commit final da fase
 
 ---
 
@@ -141,10 +141,10 @@
 
 ## Task 8: Smoke aceite
 
-- [ ] **Step 1:** Habilitar módulo `prontuario` na clínica de teste (SuperAdmin ou plano Completo)
-- [ ] **Step 2:** Upload PDF de teste em `/pacientes/[id]/prontuario`
-- [ ] **Step 3:** Verificar listagem e download
-- [ ] **Step 4:** Marcar critérios §7 na spec
+- [x] **Step 1:** Habilitar módulo `prontuario` na clínica de teste (SuperAdmin ou plano Completo)
+- [x] **Step 2:** Upload PDF de teste em `/pacientes/[id]/prontuario`
+- [x] **Step 3:** Verificar listagem e download
+- [x] **Step 4:** Marcar critérios §7 na spec
 
 ---
 
@@ -152,4 +152,4 @@
 
 Plano salvo em `docs/superpowers/plans/2026-07-02-dental-seven-v2.5-prontuario.md`.
 
-**Próximo:** Task 1 — migration `007_patient_documents`.
+**Próximo:** v2.5 concluída (2026-07-02). Planejar v3+ conforme `2026-06-15-estrategia-modularidade-billing-ia.md`.
