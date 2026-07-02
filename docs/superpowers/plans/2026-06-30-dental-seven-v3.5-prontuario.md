@@ -46,7 +46,7 @@
 
 - [x] Task 1: `document-viewer-modal.tsx` — PDF iframe + image lightbox
 - [x] Task 2: Integrar Visualizar em `document-list.tsx` + testes de helper mime
-- [ ] Task 3: Smoke viewer — abrir Laudo Smoke v2.5 no modal
+- [x] Task 3: Smoke viewer — abrir Laudo Smoke v2.5 no modal
 
 ---
 
@@ -91,6 +91,17 @@
 - [x] **Step 2:** Teste helper `isPreviewableMime(type)` se extraído
 - [x] **Step 3:** `npm run test` passando
 - [x] **Step 4:** Commit `feat(v3.5): botao visualizar documentos`
+
+---
+
+## Task 3: Smoke viewer
+
+**Files:**
+- Create: `scripts/smoke-viewer.ts`
+
+- [x] **Step 1:** Script valida login, documento "Laudo Smoke v2.5", signed URL TTL 120s e bytes `%PDF`
+- [x] **Step 2:** Smoke UI — `/pacientes/{id}/prontuario` → Visualizar → modal com iframe (conta `v2smoke-full-20260702@test.dr7.app`, 2026-07-02)
+- [x] **Step 3:** Commit `test(v3.5): smoke viewer modal prontuario`
 
 ---
 
