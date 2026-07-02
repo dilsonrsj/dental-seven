@@ -55,7 +55,7 @@
 - [x] Task 4: Migration `009` + aplicar Supabase
 - [x] Task 5: Migration `010` bucket `clinic-assets` + aplicar
 - [x] Task 6: `clinical-notes-actions.ts` + `clinical-notes.tsx`
-- [ ] Task 7: Form perfil dentista (CRO, specialty, assinatura) em Configurações
+- [x] Task 7: Form perfil dentista (CRO, specialty, assinatura) em Configurações
 - [ ] Task 8: Export LGPD inclui `patient_clinical_notes.json`
 
 ---

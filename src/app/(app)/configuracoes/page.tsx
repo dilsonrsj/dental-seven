@@ -7,6 +7,9 @@ import {
 } from "@/lib/billing/actions";
 import { isAsaasConfigured } from "@/lib/billing/asaas";
 import { PLAN_LABELS, PLAN_PRICES } from "@/lib/billing/plans";
+import { isSubscriptionBlocking } from "@/lib/billing/subscription";
+import { getDentistProfile } from "@/modules/configuracoes/dentist-profile-actions";
+import { DentistProfileForm } from "@/modules/configuracoes/dentist-profile-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EncerramentoForm } from "./encerramento-form";
@@ -21,6 +24,19 @@ export default async function ConfiguracoesPage() {
     : "—";
   const asaasReady = isAsaasConfigured();
   const canManageBilling = ctx.profile.role === "clinic_admin";
+  const targetDentistId =
+    ctx.profile.dentist_id ?? ctx.dentists[0]?.id ?? null;
+  const canManageDentistProfile =
+    !!clinic &&
+    ctx.enabledModules.includes("prontuario") &&
+    !!targetDentistId &&
+    (ctx.profile.role === "clinic_admin" || ctx.profile.role === "dentist");
+  const dentistProfile = canManageDentistProfile
+    ? await getDentistProfile(targetDentistId)
+    : null;
+  const canWriteDentistProfile =
+    !!clinic &&
+    !isSubscriptionBlocking(clinic.subscription_status, ctx.profile.role);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -74,6 +90,18 @@ export default async function ConfiguracoesPage() {
           </p>
         )}
       </Card>
+
+      {dentistProfile && (
+        <Card className="space-y-4 p-6">
+          <h2 className="font-display text-lg font-semibold">
+            Perfil profissional
+          </h2>
+          <DentistProfileForm
+            initialProfile={dentistProfile}
+            canWrite={canWriteDentistProfile}
+          />
+        </Card>
+      )}
 
       {canManageBilling && clinic && (
         <Card className="space-y-4 p-6">
