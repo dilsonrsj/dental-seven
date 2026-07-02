@@ -1,5 +1,6 @@
 import {
   Calendar,
+  ClipboardList,
   MessageCircle,
   Settings,
   Users,
@@ -15,6 +16,7 @@ export type NavLink = {
 export const APP_NAV_LINKS: NavLink[] = [
   { href: "/agenda", label: "Agenda", icon: Calendar },
   { href: "/pacientes", label: "Pacientes", icon: Users },
+  { href: "/procedimentos", label: "Procedimentos", icon: ClipboardList },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];

@@ -5,6 +5,7 @@ describe("isClinicAppPath", () => {
   it("matches clinic app routes", () => {
     expect(isClinicAppPath("/agenda")).toBe(true);
     expect(isClinicAppPath("/pacientes/abc/prontuario")).toBe(true);
+    expect(isClinicAppPath("/procedimentos")).toBe(true);
     expect(isClinicAppPath("/configuracoes")).toBe(true);
   });
 

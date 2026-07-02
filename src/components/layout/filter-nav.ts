@@ -3,6 +3,7 @@ import type { NavLink } from "./nav-links";
 const MODULE_BY_HREF: Record<string, string> = {
   "/agenda": "agenda",
   "/pacientes": "pacientes",
+  "/procedimentos": "procedimentos",
   "/whatsapp": "whatsapp",
 };
 
