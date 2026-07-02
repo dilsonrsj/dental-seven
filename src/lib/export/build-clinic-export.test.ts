@@ -141,6 +141,7 @@ describe("toCsv", () => {
           sku: "LV-01",
           quantity_on_hand: 10,
           min_quantity: 5,
+          preferred_supplier_id: "supplier-1",
           is_active: true,
           created_at: "2026-07-02T12:00:00.000Z",
           updated_at: "2026-07-02T12:00:00.000Z",
@@ -154,14 +155,48 @@ describe("toCsv", () => {
         "sku",
         "quantity_on_hand",
         "min_quantity",
+        "preferred_supplier_id",
         "is_active",
         "created_at",
         "updated_at",
       ],
     );
     expect(csv).toContain("quantity_on_hand");
+    expect(csv).toContain("preferred_supplier_id");
+    expect(csv).toContain("supplier-1");
     expect(csv).toContain("10");
     expect(csv).toContain("5");
+  });
+
+  it("formats supplier rows for export", () => {
+    const csv = toCsv(
+      [
+        {
+          id: "supplier-1",
+          name: "Dental Supply Co",
+          phone: "+5511999999999",
+          email: "contato@dental.com",
+          notes: "Entrega em 48h",
+          is_active: true,
+          created_at: "2026-07-02T12:00:00.000Z",
+          updated_at: "2026-07-02T12:00:00.000Z",
+        },
+      ],
+      [
+        "id",
+        "name",
+        "phone",
+        "email",
+        "notes",
+        "is_active",
+        "created_at",
+        "updated_at",
+      ],
+    );
+    expect(csv).toContain("supplier-1");
+    expect(csv).toContain("Dental Supply Co");
+    expect(csv).toContain("contato@dental.com");
+    expect(csv).toContain("Entrega em 48h");
   });
 
   it("formats stock movement rows for export", () => {

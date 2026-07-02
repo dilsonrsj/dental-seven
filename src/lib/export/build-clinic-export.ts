@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toCsv } from "./csv";
 
-const EXPORT_SCHEMA_VERSION = "1.5";
+const EXPORT_SCHEMA_VERSION = "1.6";
 
 const README = `Dental Seven — Exportação de dados (LGPD)
 ============================================
@@ -69,6 +69,7 @@ export async function buildClinicExport(clinicId: string): Promise<{
     { data: financialEntries },
     { data: clinicMonthlySettings },
     { data: appointmentFinanceApplied },
+    { data: suppliers },
   ] = await Promise.all([
     admin.from("dentists").select("*").eq("clinic_id", clinicId),
     admin.from("patients").select("*").eq("clinic_id", clinicId),
@@ -93,6 +94,7 @@ export async function buildClinicExport(clinicId: string): Promise<{
       .from("appointment_finance_applied")
       .select("*")
       .eq("clinic_id", clinicId),
+    admin.from("suppliers").select("*").eq("clinic_id", clinicId),
   ]);
 
   const threadIds = (threads ?? []).map((t) => t.id);
@@ -135,6 +137,7 @@ export async function buildClinicExport(clinicId: string): Promise<{
       null,
       2,
     ),
+    "suppliers.json": JSON.stringify(suppliers ?? [], null, 2),
     "dentists.csv": toCsv(dentists ?? [], [
       "id",
       "name",
@@ -185,6 +188,17 @@ export async function buildClinicExport(clinicId: string): Promise<{
       "sku",
       "quantity_on_hand",
       "min_quantity",
+      "preferred_supplier_id",
+      "is_active",
+      "created_at",
+      "updated_at",
+    ]),
+    "suppliers.csv": toCsv(suppliers ?? [], [
+      "id",
+      "name",
+      "phone",
+      "email",
+      "notes",
       "is_active",
       "created_at",
       "updated_at",
@@ -296,6 +310,7 @@ export async function buildClinicExport(clinicId: string): Promise<{
       financial_entries: financialEntries?.length ?? 0,
       clinic_monthly_settings: clinicMonthlySettings?.length ?? 0,
       appointment_finance_applied: appointmentFinanceApplied?.length ?? 0,
+      suppliers: suppliers?.length ?? 0,
     },
     checksums,
   };

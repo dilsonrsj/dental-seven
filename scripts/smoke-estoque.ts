@@ -470,7 +470,7 @@ async function main() {
     const manifest = JSON.parse(
       (await zip.file("manifest.json")?.async("string")) ?? "{}",
     );
-    if (manifest.schemaVersion !== "1.5") {
+    if (manifest.schemaVersion !== "1.6") {
       throw new Error(`schemaVersion inesperado: ${manifest.schemaVersion}`);
     }
     if (typeof manifest.counts?.stock_movements !== "number") {
