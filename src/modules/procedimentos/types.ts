@@ -16,6 +16,7 @@ export type SupplyRow = {
   unit_label: string;
   unit_cost_cents: number | null;
   sku: string | null;
+  preferred_supplier_id: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

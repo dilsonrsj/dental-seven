@@ -23,4 +23,5 @@ export type SupplyLinkRow = {
   name: string;
   unit_label: string;
   preferred_supplier_id: string | null;
+  preferred_supplier_name?: string | null;
 };
