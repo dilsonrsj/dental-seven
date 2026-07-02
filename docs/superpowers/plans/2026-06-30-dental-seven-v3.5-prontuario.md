@@ -52,7 +52,7 @@
 
 ## Tasks — Onda 2: Evolução + dentista
 
-- [ ] Task 4: Migration `009` + aplicar Supabase
+- [x] Task 4: Migration `009` + aplicar Supabase
 - [ ] Task 5: Migration `010` bucket `clinic-assets` + aplicar
 - [ ] Task 6: `clinical-notes-actions.ts` + `clinical-notes.tsx`
 - [ ] Task 7: Form perfil dentista (CRO, specialty, assinatura) em Configurações
@@ -110,9 +110,9 @@
 **Files:**
 - Create: `supabase/migrations/009_dentists_clinical_notes.sql`
 
-- [ ] **Step 1:** `alter table dentists` — cro, specialty, signature_storage_path
-- [ ] **Step 2:** `patient_clinical_notes` + índices + RLS clinic
-- [ ] **Step 3:** Aplicar via Supabase MCP
+- [x] **Step 1:** `alter table dentists` — cro, specialty, signature_storage_path
+- [x] **Step 2:** `patient_clinical_notes` + índices + RLS clinic
+- [x] **Step 3:** Aplicar via Supabase MCP
 - [ ] **Step 4:** Commit `feat(v3.5): migration clinical notes e dentist profile`
 
 ---
