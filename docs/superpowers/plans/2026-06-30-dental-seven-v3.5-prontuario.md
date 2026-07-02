@@ -77,11 +77,11 @@
 ## Tasks — Onda 3: Documentos clínicos
 
 - [x] Task 9: `templates/` + `generate-clinical-pdf.ts` + Vitest
-- [ ] Task 10: `clinical-document-form.tsx` + action `generateClinicalDocument`
-- [ ] Task 11: Preview, salvar em Storage, listar como `source: generated`
-- [ ] Task 12: `sendDocumentToWhatsAppThread` — mensagem simulada
-- [ ] Task 13: Smoke E2E — gerar atestado → visualizar → WhatsApp simulado
-- [ ] Task 14: Marcar spec §7 aceite + commit final fase
+- [x] Task 10: `clinical-document-form.tsx` + action `generateClinicalDocument`
+- [x] Task 11: Preview, salvar em Storage, listar como `source: generated`
+- [x] Task 12: `sendDocumentToWhatsAppThread` — mensagem simulada
+- [x] Task 13: Smoke E2E — gerar atestado → visualizar → WhatsApp simulado
+- [x] Task 14: Marcar spec §7 aceite + commit final fase
 
 ---
 
@@ -146,10 +146,10 @@
 
 ## Task 12: WhatsApp simulado
 
-- [ ] **Step 1:** Localizar thread do paciente (`whatsapp_threads`)
-- [ ] **Step 2:** Inserir mensagem outbound com texto do documento
-- [ ] **Step 3:** Toast + link para `/whatsapp`
-- [ ] **Step 4:** Commit `feat(v3.5): envio simulado documento whatsapp`
+- [x] **Step 1:** Localizar thread do paciente (`whatsapp_threads`)
+- [x] **Step 2:** Inserir mensagem outbound com texto do documento
+- [x] **Step 3:** Toast + link para `/whatsapp`
+- [x] **Step 4:** Commit `feat(v3.5): envio simulado documento whatsapp`
 
 ---
 
@@ -157,6 +157,6 @@
 
 Plano salvo em `docs/superpowers/plans/2026-06-30-dental-seven-v3.5-prontuario.md`.
 
-**Próximo:** Revisão da spec pelo usuário → Task 1 (viewer modal).
+**Status:** v3.5 Onda 3 concluída (Tasks 10–14) na branch `feat/v2`.
 
-**Dependência npm nova:** `pdf-lib` (apenas Onda 3, Task 9).
+**Dependência npm nova:** `pdf-lib` (Onda 3, Task 9).
