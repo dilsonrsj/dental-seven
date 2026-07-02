@@ -152,4 +152,4 @@
 
 Plano salvo em `docs/superpowers/plans/2026-07-02-dental-seven-v2.5-prontuario.md`.
 
-**Próximo:** v2.5 concluída (2026-07-02). Planejar v3+ conforme `2026-06-15-estrategia-modularidade-billing-ia.md`.
+**Próximo:** v2.5 concluída (2026-07-02). **v3.5** — `docs/superpowers/plans/2026-06-30-dental-seven-v3.5-prontuario.md`
