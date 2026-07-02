@@ -15,10 +15,18 @@ export type StockLevelInput = {
   min_quantity: number | null;
 };
 
+export type PreferredSupplierRef = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+};
+
 export type StockSupplyRow = SupplyRow & {
   quantity_on_hand: number;
   min_quantity: number | null;
   alert_level: StockAlertLevel;
+  preferred_supplier: PreferredSupplierRef | null;
 };
 
 export type StockMovementRow = {

@@ -7,7 +7,12 @@ import { isDemoMockDataEnabled } from "@/lib/demo/config";
 import { createClient } from "@/lib/supabase/server";
 import { applySupplyMovement } from "./appointment-stock";
 import { getStockAlertLevel, isStockAlert } from "./stock-level";
-import type { StockMovementFormInput, StockMovementRow, StockSupplyRow } from "./types";
+import type {
+  PreferredSupplierRef,
+  StockMovementFormInput,
+  StockMovementRow,
+  StockSupplyRow,
+} from "./types";
 import {
   assertAdjustmentDelta,
   assertMinQuantity,
@@ -47,36 +52,61 @@ async function requireSupplyInClinic(supplyId: string, clinicId: string) {
   if (!data) throw new Error("Insumo não encontrado.");
 }
 
+type SupplyQueryRow = Record<string, unknown> & {
+  preferred_supplier?:
+    | PreferredSupplierRef
+    | PreferredSupplierRef[]
+    | null;
+};
+
+function mapPreferredSupplier(
+  value: SupplyQueryRow["preferred_supplier"],
+): PreferredSupplierRef | null {
+  if (!value) return null;
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value;
+}
+
+function mapStockSupplyRow(row: SupplyQueryRow): StockSupplyRow {
+  const quantityOnHand = Number(row.quantity_on_hand ?? 0);
+  const minQuantity =
+    row.min_quantity == null ? null : Number(row.min_quantity);
+  const alertLevel = getStockAlertLevel({
+    quantity_on_hand: quantityOnHand,
+    min_quantity: minQuantity,
+  });
+
+  const { preferred_supplier: preferredSupplierRaw, ...supplyRow } = row;
+
+  return {
+    ...(supplyRow as Omit<StockSupplyRow, "alert_level" | "preferred_supplier">),
+    quantity_on_hand: quantityOnHand,
+    min_quantity: minQuantity,
+    alert_level: alertLevel,
+    preferred_supplier: mapPreferredSupplier(preferredSupplierRaw),
+  };
+}
+
 export async function listStockSupplies(): Promise<StockSupplyRow[]> {
   if (isDemoMockDataEnabled()) return [];
 
-  await requireEstoqueModule();
+  const ctx = await requireEstoqueModule();
   const clinicId = await requireClinicId();
   const supabase = await createClient();
+  const fornecedoresEnabled = ctx.enabledModules.includes("fornecedores");
+  const selectQuery = fornecedoresEnabled
+    ? `*, preferred_supplier:suppliers!supplies_preferred_supplier_id_fkey(id, name, phone, email)`
+    : "*";
+
   const { data, error } = await supabase
     .from("supplies")
-    .select("*")
+    .select(selectQuery)
     .eq("clinic_id", clinicId)
     .order("name", { ascending: true });
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((row) => {
-    const quantityOnHand = Number(row.quantity_on_hand ?? 0);
-    const minQuantity =
-      row.min_quantity == null ? null : Number(row.min_quantity);
-    const alertLevel = getStockAlertLevel({
-      quantity_on_hand: quantityOnHand,
-      min_quantity: minQuantity,
-    });
-
-    return {
-      ...(row as Omit<StockSupplyRow, "alert_level">),
-      quantity_on_hand: quantityOnHand,
-      min_quantity: minQuantity,
-      alert_level: alertLevel,
-    };
-  });
+  return (data ?? []).map((row) => mapStockSupplyRow(row as SupplyQueryRow));
 }
 
 export async function countStockAlerts(): Promise<number> {
@@ -197,9 +227,10 @@ export async function updateSupplyMinQuantity(
   revalidatePath("/estoque");
 
   return {
-    ...(data as Omit<StockSupplyRow, "alert_level">),
+    ...(data as Omit<StockSupplyRow, "alert_level" | "preferred_supplier">),
     quantity_on_hand: quantityOnHand,
     min_quantity: minQty,
     alert_level: alertLevel,
+    preferred_supplier: null,
   };
 }

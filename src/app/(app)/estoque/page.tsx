@@ -11,6 +11,7 @@ export default async function EstoquePage() {
   }
 
   const isAdmin = ctx.profile.role === "clinic_admin";
+  const fornecedoresEnabled = ctx.enabledModules.includes("fornecedores");
   const supplies = await listStockSupplies();
 
   return (
@@ -18,7 +19,11 @@ export default async function EstoquePage() {
       <h1 className="font-display text-2xl font-semibold tracking-tight">
         Estoque
       </h1>
-      <StockList supplies={supplies} isAdmin={isAdmin} />
+      <StockList
+        supplies={supplies}
+        isAdmin={isAdmin}
+        fornecedoresEnabled={fornecedoresEnabled}
+      />
     </div>
   );
 }
