@@ -3,6 +3,7 @@ const CLINIC_APP_PREFIXES = [
   "/pacientes",
   "/procedimentos",
   "/estoque",
+  "/financeiro",
   "/whatsapp",
   "/configuracoes",
 ] as const;

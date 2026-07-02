@@ -5,6 +5,7 @@ import {
   Package,
   Settings,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ export const APP_NAV_LINKS: NavLink[] = [
   { href: "/pacientes", label: "Pacientes", icon: Users },
   { href: "/procedimentos", label: "Procedimentos", icon: ClipboardList },
   { href: "/estoque", label: "Estoque", icon: Package },
+  { href: "/financeiro", label: "Financeiro", icon: Wallet },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
