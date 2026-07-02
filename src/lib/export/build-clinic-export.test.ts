@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
+import { documentZipPath } from "./build-clinic-export";
 import { toCsv } from "./csv";
+
+describe("documentZipPath", () => {
+  it("builds stable path under documents/", () => {
+    expect(
+      documentZipPath(
+        "doc-1",
+        "clinic/patient/doc-1/laudo.pdf",
+      ),
+    ).toBe("documents/doc-1_laudo.pdf");
+  });
+});
 
 describe("toCsv", () => {
   it("escapes commas and quotes", () => {

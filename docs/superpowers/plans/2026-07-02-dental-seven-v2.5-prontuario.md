@@ -48,7 +48,7 @@
 - [x] Task 4: Actions `listPatientDocuments`, `uploadPatientDocument`, `getDocumentDownloadUrl`
 - [x] Task 5: Página `/pacientes/[id]/prontuario` + `document-list.tsx`
 - [x] Task 6: Aba Prontuário na ficha (gate `enabledModules.includes('prontuario')`)
-- [ ] Task 7: Export LGPD — incluir `patient_documents` no ZIP
+- [x] Task 7: Export LGPD — incluir `patient_documents` no ZIP
 - [ ] Task 8: Smoke manual — upload na Clínica Smoke Test (plano Completo ou toggle SuperAdmin)
 - [ ] Task 9: Atualizar spec §7 critérios de aceite + commit final da fase
 
@@ -132,10 +132,10 @@
 **Files:**
 - Modify: `src/lib/export/build-clinic-export.ts`
 
-- [ ] **Step 1:** Query `patient_documents` por `clinic_id`
-- [ ] **Step 2:** Adicionar `patient_documents.json` ao ZIP; opcionalmente arquivos em subpasta `documents/`
-- [ ] **Step 3:** Atualizar `build-clinic-export.test.ts` se necessário
-- [ ] **Step 4:** Commit `feat(v2.5): export LGPD inclui prontuario`
+- [x] **Step 1:** Query `patient_documents` por `clinic_id`
+- [x] **Step 2:** Adicionar `patient_documents.json` ao ZIP; opcionalmente arquivos em subpasta `documents/`
+- [x] **Step 3:** Atualizar `build-clinic-export.test.ts` se necessário
+- [x] **Step 4:** Commit `feat(v2.5): export LGPD inclui prontuario`
 
 ---
 

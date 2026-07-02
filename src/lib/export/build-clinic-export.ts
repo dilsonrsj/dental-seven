@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toCsv } from "./csv";
 
-const EXPORT_SCHEMA_VERSION = "1.0";
+const EXPORT_SCHEMA_VERSION = "1.1";
 
 const README = `Dental Seven — Exportação de dados (LGPD)
 ============================================
@@ -11,8 +11,12 @@ const README = `Dental Seven — Exportação de dados (LGPD)
 Este arquivo ZIP contém todos os dados da sua clínica na data da exportação.
 Formatos: JSON (canônico) e CSV (leitura em planilhas).
 
+A pasta documents/ inclui arquivos do prontuário (quando existirem).
+
 Não inclui senhas, tokens ou dados de outras clínicas.
 `;
+
+const PATIENT_DOCUMENTS_BUCKET = "patient-documents";
 
 function sha256(content: string): string {
   return createHash("sha256").update(content, "utf8").digest("hex");
@@ -20,6 +24,15 @@ function sha256(content: string): string {
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function basenameFromStoragePath(storagePath: string): string {
+  const parts = storagePath.split("/");
+  return parts[parts.length - 1] ?? "documento";
+}
+
+export function documentZipPath(documentId: string, storagePath: string): string {
+  return `documents/${documentId}_${basenameFromStoragePath(storagePath)}`;
 }
 
 export async function buildClinicExport(clinicId: string): Promise<{
@@ -45,11 +58,13 @@ export async function buildClinicExport(clinicId: string): Promise<{
     { data: patients },
     { data: appointments },
     { data: threads },
+    { data: patientDocuments },
   ] = await Promise.all([
     admin.from("dentists").select("*").eq("clinic_id", clinicId),
     admin.from("patients").select("*").eq("clinic_id", clinicId),
     admin.from("appointments").select("*").eq("clinic_id", clinicId),
     admin.from("whatsapp_threads").select("*").eq("clinic_id", clinicId),
+    admin.from("patient_documents").select("*").eq("clinic_id", clinicId),
   ]);
 
   const threadIds = (threads ?? []).map((t) => t.id);
@@ -70,6 +85,7 @@ export async function buildClinicExport(clinicId: string): Promise<{
     "appointments.json": JSON.stringify(appointments ?? [], null, 2),
     "whatsapp_threads.json": JSON.stringify(threads ?? [], null, 2),
     "whatsapp_messages.json": JSON.stringify(messages, null, 2),
+    "patient_documents.json": JSON.stringify(patientDocuments ?? [], null, 2),
     "dentists.csv": toCsv(dentists ?? [], [
       "id",
       "name",
@@ -99,11 +115,46 @@ export async function buildClinicExport(clinicId: string): Promise<{
       "notes",
       "created_at",
     ]),
+    "patient_documents.csv": toCsv(patientDocuments ?? [], [
+      "id",
+      "patient_id",
+      "title",
+      "mime_type",
+      "storage_path",
+      "file_size_bytes",
+      "source",
+      "uploaded_by",
+      "created_at",
+    ]),
   };
+
+  const documentFiles: { path: string; buffer: Buffer }[] = [];
+
+  for (const document of patientDocuments ?? []) {
+    const { data: blob, error: downloadError } = await admin.storage
+      .from(PATIENT_DOCUMENTS_BUCKET)
+      .download(document.storage_path);
+
+    if (downloadError || !blob) {
+      throw new Error(
+        `Falha ao exportar documento ${document.id}: ${downloadError?.message ?? "arquivo ausente"}`,
+      );
+    }
+
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    documentFiles.push({
+      path: documentZipPath(document.id, document.storage_path),
+      buffer,
+    });
+  }
 
   const checksums = Object.fromEntries(
     Object.entries(files).map(([name, content]) => [name, sha256(content)]),
   );
+
+  for (const { path, buffer } of documentFiles) {
+    checksums[path] = createHash("sha256").update(buffer).digest("hex");
+  }
 
   const manifest = {
     schemaVersion: EXPORT_SCHEMA_VERSION,
@@ -116,6 +167,8 @@ export async function buildClinicExport(clinicId: string): Promise<{
       appointments: appointments?.length ?? 0,
       whatsapp_threads: threads?.length ?? 0,
       whatsapp_messages: messages.length,
+      patient_documents: patientDocuments?.length ?? 0,
+      patient_document_files: documentFiles.length,
     },
     checksums,
   };
@@ -126,6 +179,9 @@ export async function buildClinicExport(clinicId: string): Promise<{
   const zip = new JSZip();
   for (const [name, content] of Object.entries(files)) {
     zip.file(name, content);
+  }
+  for (const { path, buffer } of documentFiles) {
+    zip.file(path, buffer);
   }
 
   const arrayBuffer = await zip.generateAsync({ type: "arraybuffer" });
