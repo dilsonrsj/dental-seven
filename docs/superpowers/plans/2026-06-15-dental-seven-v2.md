@@ -109,4 +109,17 @@
 
 Plano salvo em `docs/superpowers/plans/2026-06-15-dental-seven-v2.md`.
 
-Tasks 1–12 concluídas. Fase aceite (Tasks 13–18) concluída em 2026-07-02. **Próximo:** `finishing-a-development-branch` → integrar `feat/v2` ou planejar v2.5 (prontuário).
+Tasks 1–12 concluídas. Fase aceite (Tasks 13–18) concluída em 2026-07-02.
+
+## Workflow Git (decisão 2026-07-02)
+
+| Branch | Deploy Vercel | Uso |
+|--------|---------------|-----|
+| `main` | ✅ `dental-seven-self.vercel.app` (demo) | **Não alterar** |
+| `feat/v2` | ❌ não deployada | v2 + v2.5 — commits incrementais; push OK |
+
+**Estratégia:** Opção 3 (manter separado) → PR (opção 2) só quando quiser publicar produto real.
+
+`feat/v2` pushado em `origin/feat/v2` (2026-07-02).
+
+**Próximo:** v2.5 Prontuário — `docs/superpowers/plans/2026-07-02-dental-seven-v2.5-prontuario.md`
