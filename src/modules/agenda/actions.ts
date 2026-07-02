@@ -7,7 +7,13 @@ import { getAuthContext, requireClinicId } from "@/lib/auth/context";
 import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { type AppointmentStatus } from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/server";
+import { applyStockForAppointmentStatusChange } from "@/modules/estoque/appointment-stock";
 import type { AppointmentFormInput, AppointmentWithRelations } from "./types";
+
+export type AppointmentMutationResult = {
+  appointment: AppointmentWithRelations;
+  stockResult?: { applied: boolean; reversed: boolean };
+};
 
 async function assertWritable() {
   const ctx = await getAuthContext();
@@ -97,7 +103,9 @@ export async function getPatients() {
   return data ?? [];
 }
 
-export async function upsertAppointment(input: AppointmentFormInput) {
+export async function upsertAppointment(
+  input: AppointmentFormInput,
+): Promise<AppointmentMutationResult> {
   if (!isDemoMockDataEnabled()) {
     if (!(await isSupabaseConfigured())) {
       throw new Error("Configure .env.local");
@@ -123,12 +131,28 @@ export async function upsertAppointment(input: AppointmentFormInput) {
   if (isDemoMockDataEnabled()) {
     const data = demoStore.upsertAppointment({ id: input.id, ...payload });
     revalidatePath("/agenda");
-    return data;
+    return { appointment: data };
   }
 
   const clinicId = await requireClinicId();
   const supabase = await createClient();
   const fullPayload = { ...payload, clinic_id: clinicId };
+
+  let previousStatus: AppointmentStatus = "pending";
+  if (input.id) {
+    const { data: existing, error: fetchError } = await supabase
+      .from("appointments")
+      .select("status")
+      .eq("id", input.id)
+      .eq("clinic_id", clinicId)
+      .maybeSingle();
+
+    if (fetchError) throw new Error(fetchError.message);
+    if (existing) {
+      previousStatus = existing.status as AppointmentStatus;
+    }
+  }
+
   const { data, error } = input.id
     ? await supabase
         .from("appointments")
@@ -156,9 +180,25 @@ export async function upsertAppointment(input: AppointmentFormInput) {
         .single();
 
   if (error) throw new Error(error.message);
+
+  let stockResult: { applied: boolean; reversed: boolean } | undefined;
+  if (previousStatus !== input.status) {
+    stockResult = await applyStockForAppointmentStatusChange(
+      data.id,
+      previousStatus,
+      input.status,
+    );
+    if (stockResult.applied || stockResult.reversed) {
+      revalidatePath("/estoque");
+    }
+  }
+
   revalidatePath("/agenda");
 
-  return data as AppointmentWithRelations;
+  return {
+    appointment: data as AppointmentWithRelations,
+    stockResult,
+  };
 }
 
 function parseAgendaDateTime(value: string) {
@@ -168,16 +208,27 @@ function parseAgendaDateTime(value: string) {
 export async function updateAppointmentStatus(
   id: string,
   status: AppointmentStatus,
-) {
+): Promise<AppointmentMutationResult> {
   if (isDemoMockDataEnabled()) {
     const data = demoStore.updateAppointmentStatus(id, status);
     revalidatePath("/agenda");
-    return data;
+    return { appointment: data };
   }
   await assertWritable();
 
   const clinicId = await requireClinicId();
   const supabase = await createClient();
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("appointments")
+    .select("status")
+    .eq("id", id)
+    .eq("clinic_id", clinicId)
+    .single();
+
+  if (fetchError) throw new Error(fetchError.message);
+  const previousStatus = existing.status as AppointmentStatus;
+
   const { data, error } = await supabase
     .from("appointments")
     .update({ status })
@@ -193,7 +244,23 @@ export async function updateAppointmentStatus(
     .single();
 
   if (error) throw new Error(error.message);
+
+  let stockResult: { applied: boolean; reversed: boolean } | undefined;
+  if (previousStatus !== status) {
+    stockResult = await applyStockForAppointmentStatusChange(
+      id,
+      previousStatus,
+      status,
+    );
+    if (stockResult.applied || stockResult.reversed) {
+      revalidatePath("/estoque");
+    }
+  }
+
   revalidatePath("/agenda");
 
-  return data as AppointmentWithRelations;
+  return {
+    appointment: data as AppointmentWithRelations,
+    stockResult,
+  };
 }

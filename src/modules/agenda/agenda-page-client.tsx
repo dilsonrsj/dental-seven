@@ -79,10 +79,13 @@ export function AgendaPageClient({
   async function handleSubmit(input: AppointmentFormInput) {
     try {
       setIsSaving(true);
-      await upsertAppointment(input);
+      const { appointment: saved, stockResult } = await upsertAppointment(input);
       await reloadAppointments(new Date(input.starts_at));
       setModalOpen(false);
       toast.success("Consulta salva.");
+      if (stockResult?.applied) {
+        toast.success("Estoque atualizado");
+      }
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
@@ -93,7 +96,10 @@ export function AgendaPageClient({
   async function handleStatusChange(id: string, status: AppointmentStatus) {
     try {
       setIsSaving(true);
-      const updated = await updateAppointmentStatus(id, status);
+      const { appointment: updated, stockResult } = await updateAppointmentStatus(
+        id,
+        status,
+      );
       setAppointments((current) =>
         current.map((appointment) =>
           appointment.id === updated.id ? updated : appointment,
@@ -103,6 +109,9 @@ export function AgendaPageClient({
         setEditingAppointment(updated);
       }
       toast.success("Status atualizado.");
+      if (stockResult?.applied) {
+        toast.success("Estoque atualizado");
+      }
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
