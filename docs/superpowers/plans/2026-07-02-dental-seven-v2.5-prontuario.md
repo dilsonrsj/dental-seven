@@ -46,7 +46,7 @@
 - [x] Task 2: Migration `008_storage_patient_documents` + aplicar
 - [x] Task 3: `validation.ts` + testes Vitest (mime, 10 MB)
 - [x] Task 4: Actions `listPatientDocuments`, `uploadPatientDocument`, `getDocumentDownloadUrl`
-- [ ] Task 5: Página `/pacientes/[id]/prontuario` + `document-list.tsx`
+- [x] Task 5: Página `/pacientes/[id]/prontuario` + `document-list.tsx`
 - [ ] Task 6: Aba Prontuário na ficha (gate `enabledModules.includes('prontuario')`)
 - [ ] Task 7: Export LGPD — incluir `patient_documents` no ZIP
 - [ ] Task 8: Smoke manual — upload na Clínica Smoke Test (plano Completo ou toggle SuperAdmin)
@@ -109,10 +109,10 @@
 **Files:**
 - Create: `src/app/(app)/pacientes/[id]/prontuario/page.tsx`, `document-list.tsx`
 
-- [ ] **Step 1:** Page server component — carrega paciente + documentos
-- [ ] **Step 2:** `document-list.tsx` — drag-drop, input file, lista com download
-- [ ] **Step 3:** Estados loading/erro/vazio
-- [ ] **Step 4:** Commit `feat(v2.5): pagina prontuario e upload UI`
+- [x] **Step 1:** Page server component — carrega paciente + documentos
+- [x] **Step 2:** `document-list.tsx` — drag-drop, input file, lista com download
+- [x] **Step 3:** Estados loading/erro/vazio
+- [x] **Step 4:** Commit `feat(v2.5): pagina prontuario e upload UI`
 
 ---
 
