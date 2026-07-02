@@ -42,9 +42,9 @@
 
 ## Tasks
 
-- [ ] Task 1: Migration `007_patient_documents` + aplicar no Supabase remoto
-- [ ] Task 2: Migration `008_storage_patient_documents` + aplicar
-- [ ] Task 3: `validation.ts` + testes Vitest (mime, 10 MB)
+- [x] Task 1: Migration `007_patient_documents` + aplicar no Supabase remoto
+- [x] Task 2: Migration `008_storage_patient_documents` + aplicar
+- [x] Task 3: `validation.ts` + testes Vitest (mime, 10 MB)
 - [ ] Task 4: Actions `listPatientDocuments`, `uploadPatientDocument`, `getDocumentDownloadUrl`
 - [ ] Task 5: Página `/pacientes/[id]/prontuario` + `document-list.tsx`
 - [ ] Task 6: Aba Prontuário na ficha (gate `enabledModules.includes('prontuario')`)
@@ -59,10 +59,10 @@
 **Files:**
 - Create: `supabase/migrations/007_patient_documents.sql`
 
-- [ ] **Step 1:** Criar tabela `patient_documents` conforme spec §4
-- [ ] **Step 2:** RLS `patient_documents_clinic` (padrão `006_rls_v2.sql`)
-- [ ] **Step 3:** Aplicar via Supabase MCP `apply_migration`
-- [ ] **Step 4:** Commit `feat(v2.5): migration patient_documents`
+- [x] **Step 1:** Criar tabela `patient_documents` conforme spec §4
+- [x] **Step 2:** RLS `patient_documents_clinic` (padrão `006_rls_v2.sql`)
+- [x] **Step 3:** Aplicar via Supabase MCP `apply_migration`
+- [x] **Step 4:** Commit `feat(v2.5): migration patient_documents`
 
 ---
 
@@ -71,10 +71,10 @@
 **Files:**
 - Create: `supabase/migrations/008_storage_patient_documents.sql`
 
-- [ ] **Step 1:** `insert into storage.buckets` — `patient-documents`, private
-- [ ] **Step 2:** Policies storage: clinic_id no path = `current_clinic_id()`
-- [ ] **Step 3:** Aplicar migration
-- [ ] **Step 4:** Commit `feat(v2.5): storage bucket patient-documents`
+- [x] **Step 1:** `insert into storage.buckets` — `patient-documents`, private
+- [x] **Step 2:** Policies storage: clinic_id no path = `current_clinic_id()`
+- [x] **Step 3:** Aplicar migration
+- [x] **Step 4:** Commit `feat(v2.5): storage bucket patient-documents`
 
 ---
 
@@ -83,10 +83,10 @@
 **Files:**
 - Create: `src/modules/prontuario/validation.ts`, `validation.test.ts`
 
-- [ ] **Step 1:** `ALLOWED_MIME_TYPES`, `MAX_FILE_BYTES = 10 * 1024 * 1024`
-- [ ] **Step 2:** `assertAllowedUpload(file: { type, size })` — throw Error amigável
-- [ ] **Step 3:** Testes: aceita pdf/jpeg/png; rejeita exe e >10MB
-- [ ] **Step 4:** `npm run test` — passar
+- [x] **Step 1:** `ALLOWED_MIME_TYPES`, `MAX_FILE_BYTES = 10 * 1024 * 1024`
+- [x] **Step 2:** `assertAllowedUpload(file: { type, size })` — throw Error amigável
+- [x] **Step 3:** Testes: aceita pdf/jpeg/png; rejeita exe e >10MB
+- [x] **Step 4:** `npm run test` — passar
 - [ ] **Step 5:** Commit `feat(v2.5): validacao upload prontuario`
 
 ---
