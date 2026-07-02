@@ -1,6 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/context";
-import { getPatient } from "@/modules/pacientes/actions";
+import { isSubscriptionBlocking } from "@/lib/billing/subscription";
+import { getPatient, getPatientAppointments } from "@/modules/pacientes/actions";
+import { listPatientClinicalNotes } from "@/modules/prontuario/clinical-notes-actions";
+import { ClinicalNotes } from "@/modules/prontuario/clinical-notes";
 import { DocumentList } from "@/modules/prontuario/document-list";
 import { listPatientDocuments } from "@/modules/prontuario/actions";
 
@@ -22,7 +25,25 @@ export default async function ProntuarioPage({ params }: ProntuarioPageProps) {
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const documents = await listPatientDocuments(id);
+  const [documents, notes, appointments] = await Promise.all([
+    listPatientDocuments(id),
+    listPatientClinicalNotes(id),
+    getPatientAppointments(id),
+  ]);
 
-  return <DocumentList patientId={id} initialDocuments={documents} />;
+  const canWrite =
+    !!ctx.clinic &&
+    !isSubscriptionBlocking(ctx.clinic.subscription_status, ctx.profile.role);
+
+  return (
+    <div className="space-y-6">
+      <ClinicalNotes
+        patientId={id}
+        initialNotes={notes}
+        recentAppointments={appointments.slice(0, 20)}
+        canWrite={canWrite}
+      />
+      <DocumentList patientId={id} initialDocuments={documents} />
+    </div>
+  );
 }
