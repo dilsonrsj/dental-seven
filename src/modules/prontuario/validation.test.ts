@@ -4,6 +4,9 @@ import {
   MAX_FILE_BYTES,
   assertAllowedUpload,
   isAllowedMimeType,
+  isImageMimeType,
+  isPdfMimeType,
+  isPreviewableMimeType,
 } from "./validation";
 
 describe("isAllowedMimeType", () => {
@@ -48,6 +51,26 @@ describe("assertAllowedUpload", () => {
     expect(() =>
       assertAllowedUpload({ type: "image/png", size: 0 }),
     ).toThrow(/vazio/i);
+  });
+});
+
+describe("isPreviewableMimeType", () => {
+  it("accepts pdf and images", () => {
+    expect(isPreviewableMimeType("application/pdf")).toBe(true);
+    expect(isPreviewableMimeType("image/jpeg")).toBe(true);
+    expect(isPreviewableMimeType("image/png")).toBe(true);
+  });
+
+  it("rejects other types", () => {
+    expect(isPreviewableMimeType("text/plain")).toBe(false);
+  });
+});
+
+describe("mime helpers", () => {
+  it("detects pdf and image types", () => {
+    expect(isPdfMimeType("application/pdf")).toBe(true);
+    expect(isImageMimeType("image/png")).toBe(true);
+    expect(isPdfMimeType("image/png")).toBe(false);
   });
 });
 

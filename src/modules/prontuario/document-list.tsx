@@ -8,8 +8,9 @@ import {
   getDocumentDownloadUrl,
   uploadPatientDocument,
 } from "./actions";
+import { DocumentViewerModal } from "./document-viewer-modal";
 import type { PatientDocumentListItem } from "./types";
-import { ALLOWED_MIME_TYPES, MAX_FILE_BYTES } from "./validation";
+import { ALLOWED_MIME_TYPES, MAX_FILE_BYTES, isPreviewableMimeType } from "./validation";
 
 type DocumentListProps = {
   patientId: string;
@@ -27,6 +28,8 @@ export function DocumentList({
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [viewerDocument, setViewerDocument] =
+    useState<PatientDocumentListItem | null>(null);
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -174,21 +177,38 @@ export function DocumentList({
                       )}
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="shrink-0"
-                    disabled={downloadingId === document.id}
-                    onClick={() => void handleDownload(document.id)}
-                  >
-                    {downloadingId === document.id ? "Abrindo..." : "Baixar"}
-                  </Button>
+                  <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                    {isPreviewableMimeType(document.mime_type) && (
+                      <Button
+                        type="button"
+                        className="shrink-0"
+                        onClick={() => setViewerDocument(document)}
+                      >
+                        Visualizar
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="shrink-0"
+                      disabled={downloadingId === document.id}
+                      onClick={() => void handleDownload(document.id)}
+                    >
+                      {downloadingId === document.id ? "Abrindo..." : "Baixar"}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </CardContent>
       </Card>
+
+      <DocumentViewerModal
+        open={viewerDocument !== null}
+        selectedDocument={viewerDocument}
+        onClose={() => setViewerDocument(null)}
+      />
     </div>
   );
 }

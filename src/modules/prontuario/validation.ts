@@ -17,6 +17,18 @@ export function isAllowedMimeType(type: string): type is AllowedMimeType {
   return (ALLOWED_MIME_TYPES as readonly string[]).includes(type);
 }
 
+export function isPdfMimeType(type: string): boolean {
+  return type === "application/pdf";
+}
+
+export function isImageMimeType(type: string): boolean {
+  return type === "image/jpeg" || type === "image/png";
+}
+
+export function isPreviewableMimeType(type: string): boolean {
+  return isPdfMimeType(type) || isImageMimeType(type);
+}
+
 export function assertAllowedUpload(file: UploadFileLike): void {
   if (file.size <= 0) {
     throw new Error("Arquivo vazio. Selecione um documento válido.");

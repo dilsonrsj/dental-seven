@@ -44,8 +44,8 @@
 
 ## Tasks — Onda 1: Viewer
 
-- [ ] Task 1: `document-viewer-modal.tsx` — PDF iframe + image lightbox
-- [ ] Task 2: Integrar Visualizar em `document-list.tsx` + testes de helper mime
+- [x] Task 1: `document-viewer-modal.tsx` — PDF iframe + image lightbox
+- [x] Task 2: Integrar Visualizar em `document-list.tsx` + testes de helper mime
 - [ ] Task 3: Smoke viewer — abrir Laudo Smoke v2.5 no modal
 
 ---
@@ -77,20 +77,20 @@
 - Create: `src/modules/prontuario/document-viewer-modal.tsx`
 - Modify: `src/modules/prontuario/document-list.tsx`
 
-- [ ] **Step 1:** Modal com título, botão fechar, overlay
-- [ ] **Step 2:** Se `mime_type` PDF → `iframe src={signedUrl}`
-- [ ] **Step 3:** Se imagem → `img` + botões zoom +/-
-- [ ] **Step 4:** Loading/erro ao buscar signed URL
-- [ ] **Step 5:** Commit `feat(v3.5): modal viewer prontuario`
+- [x] **Step 1:** Modal com título, botão fechar, overlay
+- [x] **Step 2:** Se `mime_type` PDF → `iframe src={signedUrl}`
+- [x] **Step 3:** Se imagem → `img` + botões zoom +/-
+- [x] **Step 4:** Loading/erro ao buscar signed URL
+- [x] **Step 5:** Commit `feat(v3.5): modal viewer prontuario`
 
 ---
 
 ## Task 2: Botão Visualizar na lista
 
-- [ ] **Step 1:** Substituir fluxo "só Baixar" por Visualizar + Baixar
-- [ ] **Step 2:** Teste helper `isPreviewableMime(type)` se extraído
-- [ ] **Step 3:** `npm run test` passando
-- [ ] **Step 4:** Commit `feat(v3.5): botao visualizar documentos`
+- [x] **Step 1:** Substituir fluxo "só Baixar" por Visualizar + Baixar
+- [x] **Step 2:** Teste helper `isPreviewableMime(type)` se extraído
+- [x] **Step 3:** `npm run test` passando
+- [x] **Step 4:** Commit `feat(v3.5): botao visualizar documentos`
 
 ---
 

@@ -10,7 +10,6 @@ import type { PatientDocumentListItem } from "./types";
 import { assertAllowedUpload } from "./validation";
 
 const STORAGE_BUCKET = "patient-documents";
-const SIGNED_URL_TTL_SECONDS = 60;
 
 async function assertWritable() {
   const ctx = await getAuthContext();
@@ -224,6 +223,7 @@ export async function uploadPatientDocument(
 
 export async function getDocumentDownloadUrl(
   documentId: string,
+  ttlSeconds = 60,
 ): Promise<string> {
   if (isDemoMockDataEnabled()) {
     throw new Error("Download indisponível no modo demo.");
@@ -245,7 +245,7 @@ export async function getDocumentDownloadUrl(
 
   const { data: signed, error: signError } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .createSignedUrl(document.storage_path, SIGNED_URL_TTL_SECONDS);
+    .createSignedUrl(document.storage_path, ttlSeconds);
 
   if (signError) throw new Error(signError.message);
   if (!signed?.signedUrl) throw new Error("Não foi possível gerar o download.");
