@@ -53,15 +53,15 @@
 
 ## Tasks
 
-- [ ] Task 1: Migration `014_suppliers` + aplicar Supabase
-- [ ] Task 2: `validation.ts` + `whatsapp-reorder.ts` + testes Vitest
-- [ ] Task 3: Server actions — CRUD suppliers + vínculo insumo
-- [ ] Task 4: UI `/fornecedores` (lista + vínculos)
-- [ ] Task 5: Menu Fornecedores
-- [ ] Task 6: Integração estoque — botão Pedir reposição
-- [ ] Task 7: Export LGPD schema 1.6
-- [ ] Task 8: Smoke `scripts/smoke-fornecedores.ts`
-- [ ] Task 9: Marcar spec §10 aceite + commit final da fase
+- [x] Task 1: Migration `014_suppliers` + aplicar Supabase
+- [x] Task 2: `validation.ts` + `whatsapp-reorder.ts` + testes Vitest
+- [x] Task 3: Server actions — CRUD suppliers + vínculo insumo
+- [x] Task 4: UI `/fornecedores` (lista + vínculos)
+- [x] Task 5: Menu Fornecedores
+- [x] Task 6: Integração estoque — botão Pedir reposição
+- [x] Task 7: Export LGPD schema 1.6
+- [x] Task 8: Smoke `scripts/smoke-fornecedores.ts`
+- [x] Task 9: Marcar spec §10 aceite + commit final da fase
 
 ---
 
