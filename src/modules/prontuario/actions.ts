@@ -14,6 +14,7 @@ import {
   toClinicalPdfPayload,
 } from "./clinical-document-input";
 import { buildClinicalPdf } from "./generate-clinical-pdf";
+import { buildDocumentWhatsAppMessage } from "./clinical-document-whatsapp";
 
 const STORAGE_BUCKET = "patient-documents";
 const SIGNATURE_BUCKET = "clinic-assets";
@@ -459,7 +460,7 @@ export async function sendDocumentToWhatsAppThread(
     throw new Error("Paciente sem conversa WhatsApp. Abra o módulo WhatsApp primeiro.");
   }
 
-  const body = `Documento "${document.title}" disponível na clínica.`;
+  const body = buildDocumentWhatsAppMessage(document.title);
   const { error: messageError } = await supabase.from("whatsapp_messages").insert({
     thread_id: thread.id,
     direction: "outbound",
