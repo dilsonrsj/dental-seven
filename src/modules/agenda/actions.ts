@@ -8,11 +8,13 @@ import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { type AppointmentStatus } from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/server";
 import { applyStockForAppointmentStatusChange } from "@/modules/estoque/appointment-stock";
+import { applyFinanceForAppointmentStatusChange } from "@/modules/financeiro/appointment-finance";
 import type { AppointmentFormInput, AppointmentWithRelations } from "./types";
 
 export type AppointmentMutationResult = {
   appointment: AppointmentWithRelations;
   stockResult?: { applied: boolean; reversed: boolean };
+  financeResult?: { applied: boolean; reversed: boolean };
 };
 
 async function assertWritable() {
@@ -182,6 +184,7 @@ export async function upsertAppointment(
   if (error) throw new Error(error.message);
 
   let stockResult: { applied: boolean; reversed: boolean } | undefined;
+  let financeResult: { applied: boolean; reversed: boolean } | undefined;
   if (previousStatus !== input.status) {
     stockResult = await applyStockForAppointmentStatusChange(
       data.id,
@@ -191,6 +194,15 @@ export async function upsertAppointment(
     if (stockResult.applied || stockResult.reversed) {
       revalidatePath("/estoque");
     }
+
+    financeResult = await applyFinanceForAppointmentStatusChange(
+      data.id,
+      previousStatus,
+      input.status,
+    );
+    if (financeResult.applied || financeResult.reversed) {
+      revalidatePath("/financeiro");
+    }
   }
 
   revalidatePath("/agenda");
@@ -198,6 +210,7 @@ export async function upsertAppointment(
   return {
     appointment: data as AppointmentWithRelations,
     stockResult,
+    financeResult,
   };
 }
 
@@ -246,6 +259,7 @@ export async function updateAppointmentStatus(
   if (error) throw new Error(error.message);
 
   let stockResult: { applied: boolean; reversed: boolean } | undefined;
+  let financeResult: { applied: boolean; reversed: boolean } | undefined;
   if (previousStatus !== status) {
     stockResult = await applyStockForAppointmentStatusChange(
       id,
@@ -255,6 +269,15 @@ export async function updateAppointmentStatus(
     if (stockResult.applied || stockResult.reversed) {
       revalidatePath("/estoque");
     }
+
+    financeResult = await applyFinanceForAppointmentStatusChange(
+      id,
+      previousStatus,
+      status,
+    );
+    if (financeResult.applied || financeResult.reversed) {
+      revalidatePath("/financeiro");
+    }
   }
 
   revalidatePath("/agenda");
@@ -262,5 +285,6 @@ export async function updateAppointmentStatus(
   return {
     appointment: data as AppointmentWithRelations,
     stockResult,
+    financeResult,
   };
 }
