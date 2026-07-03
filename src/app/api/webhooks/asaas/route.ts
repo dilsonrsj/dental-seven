@@ -1,6 +1,39 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+type AsaasWebhookBody = {
+  event?: string;
+  payment?: { subscription?: string; customer?: string };
+  [key: string]: unknown;
+};
+
+async function resolveClinicId(
+  admin: ReturnType<typeof createAdminClient>,
+  body: AsaasWebhookBody,
+): Promise<string | null> {
+  const subscriptionId = body.payment?.subscription;
+  if (subscriptionId) {
+    const { data } = await admin
+      .from("clinics")
+      .select("id")
+      .eq("asaas_subscription_id", subscriptionId)
+      .maybeSingle();
+    if (data?.id) return data.id;
+  }
+
+  const customerId = body.payment?.customer;
+  if (customerId) {
+    const { data } = await admin
+      .from("clinics")
+      .select("id")
+      .eq("asaas_customer_id", customerId)
+      .maybeSingle();
+    if (data?.id) return data.id;
+  }
+
+  return null;
+}
+
 export async function POST(request: Request) {
   const token = request.headers.get("asaas-access-token");
   const expected = process.env.ASAAS_WEBHOOK_TOKEN;
@@ -9,10 +42,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as {
-    event?: string;
-    payment?: { subscription?: string; customer?: string };
-  };
+  const body = (await request.json()) as AsaasWebhookBody;
+  const admin = createAdminClient();
+  const clinicId = await resolveClinicId(admin, body);
+
+  const { error: persistError } = await admin.from("asaas_webhook_events").insert({
+    event_type: body.event ?? "UNKNOWN",
+    clinic_id: clinicId,
+    payload: body,
+  });
+
+  if (persistError) {
+    console.error("asaas webhook persist failed:", persistError.message);
+    return NextResponse.json({ error: "Failed to persist webhook" }, { status: 500 });
+  }
 
   const event = body.event;
   const subscriptionId = body.payment?.subscription;
@@ -21,7 +64,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, skipped: true });
   }
 
-  const admin = createAdminClient();
   let status: string | null = null;
 
   if (event === "PAYMENT_CONFIRMED") status = "active";
