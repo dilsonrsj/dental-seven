@@ -1,4 +1,4 @@
-import type { PlanKey } from "@/lib/billing/plans";
+import type { PlanKey, ModuleKey } from "@/lib/billing/plans";
 import type { SubscriptionStatus } from "@/lib/billing/subscription";
 
 export type { PlanKey };
@@ -59,4 +59,41 @@ export type ClinicDetail = AdminClinicRecord & {
   asaas_subscription_id: string | null;
   admin_notes: string | null;
   whatsapp_throttled: boolean;
+};
+
+export type AdminClinicListFilters = {
+  planKey?: PlanKey;
+  status?: SubscriptionStatus;
+  moduleKey?: ModuleKey;
+  fairUseAlert?: boolean;
+  search?: string;
+};
+
+export type FairUseAlertRow = AdminClinicRecord & {
+  fairUse: FairUseStatus;
+  fairUseLevel: FairUseLevel;
+};
+
+export type AdminDashboardData = {
+  kpis: DashboardKpis;
+  trialsExpiring: AdminClinicRecord[];
+  fairUseAlerts: FairUseAlertRow[];
+};
+
+export type ClinicModuleRow = {
+  module_key: string;
+  enabled: boolean;
+};
+
+export type AsaasWebhookEventRow = {
+  id: string;
+  event_type: string;
+  payload: Record<string, unknown>;
+  created_at: string;
+};
+
+export type ClinicDetailForAdmin = {
+  clinic: ClinicDetail;
+  modules: ClinicModuleRow[];
+  webhookEvents: AsaasWebhookEventRow[];
 };

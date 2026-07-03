@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   FAIR_USE_CAPS,
+  buildFairUseStatus,
   computeFairUsePercent,
   getFairUseCaps,
   getFairUseLevel,
+  getOverallFairUseLevel,
 } from "./usage";
 
 describe("FAIR_USE_CAPS", () => {
@@ -66,5 +68,30 @@ describe("getFairUseLevel", () => {
   it("exceeded em 100% ou mais", () => {
     expect(getFairUseLevel(100)).toBe("exceeded");
     expect(getFairUseLevel(150)).toBe("exceeded");
+  });
+});
+
+describe("buildFairUseStatus", () => {
+  it("monta métricas whatsapp e ai para plano completo", () => {
+    const status = buildFairUseStatus("completo", {
+      whatsapp_conversations: 2000,
+      ai_responses: 1200,
+    });
+
+    expect(status.whatsapp.usage).toBe(2000);
+    expect(status.whatsapp.cap).toBe(2500);
+    expect(status.whatsapp.level).toBe("warning");
+    expect(status.ai.level).toBe("warning");
+  });
+
+  it("retorna ok para plano essencial sem caps", () => {
+    const status = buildFairUseStatus("essencial", {
+      whatsapp_conversations: 9999,
+      ai_responses: 9999,
+    });
+
+    expect(status.whatsapp.percent).toBeNull();
+    expect(status.ai.percent).toBeNull();
+    expect(getOverallFairUseLevel(status)).toBe("ok");
   });
 });
