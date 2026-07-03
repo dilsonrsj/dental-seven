@@ -2,7 +2,7 @@
 
 **Versão:** 1.0  
 **Data:** 2026-07-03  
-**Status:** Aprovado para plano de implementação  
+**Status:** Aprovado — plano em `docs/superpowers/plans/2026-07-03-dental-seven-v6-superadmin.md`  
 **Pré-requisito:** v2 Auth/Billing + módulos v2.5–v5.1 concluídos na branch `feat/v2`  
 **Specs relacionadas:**  
 - `2026-06-11-dental-seven-mvp-design.md` § SuperAdmin, roadmap v6  
