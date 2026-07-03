@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getAuthContext, requireClinicId } from "@/lib/auth/context";
+import { getAuthContext, requireClinicId, type ClinicContext } from "@/lib/auth/context";
 import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { isDemoMockDataEnabled } from "@/lib/demo/config";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +25,7 @@ async function requireEstoqueModule() {
   if (!ctx.enabledModules.includes("estoque")) {
     throw new Error("Módulo Estoque não está ativo para esta clínica.");
   }
-  return ctx;
+  return ctx as typeof ctx & { clinic: ClinicContext };
 }
 
 async function assertWritableAdmin() {

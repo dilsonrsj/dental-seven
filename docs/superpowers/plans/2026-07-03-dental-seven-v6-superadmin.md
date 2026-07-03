@@ -17,22 +17,22 @@
 ## Tasks
 
 ### v6a
-- [ ] Task 1: Migration `015_admin_platform` + Supabase
-- [ ] Task 2: `usage.ts` + `dashboard-metrics.ts` + testes
-- [ ] Task 3: `audit.ts` + agregação uso mensal
-- [ ] Task 4: Actions admin expandidas (ficha, plano, trial, suspender)
-- [ ] Task 5: Dashboard `/admin`
-- [ ] Task 6: Lista `/admin/clinicas` com filtros
-- [ ] Task 7: Ficha 360° `/admin/clinicas/[id]`
-- [ ] Task 8: Webhook Asaas → `asaas_webhook_events`
+- [x] Task 1: Migration `015_admin_platform` + Supabase
+- [x] Task 2: `usage.ts` + `dashboard-metrics.ts` + testes
+- [x] Task 3: `audit.ts` + agregação uso mensal
+- [x] Task 4: Actions admin expandidas (ficha, plano, trial, suspender)
+- [x] Task 5: Dashboard `/admin`
+- [x] Task 6: Lista `/admin/clinicas` com filtros
+- [x] Task 7: Ficha 360° `/admin/clinicas/[id]`
+- [x] Task 8: Webhook Asaas → `asaas_webhook_events`
 
 ### v6b
-- [ ] Task 9: Provisioning `/admin/clinicas/nova`
-- [ ] Task 10: Impersonação read-only + banner + middleware
-- [ ] Task 11: `/admin/auditoria` + audit em todas ações
-- [ ] Task 12: Notas DR7 + throttle flag + alertas fair use e-mail
-- [ ] Task 13: Smoke `scripts/smoke-superadmin.ts`
-- [ ] Task 14: Aceite spec §10 + plano
+- [x] Task 9: Provisioning `/admin/clinicas/nova`
+- [x] Task 10: Impersonação read-only + banner + middleware
+- [x] Task 11: `/admin/auditoria` + audit em todas ações
+- [x] Task 12: Notas DR7 + throttle flag + alertas fair use e-mail
+- [x] Task 13: Smoke `scripts/smoke-superadmin.ts`
+- [x] Task 14: Aceite spec §10 + plano
 
 ---
 

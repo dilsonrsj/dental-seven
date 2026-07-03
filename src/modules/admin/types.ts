@@ -76,7 +76,7 @@ export type FairUseAlertRow = AdminClinicRecord & {
 
 export type AdminDashboardData = {
   kpis: DashboardKpis;
-  trialsExpiring: AdminClinicRecord[];
+  trialsExpiring: AdminClinicMetricsInput[];
   fairUseAlerts: FairUseAlertRow[];
 };
 

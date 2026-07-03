@@ -2,7 +2,7 @@
 
 **Versão:** 1.0  
 **Data:** 2026-07-03  
-**Status:** Aprovado — plano em `docs/superpowers/plans/2026-07-03-dental-seven-v6-superadmin.md`  
+**Status:** Implementado (v6a + v6b) — aceite §10 em 2026-07-03  
 **Pré-requisito:** v2 Auth/Billing + módulos v2.5–v5.1 concluídos na branch `feat/v2`  
 **Specs relacionadas:**  
 - `2026-06-11-dental-seven-mvp-design.md` § SuperAdmin, roadmap v6  
@@ -308,24 +308,24 @@ create policy "asaas_webhook_events_super_admin" on asaas_webhook_events for sel
 
 ### v6a
 
-- [ ] SuperAdmin vê dashboard com KPIs e alertas fair use
-- [ ] Lista clínicas com filtros por plano, status e uso
-- [ ] Ficha 360° com billing, contagens, módulos e % fair use
-- [ ] Alterar plano, estender trial, suspender/reativar com audit
-- [ ] Webhooks Asaas visíveis na ficha (últimos eventos)
-- [ ] `/cadastro` self-service continua funcionando
-- [ ] Nenhum bloqueio de uso na clínica por fair use (v6a)
+- [x] SuperAdmin vê dashboard com KPIs e alertas fair use
+- [x] Lista clínicas com filtros por plano, status e uso
+- [x] Ficha 360° com billing, contagens, módulos e % fair use
+- [x] Alterar plano, estender trial, suspender/reativar com audit
+- [x] Webhooks Asaas visíveis na ficha (últimos eventos)
+- [x] `/cadastro` self-service continua funcionando
+- [x] Nenhum bloqueio de uso na clínica por fair use (v6a)
 
 ### v6b
 
-- [ ] Provisioning: criar clínica + convite admin pelo `/admin`
-- [ ] Impersonação read-only com banner; **403 em prontuário**
-- [ ] Audit log registra ações SuperAdmin
-- [ ] Notas internas DR7 na ficha
-- [ ] Página `/admin/auditoria` com log global
-- [ ] Notificação e-mail fair use 80%/100% (admin clínica)
-- [ ] Flag throttle visível no SuperAdmin
-- [ ] Testes Vitest para usage, impersonation guards
+- [x] Provisioning: criar clínica + convite admin pelo `/admin`
+- [x] Impersonação read-only com banner; **403 em prontuário**
+- [x] Audit log registra ações SuperAdmin
+- [x] Notas internas DR7 na ficha
+- [x] Página `/admin/auditoria` com log global
+- [x] Notificação e-mail fair use 80%/100% (admin clínica)
+- [x] Flag throttle visível no SuperAdmin
+- [x] Testes Vitest para usage, impersonation guards
 
 ---
 

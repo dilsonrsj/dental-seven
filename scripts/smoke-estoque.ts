@@ -61,11 +61,13 @@ async function ensureModuleEnabled(
   }
 
   const { error: upsertError } = await admin.from("clinic_modules").upsert(
-    {
-      clinic_id: CLINIC_ID,
-      module_key: moduleKey,
-      enabled: true,
-    } as { clinic_id: string; module_key: string; enabled: boolean },
+    [
+      {
+        clinic_id: CLINIC_ID,
+        module_key: moduleKey,
+        enabled: true,
+      },
+    ],
     { onConflict: "clinic_id,module_key" },
   );
 
