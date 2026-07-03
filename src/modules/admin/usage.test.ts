@@ -75,7 +75,7 @@ describe("buildFairUseStatus", () => {
   it("monta métricas whatsapp e ai para plano completo", () => {
     const status = buildFairUseStatus("completo", {
       whatsapp_conversations: 2000,
-      ai_responses: 1200,
+      ai_responses: 2800,
     });
 
     expect(status.whatsapp.usage).toBe(2000);
