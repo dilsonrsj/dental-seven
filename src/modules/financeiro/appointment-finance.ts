@@ -14,6 +14,11 @@ export type AutoFinanceReversalDraft = {
   description: string;
 };
 
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  if (!value) return null;
+  return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
 export function shouldApplyAutoFinance(input: {
   previousStatus: AppointmentStatus;
   newStatus: AppointmentStatus;
@@ -228,10 +233,12 @@ export async function applyFinanceForAppointmentStatusChange(
     if (bomError) throw new Error(bomError.message);
 
     const bomItems = (bomRows ?? []).map((row) => {
-      const supply = row.supplies as {
-        name: string;
-        unit_cost_cents: number | null;
-      } | null;
+      const supply = firstRelation(
+        row.supplies as
+          | { name: string; unit_cost_cents: number | null }
+          | { name: string; unit_cost_cents: number | null }[]
+          | null,
+      );
       return {
         supply_name: supply?.name ?? "Insumo",
         quantity: Number(row.quantity),

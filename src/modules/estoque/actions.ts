@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getAuthContext, requireClinicId, type ClinicContext } from "@/lib/auth/context";
+import { getAuthContext, requireClinicId, assertClinicContext } from "@/lib/auth/context";
 import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { isDemoMockDataEnabled } from "@/lib/demo/config";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +25,7 @@ async function requireEstoqueModule() {
   if (!ctx.enabledModules.includes("estoque")) {
     throw new Error("Módulo Estoque não está ativo para esta clínica.");
   }
-  return ctx as typeof ctx & { clinic: ClinicContext };
+  return assertClinicContext(ctx);
 }
 
 async function assertWritableAdmin() {
@@ -94,13 +94,34 @@ export async function listStockSupplies(): Promise<StockSupplyRow[]> {
   const clinicId = await requireClinicId();
   const supabase = await createClient();
   const fornecedoresEnabled = ctx.enabledModules.includes("fornecedores");
-  const selectQuery = fornecedoresEnabled
-    ? `*, preferred_supplier:suppliers!supplies_preferred_supplier_id_fkey(id, name, phone, email)`
-    : "*";
+
+  if (fornecedoresEnabled) {
+    const { data, error } = await supabase
+      .from("supplies")
+      .select(
+        `
+          *,
+          preferred_supplier:suppliers!supplies_preferred_supplier_id_fkey (
+            id,
+            name,
+            phone,
+            email
+          )
+        `,
+      )
+      .eq("clinic_id", clinicId)
+      .order("name", { ascending: true });
+
+    if (error) throw new Error(error.message);
+
+    return (data ?? []).map((row) =>
+      mapStockSupplyRow(row as SupplyQueryRow),
+    );
+  }
 
   const { data, error } = await supabase
     .from("supplies")
-    .select(selectQuery)
+    .select("*")
     .eq("clinic_id", clinicId)
     .order("name", { ascending: true });
 

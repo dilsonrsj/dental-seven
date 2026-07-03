@@ -39,6 +39,13 @@ export type AuthContext = {
   isImpersonating?: boolean;
 };
 
+export type AuthContextWithClinic = AuthContext & { clinic: ClinicContext };
+
+export function assertClinicContext(ctx: AuthContext): AuthContextWithClinic {
+  if (!ctx.clinic) throw new Error("Usuário sem clínica vinculada");
+  return ctx as AuthContextWithClinic;
+}
+
 async function loadClinicContext(
   clinicId: string,
   supabase: Awaited<ReturnType<typeof createClient>>,

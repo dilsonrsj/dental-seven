@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getAuthContext, requireClinicId } from "@/lib/auth/context";
+import { getAuthContext, requireClinicId, assertClinicContext } from "@/lib/auth/context";
 import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { isDemoMockDataEnabled } from "@/lib/demo/config";
 import { createClient } from "@/lib/supabase/server";
@@ -58,7 +58,7 @@ async function requireFinanceiroModule() {
   if (!ctx.enabledModules.includes("financeiro")) {
     throw new Error("Módulo Financeiro não está ativo para esta clínica.");
   }
-  return ctx;
+  return assertClinicContext(ctx);
 }
 
 async function assertWritableAdmin() {
