@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAuthContext, requireAuthContext, requireClinicId } from "@/lib/auth/context";
 import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { isDemoMockDataEnabled } from "@/lib/demo/config";
+import { assertNotImpersonating } from "@/modules/admin/impersonation";
 import { createClient } from "@/lib/supabase/server";
 import type { PatientDocumentListItem } from "./types";
 import { assertAllowedUpload } from "./validation";
@@ -21,6 +22,7 @@ const SIGNATURE_BUCKET = "clinic-assets";
 
 async function assertWritable() {
   const ctx = await getAuthContext();
+  assertNotImpersonating(ctx?.isImpersonating);
   if (
     !ctx?.clinic ||
     isSubscriptionBlocking(ctx.clinic.subscription_status, ctx.profile.role)
@@ -243,7 +245,8 @@ export async function getDocumentDownloadUrl(
     throw new Error("Download indisponível no modo demo.");
   }
 
-  await assertProntuarioModule();
+  const ctx = await assertProntuarioModule();
+  assertNotImpersonating(ctx.isImpersonating);
   const clinicId = await requireClinicId();
   const supabase = await createClient();
 

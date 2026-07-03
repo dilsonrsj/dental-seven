@@ -1,6 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import {
+  IMPERSONATION_COOKIE,
+  isImpersonationBlockedPath,
+  isImpersonationValid,
+  parseImpersonationCookie,
+} from "@/modules/admin/impersonation";
+import {
   defaultAppPathForRole,
   isClinicAppPath,
 } from "@/lib/auth/routes";
@@ -56,6 +62,13 @@ export async function updateSession(request: NextRequest) {
   }
 
   const isSuperAdmin = profileRole === "super_admin";
+  const impersonationPayload = parseImpersonationCookie(
+    request.cookies.get(IMPERSONATION_COOKIE)?.value,
+  );
+  const hasValidImpersonation =
+    Boolean(user) &&
+    Boolean(impersonationPayload) &&
+    isImpersonationValid(impersonationPayload!, user!.id);
 
   if (user && isAuthPage) {
     return NextResponse.redirect(
@@ -64,7 +77,16 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && isSuperAdmin && isClinicAppPath(pathname)) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    if (!hasValidImpersonation) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+    if (isImpersonationBlockedPath(pathname)) {
+      return NextResponse.redirect(new URL("/agenda", request.url));
+    }
+  }
+
+  if (hasValidImpersonation && isImpersonationBlockedPath(pathname)) {
+    return NextResponse.redirect(new URL("/agenda", request.url));
   }
 
   if (!user && !isPublic && !pathname.startsWith("/api/")) {

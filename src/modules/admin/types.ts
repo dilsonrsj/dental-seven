@@ -99,3 +99,19 @@ export type ClinicDetailForAdmin = {
   storageBytes: number;
   yearMonth: string;
 };
+
+export type AdminAuditLogRow = {
+  id: string;
+  actor_id: string;
+  actor_name: string;
+  action: string;
+  clinic_id: string | null;
+  clinic_name: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type AdminAuditLogFilters = {
+  clinicId?: string;
+  action?: string;
+};

@@ -10,6 +10,9 @@ import {
   extendClinicTrial,
   logClinicExportRequest,
   setClinicSubscriptionStatus,
+  setClinicWhatsAppThrottled,
+  startClinicImpersonation,
+  updateClinicAdminNotes,
   updateClinicPlan,
 } from "@/lib/admin/actions";
 import { PLAN_LABELS, type PlanKey } from "@/lib/billing/plans";
@@ -282,16 +285,51 @@ export function ClinicDetail({
                 value={formatDate(clinic.created_at)}
               />
             </dl>
-            {clinic.admin_notes ? (
-              <div className="rounded-xl border border-border bg-muted/30 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Notas internas DR7
-                </p>
-                <p className="mt-2 whitespace-pre-wrap text-sm">
-                  {clinic.admin_notes}
-                </p>
-              </div>
-            ) : null}
+
+            <form
+              action={async (formData) => {
+                const notes = formData.get("adminNotes")?.toString() ?? "";
+                await updateClinicAdminNotes(clinic.id, notes);
+              }}
+              className="space-y-3 border-t border-border pt-4"
+            >
+              <CardTitle className="text-base">Notas internas DR7</CardTitle>
+              <textarea
+                name="adminNotes"
+                defaultValue={clinic.admin_notes ?? ""}
+                rows={4}
+                placeholder="Observações internas visíveis apenas no SuperAdmin…"
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+              />
+              <Button type="submit" variant="outline" size="md">
+                Salvar notas
+              </Button>
+            </form>
+
+            <form
+              action={async (formData) => {
+                const throttled = formData.get("whatsappThrottled") === "on";
+                await setClinicWhatsAppThrottled(clinic.id, throttled);
+              }}
+              className="space-y-3 border-t border-border pt-4"
+            >
+              <CardTitle className="text-base">WhatsApp throttle</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Quando ativo, limita envios WhatsApp na fase de integração real.
+              </p>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="whatsappThrottled"
+                  defaultChecked={clinic.whatsapp_throttled}
+                  className="size-4 rounded border-border"
+                />
+                WhatsApp throttled
+              </label>
+              <Button type="submit" variant="outline" size="md">
+                Salvar throttle
+              </Button>
+            </form>
           </CardContent>
         </Card>
       ) : null}
@@ -481,6 +519,21 @@ export function ClinicDetail({
                   Clínica suspensa — paywall ativo para usuários da clínica.
                 </p>
               ) : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="space-y-4 py-5">
+              <CardTitle className="text-base">Modo suporte</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Visualizar o app da clínica em modo somente leitura, sem acesso a
+                prontuário.
+              </p>
+              <form action={startClinicImpersonation.bind(null, clinic.id)}>
+                <Button type="submit" variant="outline" size="md">
+                  Impersonar clínica
+                </Button>
+              </form>
             </CardContent>
           </Card>
 

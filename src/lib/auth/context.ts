@@ -1,7 +1,14 @@
 import type { PlanKey } from "@/lib/billing/plans";
 import type { SubscriptionStatus } from "@/lib/billing/subscription";
 import type { Dentist } from "@/lib/supabase/types";
+import {
+  IMPERSONATION_COOKIE,
+  isImpersonationValid,
+  parseImpersonationCookie,
+} from "@/modules/admin/impersonation";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 
 export type UserRole = "super_admin" | "clinic_admin" | "dentist";
 
@@ -29,7 +36,50 @@ export type AuthContext = {
   clinic: ClinicContext | null;
   enabledModules: string[];
   dentists: Pick<Dentist, "id" | "name" | "color">[];
+  isImpersonating?: boolean;
 };
+
+async function loadClinicContext(
+  clinicId: string,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<{
+  clinic: ClinicContext | null;
+  enabledModules: string[];
+  dentists: Pick<Dentist, "id" | "name" | "color">[];
+}> {
+  const { data: clinicRow } = await supabase
+    .from("clinics")
+    .select(
+      "id, name, slug, subscription_status, trial_ends_at, plan_key",
+    )
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  const clinic = clinicRow ? (clinicRow as ClinicContext) : null;
+
+  const { data: modules } = await supabase
+    .from("clinic_modules")
+    .select("module_key")
+    .eq("clinic_id", clinicId)
+    .eq("enabled", true);
+
+  const enabledModules = modules?.length
+    ? modules.map((m) => m.module_key)
+    : ["agenda", "pacientes"];
+
+  const { data: dentistRows } = await supabase
+    .from("dentists")
+    .select("id, name, color")
+    .eq("clinic_id", clinicId)
+    .eq("active", true)
+    .order("name");
+
+  return {
+    clinic,
+    enabledModules,
+    dentists: dentistRows ?? [],
+  };
+}
 
 export async function getAuthContext(): Promise<AuthContext | null> {
   const supabase = await createClient();
@@ -49,38 +99,53 @@ export async function getAuthContext(): Promise<AuthContext | null> {
   let clinic: ClinicContext | null = null;
   let enabledModules: string[] = ["agenda", "pacientes"];
   let dentists: Pick<Dentist, "id" | "name" | "color">[] = [];
+  let isImpersonating = false;
 
-  if (profile.clinic_id) {
-    const { data: clinicRow } = await supabase
-      .from("clinics")
-      .select(
-        "id, name, slug, subscription_status, trial_ends_at, plan_key",
-      )
-      .eq("id", profile.clinic_id)
-      .maybeSingle();
+  if (profile.role === "super_admin") {
+    const cookieStore = await cookies();
+    const payload = parseImpersonationCookie(
+      cookieStore.get(IMPERSONATION_COOKIE)?.value,
+    );
 
-    if (clinicRow) {
-      clinic = clinicRow as ClinicContext;
+    if (payload && isImpersonationValid(payload, user.id)) {
+      isImpersonating = true;
+      const admin = createAdminClient();
+      const { data: clinicRow } = await admin
+        .from("clinics")
+        .select(
+          "id, name, slug, subscription_status, trial_ends_at, plan_key",
+        )
+        .eq("id", payload.clinicId)
+        .maybeSingle();
+
+      if (clinicRow) {
+        clinic = clinicRow as ClinicContext;
+
+        const { data: modules } = await admin
+          .from("clinic_modules")
+          .select("module_key")
+          .eq("clinic_id", payload.clinicId)
+          .eq("enabled", true);
+
+        if (modules?.length) {
+          enabledModules = modules.map((m) => m.module_key);
+        }
+
+        const { data: dentistRows } = await admin
+          .from("dentists")
+          .select("id, name, color")
+          .eq("clinic_id", payload.clinicId)
+          .eq("active", true)
+          .order("name");
+
+        dentists = dentistRows ?? [];
+      }
     }
-
-    const { data: modules } = await supabase
-      .from("clinic_modules")
-      .select("module_key")
-      .eq("clinic_id", profile.clinic_id)
-      .eq("enabled", true);
-
-    if (modules?.length) {
-      enabledModules = modules.map((m) => m.module_key);
-    }
-
-    const { data: dentistRows } = await supabase
-      .from("dentists")
-      .select("id, name, color")
-      .eq("clinic_id", profile.clinic_id)
-      .eq("active", true)
-      .order("name");
-
-    dentists = dentistRows ?? [];
+  } else if (profile.clinic_id) {
+    const loaded = await loadClinicContext(profile.clinic_id, supabase);
+    clinic = loaded.clinic;
+    enabledModules = loaded.enabledModules;
+    dentists = loaded.dentists;
   }
 
   return {
@@ -90,6 +155,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     clinic,
     enabledModules,
     dentists,
+    isImpersonating,
   };
 }
 
@@ -101,8 +167,8 @@ export async function requireAuthContext(): Promise<AuthContext> {
 
 export async function requireClinicId(): Promise<string> {
   const ctx = await requireAuthContext();
-  if (!ctx.profile.clinic_id) {
+  if (!ctx.clinic?.id) {
     throw new Error("Usuário sem clínica vinculada");
   }
-  return ctx.profile.clinic_id;
+  return ctx.clinic.id;
 }

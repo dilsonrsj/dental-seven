@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAuthContext, requireAuthContext, requireClinicId } from "@/lib/auth/context";
 import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { isDemoMockDataEnabled } from "@/lib/demo/config";
+import { assertNotImpersonating } from "@/modules/admin/impersonation";
 import { createClient } from "@/lib/supabase/server";
 import type { PatientClinicalNoteListItem } from "./types";
 
@@ -22,6 +23,7 @@ async function assertProntuarioModule() {
 
 async function assertWritable() {
   const ctx = await getAuthContext();
+  assertNotImpersonating(ctx?.isImpersonating);
   if (
     !ctx?.clinic ||
     isSubscriptionBlocking(ctx.clinic.subscription_status, ctx.profile.role)

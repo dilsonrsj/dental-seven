@@ -65,7 +65,7 @@ async function ensureModuleEnabled(
       clinic_id: CLINIC_ID,
       module_key: moduleKey,
       enabled: true,
-    },
+    } as { clinic_id: string; module_key: string; enabled: boolean },
     { onConflict: "clinic_id,module_key" },
   );
 

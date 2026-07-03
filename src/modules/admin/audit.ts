@@ -12,7 +12,8 @@ export type AdminAuditAction =
   | "clinic.provisioned"
   | "clinic.impersonation_started"
   | "clinic.impersonation_stopped"
-  | "clinic.whatsapp_throttle_set";
+  | "clinic.whatsapp_throttle_set"
+  | "fair_use.email_sent";
 
 export type LogAdminActionInput = {
   actorId: string;

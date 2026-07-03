@@ -87,10 +87,20 @@ export default async function AdminClinicasPage({
         >
           ← SuperAdmin
         </Link>
-        <h1 className="mt-2 font-display text-2xl font-bold">Clínicas</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Lista de clínicas da plataforma com filtros operacionais
-        </p>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="font-display text-2xl font-bold">Clínicas</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Lista de clínicas da plataforma com filtros operacionais
+            </p>
+          </div>
+          <Link
+            href="/admin/clinicas/nova"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Nova clínica
+          </Link>
+        </div>
       </div>
 
       <ClinicList clinics={clinics} filters={filters} />

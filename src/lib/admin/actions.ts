@@ -2,17 +2,24 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { processFairUseAlertEmails } from "@/lib/email/fair-use-alerts";
 import { logAdminAction } from "@/modules/admin/audit";
 import {
   computeDashboardKpis,
   trialsExpiringSoon,
 } from "@/modules/admin/dashboard-metrics";
 import {
+  startImpersonation,
+  stopImpersonation,
+} from "@/modules/admin/impersonation";
+import {
   getCurrentYearMonth,
   syncAllClinicsUsageMonthly,
   syncClinicUsageMonthly,
 } from "@/modules/admin/sync-usage";
 import type {
+  AdminAuditLogFilters,
+  AdminAuditLogRow,
   AdminClinicListFilters,
   AdminClinicRecord,
   AdminDashboardData,
@@ -30,6 +37,7 @@ import {
   type ModuleKey,
   type PlanKey,
 } from "@/lib/billing/plans";
+import { trialEndsAtFromNow } from "@/lib/billing/subscription";
 import type { SubscriptionStatus } from "@/lib/billing/subscription";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -114,11 +122,17 @@ function matchesSearch(clinic: AdminClinicRecord, search?: string): boolean {
 }
 
 export async function getDashboardData(): Promise<AdminDashboardData> {
-  await requireSuperAdmin();
+  const ctx = await requireSuperAdmin();
   const admin = createAdminClient();
   const yearMonth = getCurrentYearMonth();
 
   await syncAllClinicsUsageMonthly(yearMonth, admin);
+
+  try {
+    await processFairUseAlertEmails(ctx.profile.id);
+  } catch (err) {
+    console.error("[admin] fair use alert emails failed:", err);
+  }
 
   const { data: clinics, error } = await admin
     .from("clinics")
@@ -489,4 +503,360 @@ export async function requestAccountClosure(
 
   await supabase.auth.signOut();
   redirect("/entrar");
+}
+
+export type ProvisionClinicInput = {
+  name: string;
+  slug: string;
+  planKey: PlanKey;
+  trialDays: number;
+  adminEmail: string;
+  adminName: string;
+};
+
+export type ProvisionClinicResult =
+  | { ok: true; clinicId: string }
+  | { ok: false; error: string };
+
+function normalizeSlug(slug: string): string {
+  return slug
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48);
+}
+
+export async function provisionClinicForAdmin(
+  input: ProvisionClinicInput,
+): Promise<ProvisionClinicResult> {
+  const ctx = await requireSuperAdmin();
+
+  const name = input.name.trim();
+  const slug = normalizeSlug(input.slug.trim());
+  const adminName = input.adminName.trim();
+  const adminEmail = input.adminEmail.trim().toLowerCase();
+
+  if (name.length < 2) {
+    return { ok: false, error: "Nome da clínica muito curto." };
+  }
+  if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+    return { ok: false, error: "Slug inválido." };
+  }
+  if (adminName.length < 2) {
+    return { ok: false, error: "Nome do admin muito curto." };
+  }
+  if (!adminEmail.includes("@")) {
+    return { ok: false, error: "E-mail inválido." };
+  }
+  if (input.trialDays <= 0 || input.trialDays > 90) {
+    return { ok: false, error: "Dias de trial inválidos." };
+  }
+
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return {
+      ok: false,
+      error:
+        "Servidor não configurado: adicione SUPABASE_SERVICE_ROLE_KEY no .env.local.",
+    };
+  }
+
+  const { data: existingSlug } = await admin
+    .from("clinics")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (existingSlug) {
+    return { ok: false, error: "Slug já em uso." };
+  }
+
+  const { data: authData, error: authError } =
+    await admin.auth.admin.inviteUserByEmail(adminEmail, {
+      data: { full_name: adminName },
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/entrar`,
+    });
+
+  if (authError || !authData.user) {
+    return {
+      ok: false,
+      error: authError?.message ?? "Não foi possível enviar o convite.",
+    };
+  }
+
+  const userId = authData.user.id;
+
+  const trialEndsAt = trialEndsAtFromNow(input.trialDays);
+
+  const { data: clinic, error: clinicError } = await admin
+    .from("clinics")
+    .insert({
+      name,
+      slug,
+      subscription_status: "trialing",
+      trial_ends_at: trialEndsAt,
+      plan_key: input.planKey,
+    })
+    .select("id")
+    .single();
+
+  if (clinicError || !clinic) {
+    await admin.auth.admin.deleteUser(userId);
+    return {
+      ok: false,
+      error: clinicError?.message ?? "Erro ao criar clínica.",
+    };
+  }
+
+  const { data: dentist, error: dentistError } = await admin
+    .from("dentists")
+    .insert({
+      clinic_id: clinic.id,
+      name: adminName,
+      color: "#4490E2",
+      active: true,
+    })
+    .select("id")
+    .single();
+
+  if (dentistError || !dentist) {
+    await admin.from("clinics").delete().eq("id", clinic.id);
+    await admin.auth.admin.deleteUser(userId);
+    return {
+      ok: false,
+      error: dentistError?.message ?? "Erro ao criar dentista.",
+    };
+  }
+
+  const { error: profileError } = await admin.from("profiles").insert({
+    id: userId,
+    role: "clinic_admin",
+    clinic_id: clinic.id,
+    dentist_id: dentist.id,
+    full_name: adminName,
+  });
+
+  if (profileError) {
+    await admin.from("dentists").delete().eq("id", dentist.id);
+    await admin.from("clinics").delete().eq("id", clinic.id);
+    await admin.auth.admin.deleteUser(userId);
+    return { ok: false, error: profileError.message };
+  }
+
+  const moduleRows = ALL_MODULE_KEYS.map((moduleKey) => ({
+    clinic_id: clinic.id,
+    module_key: moduleKey,
+    enabled: defaultModuleEnabled(input.planKey, moduleKey),
+  }));
+
+  const { error: modulesError } = await admin
+    .from("clinic_modules")
+    .insert(moduleRows);
+
+  if (modulesError) {
+    await admin.from("profiles").delete().eq("id", userId);
+    await admin.from("dentists").delete().eq("id", dentist.id);
+    await admin.from("clinics").delete().eq("id", clinic.id);
+    await admin.auth.admin.deleteUser(userId);
+    return { ok: false, error: modulesError.message };
+  }
+
+  await logAdminAction({
+    actorId: ctx.profile.id,
+    action: "clinic.provisioned",
+    clinicId: clinic.id,
+    metadata: {
+      name,
+      slug,
+      planKey: input.planKey,
+      trialDays: input.trialDays,
+      adminEmail,
+      adminName,
+    },
+  });
+
+  revalidatePath("/admin/clinicas");
+  revalidatePath("/admin");
+
+  return { ok: true, clinicId: clinic.id };
+}
+
+export async function startClinicImpersonation(clinicId: string) {
+  const ctx = await requireSuperAdmin();
+  const admin = createAdminClient();
+
+  const { data: clinic, error } = await admin
+    .from("clinics")
+    .select("id, name, deleted_at")
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  if (error || !clinic) throw new Error("Clínica não encontrada");
+  if (clinic.deleted_at) throw new Error("Clínica encerrada.");
+
+  await startImpersonation(clinicId, ctx.profile.id);
+
+  await logAdminAction({
+    actorId: ctx.profile.id,
+    action: "clinic.impersonation_started",
+    clinicId,
+    metadata: { clinicName: clinic.name },
+  });
+
+  redirect("/agenda");
+}
+
+export async function stopClinicImpersonation() {
+  const ctx = await requireSuperAdmin();
+  const authCtx = await requireAuthContext();
+  const clinicId = authCtx.clinic?.id ?? null;
+
+  await stopImpersonation();
+
+  await logAdminAction({
+    actorId: ctx.profile.id,
+    action: "clinic.impersonation_stopped",
+    clinicId,
+    metadata: {},
+  });
+
+  if (clinicId) {
+    redirect(`/admin/clinicas/${clinicId}`);
+  }
+  redirect("/admin");
+}
+
+export async function listAdminAuditLog(
+  limit = 50,
+  filters: AdminAuditLogFilters = {},
+): Promise<AdminAuditLogRow[]> {
+  await requireSuperAdmin();
+  const admin = createAdminClient();
+
+  let query = admin
+    .from("admin_audit_log")
+    .select("id, actor_id, action, clinic_id, metadata, created_at")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (filters.clinicId) {
+    query = query.eq("clinic_id", filters.clinicId);
+  }
+  if (filters.action) {
+    query = query.eq("action", filters.action);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const rows = data ?? [];
+  const actorIds = [...new Set(rows.map((r) => r.actor_id))];
+  const clinicIds = [
+    ...new Set(rows.map((r) => r.clinic_id).filter(Boolean)),
+  ] as string[];
+
+  const actorNames = new Map<string, string>();
+  if (actorIds.length > 0) {
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", actorIds);
+    for (const p of profiles ?? []) {
+      actorNames.set(p.id, p.full_name);
+    }
+  }
+
+  const clinicNames = new Map<string, string>();
+  if (clinicIds.length > 0) {
+    const { data: clinics } = await admin
+      .from("clinics")
+      .select("id, name")
+      .in("id", clinicIds);
+    for (const c of clinics ?? []) {
+      clinicNames.set(c.id, c.name);
+    }
+  }
+
+  return rows.map((row) => ({
+    id: row.id,
+    actor_id: row.actor_id,
+    actor_name: actorNames.get(row.actor_id) ?? "—",
+    action: row.action,
+    clinic_id: row.clinic_id,
+    clinic_name: row.clinic_id
+      ? (clinicNames.get(row.clinic_id) ?? "—")
+      : null,
+    metadata: (row.metadata ?? {}) as Record<string, unknown>,
+    created_at: row.created_at,
+  }));
+}
+
+export async function updateClinicAdminNotes(
+  clinicId: string,
+  notes: string,
+) {
+  const ctx = await requireSuperAdmin();
+  const admin = createAdminClient();
+
+  const { data: current, error: readError } = await admin
+    .from("clinics")
+    .select("admin_notes")
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  if (readError || !current) throw new Error("Clínica não encontrada");
+
+  const trimmed = notes.trim();
+  const { error } = await admin
+    .from("clinics")
+    .update({ admin_notes: trimmed || null })
+    .eq("id", clinicId);
+
+  if (error) throw new Error(error.message);
+
+  await logAdminAction({
+    actorId: ctx.profile.id,
+    action: "clinic.notes_updated",
+    clinicId,
+    metadata: { from: current.admin_notes, to: trimmed || null },
+  });
+
+  revalidatePath(`/admin/clinicas/${clinicId}`);
+}
+
+export async function setClinicWhatsAppThrottled(
+  clinicId: string,
+  throttled: boolean,
+) {
+  const ctx = await requireSuperAdmin();
+  const admin = createAdminClient();
+
+  const { data: current, error: readError } = await admin
+    .from("clinics")
+    .select("whatsapp_throttled")
+    .eq("id", clinicId)
+    .maybeSingle();
+
+  if (readError || !current) throw new Error("Clínica não encontrada");
+
+  const { error } = await admin
+    .from("clinics")
+    .update({ whatsapp_throttled: throttled })
+    .eq("id", clinicId);
+
+  if (error) throw new Error(error.message);
+
+  await logAdminAction({
+    actorId: ctx.profile.id,
+    action: "clinic.whatsapp_throttle_set",
+    clinicId,
+    metadata: { from: current.whatsapp_throttled, to: throttled },
+  });
+
+  revalidatePath(`/admin/clinicas/${clinicId}`);
+  revalidatePath("/admin/clinicas");
 }
