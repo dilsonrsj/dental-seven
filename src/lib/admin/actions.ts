@@ -229,7 +229,7 @@ export async function getClinicDetailForAdmin(
 
   const { data: usageRow } = await admin
     .from("clinic_usage_monthly")
-    .select("whatsapp_conversations, ai_responses")
+    .select("whatsapp_conversations, ai_responses, storage_bytes")
     .eq("clinic_id", clinicId)
     .eq("year_month", yearMonth)
     .maybeSingle();
@@ -262,9 +262,15 @@ export async function getClinicDetailForAdmin(
     clinic: {
       ...(clinic as AdminClinicRecord),
       fairUse,
+      asaas_customer_id: clinic.asaas_customer_id as string | null,
+      asaas_subscription_id: clinic.asaas_subscription_id as string | null,
+      admin_notes: clinic.admin_notes as string | null,
+      whatsapp_throttled: Boolean(clinic.whatsapp_throttled),
     },
     modules: modules ?? [],
     webhookEvents: (webhookEvents ?? []) as ClinicDetailForAdmin["webhookEvents"],
+    storageBytes: usageRow?.storage_bytes ?? 0,
+    yearMonth,
   };
 }
 
@@ -406,6 +412,17 @@ export async function setClinicSubscriptionStatus(
   revalidatePath(`/admin/clinicas/${clinicId}`);
   revalidatePath("/admin/clinicas");
   revalidatePath("/admin");
+}
+
+export async function logClinicExportRequest(clinicId: string) {
+  const ctx = await requireSuperAdmin();
+
+  await logAdminAction({
+    actorId: ctx.profile.id,
+    action: "clinic.export_requested",
+    clinicId,
+    metadata: {},
+  });
 }
 
 export async function toggleClinicModule(

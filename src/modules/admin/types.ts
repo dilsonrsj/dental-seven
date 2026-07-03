@@ -96,4 +96,6 @@ export type ClinicDetailForAdmin = {
   clinic: ClinicDetail;
   modules: ClinicModuleRow[];
   webhookEvents: AsaasWebhookEventRow[];
+  storageBytes: number;
+  yearMonth: string;
 };
