@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { FOUNDING_COOKIE } from "@/lib/founding/content";
+import { parseEnvFlag } from "@/lib/founding/parse-env-flag";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -21,7 +22,7 @@ export type BetaFounderRow = {
 };
 
 export function isBetaGateEnabled(): boolean {
-  return process.env.DENTAL_SEVEN_BETA_GATE === "true";
+  return parseEnvFlag(process.env.DENTAL_SEVEN_BETA_GATE);
 }
 
 export function isValidFoundingToken(token: string | undefined): boolean {
