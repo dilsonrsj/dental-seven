@@ -2,9 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Download, Minus, Plus, X } from "lucide-react";
+import { Download, ExternalLink, Minus, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui";
 import { getDocumentDownloadUrl } from "./actions";
+import {
+  downloadPdfUrl,
+  openPdfUrl,
+  prefersExternalPdfViewer,
+} from "./pdf-open";
 import type { PatientDocumentListItem } from "./types";
 import { isImageMimeType, isPdfMimeType } from "./validation";
 
@@ -26,9 +31,11 @@ export function DocumentViewerModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageZoomIndex, setImageZoomIndex] = useState(0);
+  const [useExternalViewer, setUseExternalViewer] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    setUseExternalViewer(prefersExternalPdfViewer());
   }, []);
 
   const resetState = useCallback(() => {
@@ -89,9 +96,24 @@ export function DocumentViewerModal({
     try {
       const url =
         signedUrl ?? (await getDocumentDownloadUrl(selectedDocument.id));
-      window.open(url, "_blank", "noopener,noreferrer");
+      if (isPdfMimeType(selectedDocument.mime_type)) {
+        downloadPdfUrl(url, selectedDocument.title);
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
     } catch (downloadError) {
       setError(getErrorMessage(downloadError));
+    }
+  }
+
+  async function handleOpen() {
+    if (!selectedDocument) return;
+    try {
+      const url =
+        signedUrl ?? (await getDocumentDownloadUrl(selectedDocument.id));
+      openPdfUrl(url);
+    } catch (openError) {
+      setError(getErrorMessage(openError));
     }
   }
 
@@ -102,15 +124,17 @@ export function DocumentViewerModal({
   const imageScale = IMAGE_ZOOM_STEPS[imageZoomIndex];
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-6">
+    <div className="fixed inset-0 z-[60] flex flex-col bg-background">
+      <header className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="min-w-0">
           <h2 className="truncate font-display text-lg font-semibold">
             {selectedDocument.title}
           </h2>
-          <p className="text-xs text-muted-foreground">Visualização do documento</p>
+          <p className="text-xs text-muted-foreground">
+            Visualização do documento
+          </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isImage && signedUrl && !isLoading && !error && (
             <>
               <Button
@@ -144,6 +168,17 @@ export function DocumentViewerModal({
               </Button>
             </>
           )}
+          {isPdf && signedUrl && (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 gap-2"
+              onClick={() => void handleOpen()}
+            >
+              <ExternalLink className="h-4 w-4" aria-hidden />
+              Abrir
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -171,13 +206,43 @@ export function DocumentViewerModal({
         {error && (
           <p className="max-w-md text-center text-sm text-red-400">{error}</p>
         )}
-        {!isLoading && !error && signedUrl && isPdf && (
-          <iframe
-            title={selectedDocument.title}
-            src={signedUrl}
-            className="h-full min-h-[60vh] w-full max-w-5xl rounded-xl border border-border bg-white"
-          />
+        {!isLoading && !error && signedUrl && isPdf && useExternalViewer && (
+          <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-4 rounded-xl border border-border bg-surface px-6 py-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              No celular o PDF abre no visualizador do aparelho.
+            </p>
+            <div className="flex w-full flex-col gap-2 sm:flex-row">
+              <Button
+                type="button"
+                className="h-11 w-full gap-2"
+                onClick={() => void handleOpen()}
+              >
+                <ExternalLink className="h-4 w-4" aria-hidden />
+                Abrir PDF
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 w-full gap-2"
+                onClick={() => void handleDownload()}
+              >
+                <Download className="h-4 w-4" aria-hidden />
+                Baixar PDF
+              </Button>
+            </div>
+          </div>
         )}
+        {!isLoading &&
+          !error &&
+          signedUrl &&
+          isPdf &&
+          !useExternalViewer && (
+            <iframe
+              title={selectedDocument.title}
+              src={signedUrl}
+              className="h-full min-h-[60vh] w-full max-w-5xl rounded-xl border border-border bg-white"
+            />
+          )}
         {!isLoading && !error && signedUrl && isImage && (
           <div className="flex min-h-[50vh] w-full max-w-5xl items-center justify-center overflow-auto">
             {/* eslint-disable-next-line @next/next/no-img-element */}
