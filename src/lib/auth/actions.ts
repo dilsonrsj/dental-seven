@@ -269,5 +269,5 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/entrar");
+  redirect(isBetaGateEnabled() ? "/founding" : "/entrar");
 }
