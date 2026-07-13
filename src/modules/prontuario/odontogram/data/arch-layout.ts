@@ -16,15 +16,16 @@ export type ToothLayout = {
   group: ToothGroup;
 };
 
-export const DENTAL_CHART_VIEWBOX = "0 0 880 420";
+/** ViewBox apertado: menos “letterbox” vertical, dentes maiores no mobile. */
+export const DENTAL_CHART_VIEWBOX = "0 0 860 300";
 
-const CENTER_X = 440;
-const UPPER_BASE_Y = 152;
-const LOWER_BASE_Y = 278;
-const TOOTH_SPACING = 44;
-const ARCH_DROP = 18;
-const ARCH_ROTATION = 2.2;
-const SIZE_BOOST = 1.18;
+const CENTER_X = 430;
+const UPPER_BASE_Y = 98;
+const LOWER_BASE_Y = 210;
+const TOOTH_SPACING = 46;
+const ARCH_DROP = 14;
+const ARCH_ROTATION = 2;
+const SIZE_BOOST = 1.36;
 
 function scaleForGroup(group: ToothGroup): number {
   const base = (() => {

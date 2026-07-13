@@ -18,7 +18,7 @@
   display: block;
   width: 100%;
   height: auto;
-  min-height: 300px;
+  aspect-ratio: 860 / 300;
 }
 
 .chartBackground {

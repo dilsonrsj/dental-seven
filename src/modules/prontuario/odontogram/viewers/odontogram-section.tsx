@@ -74,7 +74,7 @@ export function OdontogramSection({
           Clique e explore cada dente.
         </h2>
         <p className="text-sm text-muted-foreground">
-          Notação FDI. Selecione coroa ou raiz para ver histórico e status clínico.
+          Notação FDI. Selecione a unidade para ver histórico e status clínico.
         </p>
       </div>
 
