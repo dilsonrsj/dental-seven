@@ -182,3 +182,59 @@ export async function submitFoundingForm(
 
   return { ok: true, accessToken: data.access_token };
 }
+
+export type FoundingResumeLoginInput = {
+  email: string;
+  whatsapp: string;
+};
+
+/**
+ * Dentista que já criou a clínica: valida e-mail + WhatsApp do Founding,
+ * seta cookie e libera /entrar.
+ */
+export async function resumeFoundingForLogin(
+  input: FoundingResumeLoginInput,
+): Promise<FoundingSubmitResult> {
+  const email = input.email.trim().toLowerCase();
+  const whatsapp = normalizeWhatsappDigits(input.whatsapp);
+
+  if (!email.includes("@") || !email.includes(".")) {
+    return { ok: false, error: "Informe um e-mail válido." };
+  }
+  if (whatsapp.length < 10 || whatsapp.length > 11) {
+    return { ok: false, error: "Informe um WhatsApp válido com DDD." };
+  }
+
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return {
+      ok: false,
+      error:
+        "Servidor não configurado. Se o problema persistir, fale com a DR7 no WhatsApp.",
+    };
+  }
+
+  const { data: existing } = await admin
+    .from("beta_founders")
+    .select("access_token, whatsapp")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (!existing?.access_token) {
+    return {
+      ok: false,
+      error:
+        "Não encontramos este cadastro Founding. Confira o e-mail ou fale com a DR7.",
+    };
+  }
+
+  const resume = assertFoundingResumeAllowed(whatsapp, existing.whatsapp ?? "");
+  if (!resume.ok) {
+    return { ok: false, error: resume.error };
+  }
+
+  await setFoundingCookie(existing.access_token);
+  return { ok: true, accessToken: existing.access_token };
+}

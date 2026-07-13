@@ -2,13 +2,16 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   BRAZILIAN_STATES,
   FEEDBACK_WHATSAPP,
   FOUNDING_CONTENT,
 } from "@/lib/founding/content";
-import { submitFoundingForm } from "@/lib/founding/actions";
+import {
+  resumeFoundingForLogin,
+  submitFoundingForm,
+} from "@/lib/founding/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +22,7 @@ type Props = {
 };
 
 export function FoundingForm({ initialAccessGranted }: Props) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const inviteRef = searchParams.get("ref") ?? "";
 
@@ -36,6 +40,11 @@ export function FoundingForm({ initialAccessGranted }: Props) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [accessGranted, setAccessGranted] = useState(initialAccessGranted);
+  const [showResumeLogin, setShowResumeLogin] = useState(false);
+  const [resumeEmail, setResumeEmail] = useState("");
+  const [resumeWhatsapp, setResumeWhatsapp] = useState("");
+  const [resumeError, setResumeError] = useState("");
+  const [resumeLoading, setResumeLoading] = useState(false);
 
   const formComplete = useMemo(() => {
     return (
@@ -108,6 +117,27 @@ export function FoundingForm({ initialAccessGranted }: Props) {
     }
 
     setAccessGranted(true);
+  }
+
+  async function handleResumeLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setResumeLoading(true);
+    setResumeError("");
+
+    const result = await resumeFoundingForLogin({
+      email: resumeEmail,
+      whatsapp: resumeWhatsapp,
+    });
+
+    setResumeLoading(false);
+
+    if (!result.ok) {
+      setResumeError(result.error);
+      return;
+    }
+
+    router.push("/entrar");
+    router.refresh();
   }
 
   return (
@@ -371,6 +401,68 @@ export function FoundingForm({ initialAccessGranted }: Props) {
                 ) : null}
               </div>
             </form>
+
+            <div className="mt-6 border-t border-border/50 pt-5">
+              {!showResumeLogin ? (
+                <p className="text-center text-sm text-muted-foreground">
+                  Já criou sua clínica?{" "}
+                  <button
+                    type="button"
+                    className="font-medium text-primary hover:underline"
+                    onClick={() => setShowResumeLogin(true)}
+                  >
+                    Quero entrar
+                  </button>
+                </p>
+              ) : (
+                <form onSubmit={handleResumeLogin} className="space-y-3">
+                  <p className="text-sm font-medium text-foreground">
+                    Já criei minha clínica — quero entrar
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Use o mesmo e-mail e WhatsApp do cadastro Founding.
+                  </p>
+                  <Input
+                    type="email"
+                    placeholder="E-mail"
+                    value={resumeEmail}
+                    onChange={(e) => setResumeEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                  <Input
+                    placeholder="WhatsApp (com DDD)"
+                    value={resumeWhatsapp}
+                    onChange={(e) => setResumeWhatsapp(e.target.value)}
+                    inputMode="tel"
+                    required
+                  />
+                  {resumeError ? (
+                    <p className="text-sm text-destructive">{resumeError}</p>
+                  ) : null}
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      type="submit"
+                      className="flex-1"
+                      disabled={resumeLoading}
+                    >
+                      {resumeLoading ? "Validando…" : "Continuar para entrar"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        setShowResumeLogin(false);
+                        setResumeError("");
+                      }}
+                    >
+                      Voltar
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

@@ -30,7 +30,12 @@
 | **Desenvolvimento** | `feat/v2` local (`npm run dev`) | Continuar features; sync com `main` após merge beta. |
 | **Pós-beta** | Mesmo domínio + `/visao` comercial | Desligar gate; reabrir planos/preços no cadastro. |
 
-**Smoke local:** `http://localhost:3000` · admin `v2smoke-full-20260702@test.dr7.app` / `demo2026v2`
+**Smoke local:** `http://localhost:3000` · clínica `v2smoke-full-20260702@test.dr7.app` / `demo2026v2`
+
+**SuperAdmin (produção beta):**  
+1. `/founding` → **Já criei minha clínica**  
+2. E-mail `superadmin-smoke@dr7.app` · WhatsApp `79998364822`  
+3. Continuar → `/entrar` · senha `demo2026v2` → `/admin`
 
 **Convite founding:** `https://dental-seven-self.vercel.app/founding`
 
@@ -103,6 +108,7 @@ Ordem obrigatória:
 | 4 | **Odontograma 3D interativo** | ✅ | `specs/2026-07-07-odontograma-3d-design.md` v2 | `plans/2026-07-07-odontograma-3d.md` |
 | 4b | Cadastro beta + banner + guia + sidebar sticky | ✅ | `specs/2026-07-13-beta-shell-ajuda-design.md` · `2026-07-11-cadastro-beta-design.md` | `plans/2026-07-13-beta-shell-ajuda.md` |
 | 4c | Fim beta 07/08 + formulário `/feedback` + admin | ✅ | `specs/2026-07-13-beta-feedback-design.md` | `plans/2026-07-13-beta-feedback.md` |
+| 4d | Retomada Founding → `/entrar` (já criou clínica) | ✅ | `specs/2026-07-13-founding-resume-login-design.md` | `plans/2026-07-13-founding-resume-login.md` |
 | 5 | Deploy beta (MVP → beta no domínio oficial) | ✅ | `docs/beta-tester-roadmap.md` · §8 | — |
 | — | Super Admin Onda 1 (cockpit beta + founding) | ✅ | `specs/2026-07-11-admin-onda1-design.md` | `plans/2026-07-11-admin-onda1.md` |
 

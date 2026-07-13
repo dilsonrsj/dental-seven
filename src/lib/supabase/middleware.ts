@@ -80,11 +80,10 @@ export async function updateSession(request: NextRequest) {
     Boolean(impersonationPayload) &&
     isImpersonationValid(impersonationPayload!, user!.id);
 
-  // Beta: só o cadastro exige cookie founding. /entrar fica aberto para
-  // clínicas já criadas e SuperAdmin DR7.
+  // Beta: /entrar e /cadastro exigem cookie founding. Anônimos no app → /founding.
   if (
     isBetaGateEnabled() &&
-    pathname === "/cadastro" &&
+    (pathname === "/cadastro" || pathname === "/entrar") &&
     !user &&
     !isValidFoundingToken(request.cookies.get(FOUNDING_COOKIE)?.value)
   ) {
@@ -111,7 +110,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (!user && !isPublic && !pathname.startsWith("/api/")) {
-    return NextResponse.redirect(new URL("/entrar", request.url));
+    const loginPath = isBetaGateEnabled() ? "/founding" : "/entrar";
+    return NextResponse.redirect(new URL(loginPath, request.url));
   }
 
   return supabaseResponse;

@@ -18,7 +18,7 @@ import { DentistFilterProvider } from "@/contexts/dentist-filter-context";
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const ctx = await getAuthContext();
   const betaGateEnabled = isBetaGateEnabled();
-  if (!ctx) redirect("/entrar");
+  if (!ctx) redirect(betaGateEnabled ? "/founding" : "/entrar");
   if (ctx.profile.role === "super_admin" && !ctx.isImpersonating) {
     redirect("/admin");
   }
