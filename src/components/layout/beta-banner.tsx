@@ -13,25 +13,41 @@ export function BetaBanner() {
   return (
     <div
       role="status"
-      className="sticky top-0 z-50 border-b border-amber-600/40 bg-amber-950 px-4 py-2.5 text-center text-xs text-amber-50 sm:text-sm"
+      className="sticky top-0 z-50 border-b border-amber-600/40 bg-amber-950 px-3 py-2.5 text-amber-50 sm:px-4"
     >
-      <p>
-        <span className="font-semibold text-amber-300">
-          Você está na versão beta
-        </span>
-        <span className="text-amber-100/90">
-          {" "}
-          — Disponível até{" "}
-          <strong className="font-semibold text-amber-200">{BETA_ENDS_SHORT}</strong>
-          . {BETA_POST_END_MESSAGE}{" "}
-        </span>
-        <Link
-          href="/feedback"
-          className="font-semibold text-amber-200 underline-offset-2 hover:underline"
-        >
-          Enviar feedback
-        </Link>
-      </p>
+      <div className="mx-auto flex max-w-5xl flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <p className="text-center text-xs sm:text-left sm:text-sm">
+          <span className="font-semibold text-amber-300">
+            Você está na versão beta
+          </span>
+          <span className="text-amber-100/90">
+            {" "}
+            — Disponível até{" "}
+            <strong className="font-semibold text-amber-200">
+              {BETA_ENDS_SHORT}
+            </strong>
+            .
+          </span>
+          <span className="mt-1 hidden text-amber-100/80 sm:mt-0 sm:inline">
+            {" "}
+            {BETA_POST_END_MESSAGE}
+          </span>
+        </p>
+        <div className="flex items-center justify-center gap-2 sm:shrink-0">
+          <Link
+            href="/ajuda"
+            className="inline-flex min-h-9 flex-1 items-center justify-center rounded-full border border-amber-400/50 bg-amber-900/60 px-3 py-1.5 text-center text-xs font-semibold text-amber-50 transition-colors hover:bg-amber-800/80 sm:flex-none"
+          >
+            Guia rápido
+          </Link>
+          <Link
+            href="/feedback"
+            className="inline-flex min-h-9 flex-1 items-center justify-center rounded-full border border-amber-300/70 bg-amber-400 px-3 py-1.5 text-center text-xs font-semibold text-amber-950 transition-colors hover:bg-amber-300 sm:flex-none"
+          >
+            Enviar feedback
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
