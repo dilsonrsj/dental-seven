@@ -80,9 +80,11 @@ export async function updateSession(request: NextRequest) {
     Boolean(impersonationPayload) &&
     isImpersonationValid(impersonationPayload!, user!.id);
 
+  // Beta: só o cadastro exige cookie founding. /entrar fica aberto para
+  // clínicas já criadas e SuperAdmin DR7.
   if (
     isBetaGateEnabled() &&
-    (pathname === "/cadastro" || pathname === "/entrar") &&
+    pathname === "/cadastro" &&
     !user &&
     !isValidFoundingToken(request.cookies.get(FOUNDING_COOKIE)?.value)
   ) {
@@ -109,8 +111,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (!user && !isPublic && !pathname.startsWith("/api/")) {
-    const loginPath = isBetaGateEnabled() ? "/founding" : "/entrar";
-    return NextResponse.redirect(new URL(loginPath, request.url));
+    return NextResponse.redirect(new URL("/entrar", request.url));
   }
 
   return supabaseResponse;

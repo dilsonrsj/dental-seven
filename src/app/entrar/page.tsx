@@ -1,23 +1,12 @@
-import { redirect } from "next/navigation";
 import { DentalSevenLogo } from "@/components/brand/dental-seven-logo";
 import { Dr7Logo } from "@/components/brand/dr7-logo";
-import {
-  isBetaGateEnabled,
-  validateFoundingAccess,
-} from "@/lib/founding/gate";
+import { isBetaGateEnabled } from "@/lib/founding/gate";
 import { EntrarForm } from "./entrar-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function EntrarPage() {
+export default function EntrarPage() {
   const betaMode = isBetaGateEnabled();
-
-  if (betaMode) {
-    const access = await validateFoundingAccess();
-    if (!access.valid) {
-      redirect("/founding");
-    }
-  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0c10] px-4">
