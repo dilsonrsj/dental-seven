@@ -55,8 +55,8 @@ function validateInput(input: FoundingFormInput): string | null {
   if (!email.includes("@") || !email.includes(".")) {
     return "Informe um e-mail válido.";
   }
-  if (input.mainPain.trim().length < 10) {
-    return "Conte em poucas palavras o que mais atrapalha hoje (mín. 10 caracteres).";
+  if (input.mainPain.trim().length < 3) {
+    return "Conte em poucas palavras o que mais atrapalha hoje.";
   }
   if (!input.acceptedTerms) {
     return "Você precisa aceitar os Termos e a Política de Privacidade.";

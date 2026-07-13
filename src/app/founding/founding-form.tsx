@@ -45,7 +45,7 @@ export function FoundingForm({ initialAccessGranted }: Props) {
       state.length === 2 &&
       whatsapp.replace(/\D/g, "").length >= 10 &&
       email.includes("@") &&
-      mainPain.trim().length >= 10 &&
+      mainPain.trim().length >= 3 &&
       acceptedTerms &&
       marketingConsent
     );
@@ -60,6 +60,23 @@ export function FoundingForm({ initialAccessGranted }: Props) {
     acceptedTerms,
     marketingConsent,
   ]);
+
+  const incompleteHint = useMemo(() => {
+    if (formComplete) return null;
+    if (mainPain.trim().length > 0 && mainPain.trim().length < 3) {
+      return "Descreva um pouco mais o que atrapalha a rotina (mín. 3 caracteres).";
+    }
+    if (!acceptedTerms || !marketingConsent) {
+      return "Marque as duas caixas de aceite abaixo para liberar o botão.";
+    }
+    if (
+      whatsapp.replace(/\D/g, "").length > 0 &&
+      whatsapp.replace(/\D/g, "").length < 10
+    ) {
+      return "Informe o WhatsApp completo com DDD.";
+    }
+    return "Preencha todos os campos obrigatórios para liberar o acesso.";
+  }, [formComplete, mainPain, acceptedTerms, marketingConsent, whatsapp]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -278,13 +295,19 @@ export function FoundingForm({ initialAccessGranted }: Props) {
                 value={currentSystem}
                 onChange={(e) => setCurrentSystem(e.target.value)}
               />
-              <textarea
-                className="sm:col-span-2 min-h-24 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                placeholder="O que mais atrapalha sua rotina hoje?"
-                value={mainPain}
-                onChange={(e) => setMainPain(e.target.value)}
-                required
-              />
+              <div className="sm:col-span-2 space-y-1">
+                <textarea
+                  className="min-h-24 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  placeholder="O que mais atrapalha sua rotina hoje?"
+                  value={mainPain}
+                  onChange={(e) => setMainPain(e.target.value)}
+                  required
+                  minLength={3}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Ex.: Agenda, falta de prontuário, estoque…
+                </p>
+              </div>
 
               <label className="sm:col-span-2 flex cursor-pointer items-start gap-3 text-sm text-muted-foreground">
                 <input
@@ -332,7 +355,7 @@ export function FoundingForm({ initialAccessGranted }: Props) {
                 <p className="sm:col-span-2 text-sm text-destructive">{error}</p>
               ) : null}
 
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 space-y-2">
                 <Button
                   type="submit"
                   size="lg"
@@ -341,6 +364,11 @@ export function FoundingForm({ initialAccessGranted }: Props) {
                 >
                   {loading ? "Registrando…" : "Confirmar e liberar acesso"}
                 </Button>
+                {incompleteHint ? (
+                  <p className="text-center text-xs text-muted-foreground">
+                    {incompleteHint}
+                  </p>
+                ) : null}
               </div>
             </form>
           </CardContent>
