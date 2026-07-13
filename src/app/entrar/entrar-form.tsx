@@ -255,7 +255,7 @@ export function EntrarForm({ betaMode = false }: EntrarFormProps) {
           <>
             Novo por aqui?{" "}
             <Link href="/cadastro" className="text-primary hover:underline">
-              Criar conta — 7 dias grátis
+              Criar conta
             </Link>
           </>
         )}
