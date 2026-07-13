@@ -30,18 +30,23 @@ export default async function FoundingPage() {
       />
 
       <header className="relative z-10 border-b border-border/40 bg-[#07090f]/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-5">
-          <DentalSevenLogo
-            variant="full"
-            surface="transparent"
-            height={44}
-            priority
-            className="h-10 w-auto"
-          />
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-5 sm:py-6">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <DentalSevenLogo
+              variant="mark"
+              surface="transparent"
+              height={56}
+              priority
+              className="h-14 w-14 shrink-0 sm:h-16 sm:w-16"
+            />
+            <span className="font-display text-lg font-bold tracking-tight text-[#F1F5F9] sm:text-xl">
+              Dental Seven
+            </span>
+          </div>
           {access.valid ? (
             <Link
               href="/cadastro"
-              className="text-sm font-medium text-primary hover:underline"
+              className="shrink-0 text-sm font-medium text-primary hover:underline"
             >
               Ir para cadastro
             </Link>

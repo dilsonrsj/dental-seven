@@ -57,7 +57,7 @@ export const FOUNDING_CONTENT = {
       "Agenda, pacientes e equipe no celular",
       "Prontuário, anamnese e odontograma interativo",
       "Procedimentos, estoque e financeiro (conforme plano)",
-      `Acesso à beta até ${BETA_ENDS_SHORT} (sem trial de 7 dias)`,
+      `Acesso à beta até ${BETA_ENDS_SHORT}`,
     ],
     comingSoon: [
       "WhatsApp automático com pacientes (produção — após a beta)",
