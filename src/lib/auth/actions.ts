@@ -6,14 +6,15 @@ import {
   defaultModuleEnabled,
   type PlanKey,
 } from "@/lib/billing/plans";
-import { trialEndsAtFromNow } from "@/lib/billing/subscription";
 import {
   createAsaasCustomer,
   createAsaasSubscription,
   isAsaasConfigured,
 } from "@/lib/billing/asaas";
-import { isBetaGateEnabled, linkFounderToClinic } from "@/lib/founding/gate";
+import { resolveSignupAccessPeriod } from "@/lib/auth/signup-access";
 import { resolveSignupPlanKey } from "@/lib/auth/signup-plan";
+import { isBetaGateEnabled, linkFounderToClinic } from "@/lib/founding/gate";
+import { BETA_ENDS_AT } from "@/lib/founding/content";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -140,16 +141,16 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
   }
 
   const userId = authData.user.id;
-  const trialEndsAt = trialEndsAtFromNow(7);
   const planKey = resolveSignupPlanKey(input.planKey, isBetaGateEnabled());
+  const access = resolveSignupAccessPeriod(isBetaGateEnabled(), BETA_ENDS_AT);
 
   const { data: clinic, error: clinicError } = await admin
     .from("clinics")
     .insert({
       name: clinicName,
       slug,
-      subscription_status: "trialing",
-      trial_ends_at: trialEndsAt,
+      subscription_status: access.subscriptionStatus,
+      trial_ends_at: access.accessEndsAt,
       plan_key: planKey,
     })
     .select("id")
@@ -219,7 +220,7 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
     return { ok: false, error: modulesError.message };
   }
 
-  if (isAsaasConfigured()) {
+  if (isAsaasConfigured() && !access.skipAsaas) {
     try {
       const customerId = await createAsaasCustomer({
         clinicId: clinic.id,
@@ -230,7 +231,7 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
         const subscriptionId = await createAsaasSubscription({
           customerId,
           planKey,
-          firstDueDate: trialEndsAt,
+          firstDueDate: access.accessEndsAt,
         });
         await admin
           .from("clinics")

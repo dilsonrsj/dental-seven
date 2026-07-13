@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { isBetaGateEnabled } from "@/lib/founding/gate";
 
 export default function HomePage() {
-  redirect("/entrar");
+  redirect(isBetaGateEnabled() ? "/founding" : "/entrar");
 }

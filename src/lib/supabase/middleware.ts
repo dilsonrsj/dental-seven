@@ -82,7 +82,8 @@ export async function updateSession(request: NextRequest) {
 
   if (
     isBetaGateEnabled() &&
-    pathname === "/cadastro" &&
+    (pathname === "/cadastro" || pathname === "/entrar") &&
+    !user &&
     !isValidFoundingToken(request.cookies.get(FOUNDING_COOKIE)?.value)
   ) {
     return NextResponse.redirect(new URL("/founding", request.url));
@@ -108,7 +109,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (!user && !isPublic && !pathname.startsWith("/api/")) {
-    return NextResponse.redirect(new URL("/entrar", request.url));
+    const loginPath = isBetaGateEnabled() ? "/founding" : "/entrar";
+    return NextResponse.redirect(new URL(loginPath, request.url));
   }
 
   return supabaseResponse;

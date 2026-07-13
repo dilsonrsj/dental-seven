@@ -22,7 +22,9 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
   const { enabledModules } = useClinicSession();
-  const links = filterNavByModules(APP_NAV_LINKS, enabledModules);
+  const links = filterNavByModules(APP_NAV_LINKS, enabledModules, {
+    hideWhatsapp: showFeedbackNav,
+  });
   const guideActive = pathname.startsWith("/ajuda");
   const feedbackActive = pathname.startsWith("/feedback");
 

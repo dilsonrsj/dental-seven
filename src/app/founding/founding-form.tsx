@@ -182,6 +182,12 @@ export function FoundingForm({ initialAccessGranted }: Props) {
                 {FOUNDING_CONTENT.ctaEnabled}
               </Button>
             </Link>
+            <p className="text-sm text-muted-foreground">
+              Já criou a clínica?{" "}
+              <Link href="/entrar" className="text-primary hover:underline">
+                Entrar
+              </Link>
+            </p>
           </CardContent>
         </Card>
       ) : (

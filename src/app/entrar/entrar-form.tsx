@@ -11,6 +11,10 @@ import { Input } from "@/components/ui/input";
 type AuthMode = "loading" | "login" | "invite";
 type InviteType = "invite" | "recovery";
 
+type EntrarFormProps = {
+  betaMode?: boolean;
+};
+
 function parseHashParams() {
   if (typeof window === "undefined") return new URLSearchParams();
   const hash = window.location.hash.startsWith("#")
@@ -19,7 +23,7 @@ function parseHashParams() {
   return new URLSearchParams(hash);
 }
 
-export function EntrarForm() {
+export function EntrarForm({ betaMode = false }: EntrarFormProps) {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("loading");
   const [inviteType, setInviteType] = useState<InviteType | null>(null);
@@ -240,10 +244,21 @@ export function EntrarForm() {
         {loading ? "Entrando…" : "Entrar"}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
-        Novo por aqui?{" "}
-        <Link href="/cadastro" className="text-primary hover:underline">
-          Criar conta — 7 dias grátis
-        </Link>
+        {betaMode ? (
+          <>
+            Ainda não tem acesso?{" "}
+            <Link href="/founding" className="text-primary hover:underline">
+              Programa Founding Members
+            </Link>
+          </>
+        ) : (
+          <>
+            Novo por aqui?{" "}
+            <Link href="/cadastro" className="text-primary hover:underline">
+              Criar conta — 7 dias grátis
+            </Link>
+          </>
+        )}
       </p>
       <p className="text-center text-xs text-muted-foreground">
         <Link href="/termos" className="hover:text-foreground hover:underline">

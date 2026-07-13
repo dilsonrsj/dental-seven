@@ -14,8 +14,12 @@ const MODULE_BY_HREF: Record<string, string> = {
 export function filterNavByModules(
   links: NavLink[],
   enabledModules: string[],
+  options?: { hideWhatsapp?: boolean },
 ): NavLink[] {
   return links.filter((link) => {
+    if (options?.hideWhatsapp && link.href === "/whatsapp") {
+      return false;
+    }
     const moduleKey = MODULE_BY_HREF[link.href];
     if (!moduleKey) return true;
     return enabledModules.includes(moduleKey);

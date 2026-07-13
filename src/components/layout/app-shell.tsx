@@ -17,7 +17,8 @@ import { DentistFilterProvider } from "@/contexts/dentist-filter-context";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const ctx = await getAuthContext();
-  if (!ctx) redirect("/entrar");
+  const betaGateEnabled = isBetaGateEnabled();
+  if (!ctx) redirect(betaGateEnabled ? "/founding" : "/entrar");
   if (ctx.profile.role === "super_admin" && !ctx.isImpersonating) {
     redirect("/admin");
   }
@@ -31,10 +32,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     ? await countStockAlerts()
     : 0;
 
-  const navHrefs = filterNavByModules(APP_NAV_LINKS, ctx.enabledModules).map(
-    (link) => link.href,
-  );
-  const betaGateEnabled = isBetaGateEnabled();
+  const navHrefs = filterNavByModules(APP_NAV_LINKS, ctx.enabledModules, {
+    hideWhatsapp: betaGateEnabled,
+  }).map((link) => link.href);
 
   return (
     <ClinicSessionProvider

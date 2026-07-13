@@ -3,6 +3,10 @@
 import { cookies } from "next/headers";
 import { notifyFoundingSubmission } from "@/lib/email/founding-notify";
 import {
+  assertFoundingResumeAllowed,
+  normalizeWhatsappDigits,
+} from "@/lib/founding/founding-resume";
+import {
   buildRefSlugBase,
   resolveUniqueRefSlug,
 } from "@/lib/founding/ref-slug";
@@ -30,10 +34,6 @@ export type FoundingSubmitResult =
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
-function normalizeWhatsapp(value: string): string {
-  return value.replace(/\D/g, "");
-}
-
 function validateInput(input: FoundingFormInput): string | null {
   if (input.fullName.trim().length < 3) {
     return "Informe seu nome completo.";
@@ -47,7 +47,7 @@ function validateInput(input: FoundingFormInput): string | null {
   if (!/^[A-Z]{2}$/.test(input.state.trim().toUpperCase())) {
     return "Selecione o estado (UF).";
   }
-  const whatsapp = normalizeWhatsapp(input.whatsapp);
+  const whatsapp = normalizeWhatsappDigits(input.whatsapp);
   if (whatsapp.length < 10 || whatsapp.length > 11) {
     return "Informe um WhatsApp válido com DDD.";
   }
@@ -98,12 +98,13 @@ export async function submitFoundingForm(
   }
 
   const email = input.email.trim().toLowerCase();
+  const whatsapp = normalizeWhatsappDigits(input.whatsapp);
   const payload = {
     full_name: input.fullName.trim(),
     clinic_name: input.clinicName.trim(),
     city: input.city.trim(),
     state: input.state.trim().toUpperCase(),
-    whatsapp: normalizeWhatsapp(input.whatsapp),
+    whatsapp,
     email,
     dentist_count: input.dentistCount,
     current_system: input.currentSystem.trim() || null,
@@ -115,16 +116,15 @@ export async function submitFoundingForm(
 
   const { data: existing } = await admin
     .from("beta_founders")
-    .select("access_token")
+    .select("access_token, whatsapp")
     .eq("email", email)
     .maybeSingle();
 
   if (existing?.access_token) {
-    await setFoundingCookie(existing.access_token);
-    return { ok: true, accessToken: existing.access_token };
-  }
-
-  if (existing?.access_token) {
+    const resume = assertFoundingResumeAllowed(whatsapp, existing.whatsapp ?? "");
+    if (!resume.ok) {
+      return { ok: false, error: resume.error };
+    }
     await setFoundingCookie(existing.access_token);
     return { ok: true, accessToken: existing.access_token };
   }
