@@ -103,7 +103,7 @@ Ordem obrigatória:
 | 4 | **Odontograma 3D interativo** | ✅ | `specs/2026-07-07-odontograma-3d-design.md` v2 | `plans/2026-07-07-odontograma-3d.md` |
 | 4b | Cadastro beta + banner + guia + sidebar sticky | ✅ | `specs/2026-07-13-beta-shell-ajuda-design.md` · `2026-07-11-cadastro-beta-design.md` | `plans/2026-07-13-beta-shell-ajuda.md` |
 | 4c | Fim beta 07/08 + formulário `/feedback` + admin | ✅ | `specs/2026-07-13-beta-feedback-design.md` | `plans/2026-07-13-beta-feedback.md` |
-| 5 | Deploy beta (MVP → beta no domínio oficial) | 🔄 merge `main` + env Vercel | `docs/beta-tester-roadmap.md` · §8 | `plans/2026-07-13-beta-feedback.md` |
+| 5 | Deploy beta (MVP → beta no domínio oficial) | ✅ | `docs/beta-tester-roadmap.md` · §8 | — |
 | — | Super Admin Onda 1 (cockpit beta + founding) | ✅ | `specs/2026-07-11-admin-onda1-design.md` | `plans/2026-07-11-admin-onda1.md` |
 
 ### Fila pós-beta (após item 5)
