@@ -16,16 +16,16 @@ export type ToothLayout = {
   group: ToothGroup;
 };
 
-/** ViewBox apertado: menos “letterbox” vertical, dentes maiores no mobile. */
-export const DENTAL_CHART_VIEWBOX = "0 0 860 300";
+/** ViewBox compacto, com faixa central livre para os números FDI. */
+export const DENTAL_CHART_VIEWBOX = "0 0 860 330";
 
 const CENTER_X = 430;
-const UPPER_BASE_Y = 98;
-const LOWER_BASE_Y = 210;
+const UPPER_BASE_Y = 90;
+const LOWER_BASE_Y = 248;
 const TOOTH_SPACING = 46;
-const ARCH_DROP = 14;
+const ARCH_DROP = 10;
 const ARCH_ROTATION = 2;
-const SIZE_BOOST = 1.36;
+const SIZE_BOOST = 1.32;
 
 function scaleForGroup(group: ToothGroup): number {
   const base = (() => {
@@ -98,7 +98,8 @@ export function toothTransform(layout: ToothLayout): string {
 /** Distância do anchor até a borda da coroa (unidades do símbolo, antes do scale). */
 const UPPER_CROWN_BOTTOM = 22;
 const LOWER_CROWN_TOP = 22;
-const LABEL_CLEARANCE = 14;
+/** Folga extra no meio para os números 11/21 não colidirem com 41/31. */
+const LABEL_CLEARANCE = 18;
 
 export function labelPosition(layout: ToothLayout): { x: number; y: number } {
   if (layout.isUpper) {
