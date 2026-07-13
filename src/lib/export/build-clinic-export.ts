@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toCsv } from "./csv";
 
-const EXPORT_SCHEMA_VERSION = "1.6";
+const EXPORT_SCHEMA_VERSION = "1.7";
 
 const README = `Dental Seven — Exportação de dados (LGPD)
 ============================================
@@ -70,6 +70,11 @@ export async function buildClinicExport(clinicId: string): Promise<{
     { data: clinicMonthlySettings },
     { data: appointmentFinanceApplied },
     { data: suppliers },
+    { data: insuranceCarriers },
+    { data: insurancePlans },
+    { data: patientEnrollments },
+    { data: insuranceProcedurePrices },
+    { data: insuranceClaims },
   ] = await Promise.all([
     admin.from("dentists").select("*").eq("clinic_id", clinicId),
     admin.from("patients").select("*").eq("clinic_id", clinicId),
@@ -95,6 +100,17 @@ export async function buildClinicExport(clinicId: string): Promise<{
       .select("*")
       .eq("clinic_id", clinicId),
     admin.from("suppliers").select("*").eq("clinic_id", clinicId),
+    admin.from("insurance_carriers").select("*").eq("clinic_id", clinicId),
+    admin.from("insurance_plans").select("*").eq("clinic_id", clinicId),
+    admin
+      .from("patient_insurance_enrollments")
+      .select("*")
+      .eq("clinic_id", clinicId),
+    admin
+      .from("insurance_procedure_prices")
+      .select("*")
+      .eq("clinic_id", clinicId),
+    admin.from("insurance_claims").select("*").eq("clinic_id", clinicId),
   ]);
 
   const threadIds = (threads ?? []).map((t) => t.id);
@@ -138,6 +154,19 @@ export async function buildClinicExport(clinicId: string): Promise<{
       2,
     ),
     "suppliers.json": JSON.stringify(suppliers ?? [], null, 2),
+    "insurance_carriers.json": JSON.stringify(insuranceCarriers ?? [], null, 2),
+    "insurance_plans.json": JSON.stringify(insurancePlans ?? [], null, 2),
+    "patient_insurance_enrollments.json": JSON.stringify(
+      patientEnrollments ?? [],
+      null,
+      2,
+    ),
+    "insurance_procedure_prices.json": JSON.stringify(
+      insuranceProcedurePrices ?? [],
+      null,
+      2,
+    ),
+    "insurance_claims.json": JSON.stringify(insuranceClaims ?? [], null, 2),
     "dentists.csv": toCsv(dentists ?? [], [
       "id",
       "name",
@@ -311,6 +340,11 @@ export async function buildClinicExport(clinicId: string): Promise<{
       clinic_monthly_settings: clinicMonthlySettings?.length ?? 0,
       appointment_finance_applied: appointmentFinanceApplied?.length ?? 0,
       suppliers: suppliers?.length ?? 0,
+      insurance_carriers: insuranceCarriers?.length ?? 0,
+      insurance_plans: insurancePlans?.length ?? 0,
+      patient_insurance_enrollments: patientEnrollments?.length ?? 0,
+      insurance_procedure_prices: insuranceProcedurePrices?.length ?? 0,
+      insurance_claims: insuranceClaims?.length ?? 0,
     },
     checksums,
   };

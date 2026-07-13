@@ -1,14 +1,23 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Button, Input, Modal } from "@/components/ui";
+import { portugueseProseFieldProps } from "@/lib/i18n/prose-field";
 import type { AppointmentStatus, Dentist, Patient } from "@/lib/supabase/types";
 import {
   OTHER_PROCEDURE_VALUE,
   resolveAgendaProcedureFields,
   type AgendaCatalogProcedure,
 } from "@/modules/procedimentos/agenda-procedure";
-import type { AppointmentFormInput, AppointmentWithRelations } from "./types";
+import type {
+  AppointmentFormInput,
+  AppointmentWithRelations,
+  InsurancePlanChoice,
+} from "./types";
+import {
+  resolveInsurancePlanSelection,
+  resolvePatientInsuranceDefaults,
+} from "./insurance-defaults";
 
 const statusOptions: { value: AppointmentStatus; label: string }[] = [
   { value: "pending", label: "Pendente" },
@@ -23,6 +32,8 @@ type AppointmentModalProps = {
   dentists: Dentist[];
   patients: Patient[];
   catalogProcedures?: AgendaCatalogProcedure[];
+  insurancePlans?: InsurancePlanChoice[];
+  primaryPlanByPatient?: Record<string, string>;
   selectedDate: Date;
   initialPatientId?: string;
   onClose: () => void;
@@ -41,6 +52,8 @@ type FormState = {
   procedure_label: string;
   status: AppointmentStatus;
   notes: string;
+  payment_source: "particular" | "insurance";
+  insurance_plan_id: string;
 };
 
 export function AppointmentModal({
@@ -49,6 +62,8 @@ export function AppointmentModal({
   dentists,
   patients,
   catalogProcedures = [],
+  insurancePlans = [],
+  primaryPlanByPatient = {},
   selectedDate,
   initialPatientId,
   onClose,
@@ -57,6 +72,11 @@ export function AppointmentModal({
   isSaving = false,
 }: AppointmentModalProps) {
   const hasCatalog = catalogProcedures.length > 0;
+  const hasInsurance = insurancePlans.length > 0;
+  const activePlanIds = useMemo(
+    () => insurancePlans.map((plan) => plan.plan_id),
+    [insurancePlans],
+  );
 
   const [form, setForm] = useState<FormState>(() =>
     buildAppointmentInitialForm(
@@ -66,6 +86,8 @@ export function AppointmentModal({
       patients,
       catalogProcedures,
       initialPatientId,
+      primaryPlanByPatient,
+      activePlanIds,
     ),
   );
 
@@ -79,15 +101,19 @@ export function AppointmentModal({
         patients,
         catalogProcedures,
         initialPatientId,
+        primaryPlanByPatient,
+        activePlanIds,
       ),
     );
   }, [
+    activePlanIds,
     appointment,
     catalogProcedures,
     dentists,
     initialPatientId,
     open,
     patients,
+    primaryPlanByPatient,
     selectedDate,
   ]);
 
@@ -139,6 +165,12 @@ export function AppointmentModal({
       procedureLabel = resolved.procedure_label;
     }
 
+    const insurancePlanId =
+      form.payment_source === "insurance"
+        ? resolveInsurancePlanSelection(form.insurance_plan_id, activePlanIds) ||
+          null
+        : null;
+
     await onSubmit({
       id: appointment?.id,
       patient_id: form.patient_id,
@@ -149,6 +181,8 @@ export function AppointmentModal({
       procedure_label: procedureLabel,
       status: form.status,
       notes: form.notes,
+      payment_source: form.payment_source,
+      insurance_plan_id: insurancePlanId,
     });
   }
 
@@ -165,12 +199,20 @@ export function AppointmentModal({
           <select
             required
             value={form.patient_id}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                patient_id: event.target.value,
-              }))
-            }
+            onChange={(event) => {
+              const patientId = event.target.value;
+              setForm((current) => {
+                if (appointment) {
+                  return { ...current, patient_id: patientId };
+                }
+                const insurance = resolvePatientInsuranceDefaults(
+                  patientId,
+                  primaryPlanByPatient,
+                  activePlanIds,
+                );
+                return { ...current, patient_id: patientId, ...insurance };
+              });
+            }}
             className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             {patients.map((patient) => (
@@ -309,9 +351,63 @@ export function AppointmentModal({
           </select>
         </label>
 
+        {hasInsurance && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block space-y-1.5">
+              <span className="text-sm font-medium">Forma de pagamento</span>
+              <select
+                value={form.payment_source}
+                onChange={(event) => {
+                  const payment_source = event.target
+                    .value as FormState["payment_source"];
+                  setForm((current) => ({
+                    ...current,
+                    payment_source,
+                    insurance_plan_id:
+                      payment_source === "insurance"
+                        ? resolveInsurancePlanSelection(
+                            current.insurance_plan_id,
+                            activePlanIds,
+                          )
+                        : "",
+                  }));
+                }}
+                className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <option value="particular">Particular</option>
+                <option value="insurance">Convênio</option>
+              </select>
+            </label>
+
+            {form.payment_source === "insurance" && (
+              <label className="block space-y-1.5">
+                <span className="text-sm font-medium">Plano</span>
+                <select
+                  required
+                  value={form.insurance_plan_id}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      insurance_plan_id: event.target.value,
+                    }))
+                  }
+                  className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {insurancePlans.map((plan) => (
+                    <option key={plan.plan_id} value={plan.plan_id}>
+                      {plan.carrier_name} — {plan.plan_name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
+        )}
+
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Observações</span>
           <textarea
+            {...portugueseProseFieldProps}
             value={form.notes}
             onChange={(event) =>
               setForm((current) => ({ ...current, notes: event.target.value }))
@@ -366,6 +462,8 @@ export function buildAppointmentInitialForm(
   patients: Patient[],
   catalogProcedures: AgendaCatalogProcedure[] = [],
   initialPatientId?: string,
+  primaryPlanByPatient: Record<string, string> = {},
+  activePlanIds: readonly string[] = [],
 ): FormState {
   const initialPatientExists = patients.some(
     (patient) => patient.id === initialPatientId,
@@ -384,12 +482,25 @@ export function buildAppointmentInitialForm(
       : OTHER_PROCEDURE_VALUE;
   }
 
+  const patientId =
+    appointment?.patient_id ??
+    (initialPatientExists ? initialPatientId : undefined) ??
+    patients[0]?.id ??
+    "";
+
+  const insuranceDefaults = appointment
+    ? {
+        payment_source: appointment.payment_source ?? "particular",
+        insurance_plan_id: appointment.insurance_plan_id ?? "",
+      }
+    : resolvePatientInsuranceDefaults(
+        patientId,
+        primaryPlanByPatient,
+        activePlanIds,
+      );
+
   return {
-    patient_id:
-      appointment?.patient_id ??
-      (initialPatientExists ? initialPatientId : undefined) ??
-      patients[0]?.id ??
-      "",
+    patient_id: patientId,
     dentist_id: appointment?.dentist_id ?? dentists[0]?.id ?? "",
     starts_at: formatDateTimeInput(
       appointment ? new Date(appointment.starts_at) : selectedDate,
@@ -400,6 +511,8 @@ export function buildAppointmentInitialForm(
     procedure_label: procedureLabel,
     status: appointment?.status ?? "pending",
     notes: appointment?.notes ?? "",
+    payment_source: insuranceDefaults.payment_source,
+    insurance_plan_id: insuranceDefaults.insurance_plan_id,
   };
 }
 

@@ -10,6 +10,8 @@ describe("isClinicAppPath", () => {
     expect(isClinicAppPath("/financeiro")).toBe(true);
     expect(isClinicAppPath("/fornecedores")).toBe(true);
     expect(isClinicAppPath("/configuracoes")).toBe(true);
+    expect(isClinicAppPath("/ajuda")).toBe(true);
+    expect(isClinicAppPath("/feedback")).toBe(true);
   });
 
   it("ignores admin and public routes", () => {

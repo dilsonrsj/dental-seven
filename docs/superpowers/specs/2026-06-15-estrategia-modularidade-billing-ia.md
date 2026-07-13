@@ -1,5 +1,9 @@
 # Dental Seven — Decisões estratégicas (modularidade, billing, IA)
 
+> **Guia de execução:** `docs/superpowers/GUIA-MASTER.md`. Matriz planos vigente: guia §6.
+
+> **Atualização 2026-07-07:** A matriz plano × módulo em §7.3 foi **superseded** por `docs/superpowers/specs/2026-07-07-plan-reposition-design.md` (WhatsApp/IA só Completo). Preços §3.4 permanecem válidos. Roadmap §5 superseded pelo guia master §3.
+
 **Versão:** 1.6  
 **Data:** 2026-06-15  
 **Status:** Aprovada — preços oficiais §3.4 (validação final cliente)  

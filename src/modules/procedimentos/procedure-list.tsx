@@ -121,8 +121,54 @@ export function ProcedureList({
           </CardContent>
         </Card>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border">
-          <table className="w-full text-left text-sm">
+        <>
+          <div className="space-y-3 md:hidden">
+            {items.map((procedure) => (
+              <Card key={procedure.id}>
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium">{procedure.name}</p>
+                    <Badge
+                      className={
+                        procedure.is_active
+                          ? "shrink-0 border-primary/30 text-primary"
+                          : "shrink-0 border-muted-foreground/30 text-muted-foreground"
+                      }
+                    >
+                      {procedure.is_active ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <span>{formatBrlFromCents(procedure.base_price_cents)}</span>
+                    <span>{procedure.default_duration_min} min</span>
+                  </div>
+                  {isAdmin ? (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={isSaving}
+                        onClick={() => openEdit(procedure)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isSaving}
+                        onClick={() => void handleToggleActive(procedure)}
+                      >
+                        {procedure.is_active ? "Desativar" : "Ativar"}
+                      </Button>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="ds-table-shell hidden md:block">
+            <table className="ds-table">
             <thead className="bg-surface text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Nome</th>
@@ -182,6 +228,7 @@ export function ProcedureList({
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {isAdmin ? (

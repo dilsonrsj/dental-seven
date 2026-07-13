@@ -13,17 +13,25 @@ import { AgendaToolbar, type AgendaViewMode } from "./agenda-toolbar";
 import { AppointmentModal } from "./appointment-modal";
 import { DayView } from "./day-view";
 import { filterAppointmentsByDentist, getWeekDays } from "./date-utils";
+import {
+  computeEffectiveWeekSchedules,
+  computeWeekGridBounds,
+  shiftWeek,
+} from "./operating-hours";
 import { WeekView } from "./week-view";
 import type {
   AgendaInitialData,
   AppointmentFormInput,
   AppointmentWithRelations,
+  InsurancePlanChoice,
 } from "./types";
 import type { ProcedureRow } from "@/modules/procedimentos/types";
 
 type AgendaPageClientProps = AgendaInitialData & {
   configureMessage?: string;
   catalogProcedures?: ProcedureRow[];
+  insurancePlans?: InsurancePlanChoice[];
+  primaryPlanByPatient?: Record<string, string>;
   initialPatientId?: string;
 };
 
@@ -31,7 +39,10 @@ export function AgendaPageClient({
   appointments: initialAppointments,
   dentists,
   patients,
+  operatingHours,
   catalogProcedures = [],
+  insurancePlans = [],
+  primaryPlanByPatient = {},
   configureMessage,
   initialPatientId,
 }: AgendaPageClientProps) {
@@ -50,6 +61,39 @@ export function AgendaPageClient({
     [appointments, selectedDentistId],
   );
 
+  const weekDays = useMemo(
+    () => getWeekDays(selectedDate),
+    [selectedDate],
+  );
+
+  const dentistSchedulesById = useMemo(
+    () => new Map(Object.entries(operatingHours.dentistSchedulesById)),
+    [operatingHours.dentistSchedulesById],
+  );
+
+  const effectiveSchedules = useMemo(
+    () =>
+      computeEffectiveWeekSchedules({
+        weekDays,
+        clinicSchedule: operatingHours.clinicSchedule,
+        dentistSchedulesById,
+        selectedDentistId,
+        activeDentistIds: dentists.map((dentist) => dentist.id),
+      }),
+    [
+      weekDays,
+      operatingHours.clinicSchedule,
+      dentistSchedulesById,
+      selectedDentistId,
+      dentists,
+    ],
+  );
+
+  const { startHour, endHour } = useMemo(
+    () => computeWeekGridBounds(weekDays, effectiveSchedules),
+    [weekDays, effectiveSchedules],
+  );
+
   async function reloadAppointments(date = selectedDate) {
     const [weekStart, , , , , , weekEnd] = getWeekDays(date);
     const from = weekStart.toISOString();
@@ -63,6 +107,18 @@ export function AgendaPageClient({
     if (nextMode === "day") {
       setSelectedDate(startOfTodayUtc());
     }
+  }
+
+  async function navigateWeek(deltaWeeks: number) {
+    const nextDate = shiftWeek(selectedDate, deltaWeeks);
+    setSelectedDate(nextDate);
+    await reloadAppointments(nextDate);
+  }
+
+  async function goToToday() {
+    const today = startOfTodayUtc();
+    setSelectedDate(today);
+    await reloadAppointments(today);
   }
 
   function openNewAppointment() {
@@ -79,8 +135,7 @@ export function AgendaPageClient({
   async function handleSubmit(input: AppointmentFormInput) {
     try {
       setIsSaving(true);
-      const { appointment: saved, stockResult, financeResult } =
-        await upsertAppointment(input);
+      const { stockResult, financeResult } = await upsertAppointment(input);
       await reloadAppointments(new Date(input.starts_at));
       setModalOpen(false);
       toast.success("Consulta salva.");
@@ -147,8 +202,12 @@ export function AgendaPageClient({
     <div className="space-y-4">
       <AgendaToolbar
         mode={mode}
+        selectedDate={selectedDate}
         onModeChange={handleModeChange}
         onNewAppointment={openNewAppointment}
+        onPreviousWeek={() => void navigateWeek(-1)}
+        onNextWeek={() => void navigateWeek(1)}
+        onToday={() => void goToToday()}
         dentists={dentists}
       />
 
@@ -156,6 +215,9 @@ export function AgendaPageClient({
         <WeekView
           appointments={filteredAppointments}
           selectedDate={selectedDate}
+          startHour={startHour}
+          endHour={endHour}
+          effectiveSchedules={effectiveSchedules}
           onSelectDate={setSelectedDate}
           onEditAppointment={openEditAppointment}
         />
@@ -175,6 +237,8 @@ export function AgendaPageClient({
         dentists={dentists}
         patients={patients}
         catalogProcedures={catalogProcedures}
+        insurancePlans={insurancePlans}
+        primaryPlanByPatient={primaryPlanByPatient}
         selectedDate={selectedDate}
         initialPatientId={initialPatientId}
         onClose={() => setModalOpen(false)}

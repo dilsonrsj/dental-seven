@@ -1,5 +1,12 @@
 export type ClinicalDocumentTemplate = "receita" | "atestado" | "guia";
 
+export type ClinicContactInfo = {
+  whatsapp?: string | null;
+  instagram?: string | null;
+  email?: string | null;
+  address?: string | null;
+};
+
 export type ClinicalDocumentContext = {
   clinicName: string;
   patientName: string;
@@ -8,6 +15,8 @@ export type ClinicalDocumentContext = {
   dentistSpecialty?: string | null;
   issuedAt: Date;
   signatureImageBytes?: Uint8Array | null;
+  clinicLogoImageBytes?: Uint8Array | null;
+  clinicContact?: ClinicContactInfo | null;
 };
 
 export type ReceitaPayload = ClinicalDocumentContext & {
@@ -19,6 +28,8 @@ export type AtestadoPayload = ClinicalDocumentContext & {
   template: "atestado";
   daysOff: number;
   reason?: string | null;
+  cidPatientAuthorized: boolean;
+  cid?: { code: string; label: string } | null;
 };
 
 export type GuiaPayload = ClinicalDocumentContext & {

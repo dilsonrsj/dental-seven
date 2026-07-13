@@ -3,8 +3,8 @@ import type { FairUseCaps, FairUseLevel, FairUseStatus } from "./types";
 
 export const FAIR_USE_CAPS: Record<PlanKey, FairUseCaps> = {
   essencial: { whatsapp: null, ai: null },
-  conecta: { whatsapp: 1200, ai: null },
-  inteligente: { whatsapp: 1200, ai: 1500 },
+  conecta: { whatsapp: null, ai: null },
+  inteligente: { whatsapp: null, ai: null },
   completo: { whatsapp: 2500, ai: 3500 },
 };
 

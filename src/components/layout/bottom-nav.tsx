@@ -3,43 +3,59 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { APP_NAV_LINKS } from "./nav-links";
-import { filterNavByModules } from "./filter-nav";
 import { StockAlertBadge } from "./stock-alert-badge";
-import { useClinicSession } from "@/contexts/clinic-session-context";
 
 type BottomNavProps = {
+  /** Hrefs permitidos (calculados no servidor para evitar divergência de módulos). */
+  enabledHrefs: string[];
   stockAlertCount?: number;
 };
 
-export function BottomNav({ stockAlertCount = 0 }: BottomNavProps) {
+export function BottomNav({ enabledHrefs, stockAlertCount = 0 }: BottomNavProps) {
   const pathname = usePathname();
-  const { enabledModules } = useClinicSession();
-  const links = filterNavByModules(APP_NAV_LINKS, enabledModules);
+  const hrefSet = new Set(enabledHrefs);
+  const links = APP_NAV_LINKS.filter((link) => hrefSet.has(link.href));
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-border bg-surface/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm lg:hidden">
-      {links.map(({ href, label, icon: Icon }) => {
-        const active = pathname.startsWith(href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={`relative flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
-              active ? "text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <span className="relative">
-              <Icon className="h-5 w-5" aria-hidden />
-              {href === "/estoque" && stockAlertCount > 0 && (
-                <span className="absolute -right-2 -top-1">
-                  <StockAlertBadge count={stockAlertCount} compact />
+    <nav
+      aria-label="Navegação principal"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm lg:hidden"
+    >
+      <div className="flex px-1 pt-1">
+        {links.map(({ href, label, shortLabel, icon: Icon }) => {
+          const active = pathname.startsWith(href);
+          const displayLabel = shortLabel ?? label;
+
+          return (
+            <Link
+              key={href}
+              href={href}
+              title={label}
+              aria-label={label}
+              aria-current={active ? "page" : undefined}
+              className={`relative flex min-w-0 flex-1 flex-col items-center justify-end gap-0.5 px-0.5 py-1.5 transition-colors ${
+                active ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
+              <span className="relative shrink-0">
+                <Icon className="h-5 w-5" aria-hidden />
+                {href === "/estoque" && stockAlertCount > 0 && (
+                  <span className="absolute -right-2 -top-1">
+                    <StockAlertBadge count={stockAlertCount} compact />
+                  </span>
+                )}
+              </span>
+              {active ? (
+                <span className="max-w-full truncate text-[9px] font-semibold leading-none">
+                  {displayLabel}
                 </span>
+              ) : (
+                <span className="h-[9px]" aria-hidden />
               )}
-            </span>
-            {label}
-          </Link>
-        );
-      })}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

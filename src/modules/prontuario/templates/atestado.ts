@@ -9,11 +9,13 @@ export const atestadoTemplate: ClinicalTemplateDefinition = {
 
 export function buildAtestadoLines(payload: AtestadoPayload): string[] {
   const daysLabel = payload.daysOff === 1 ? "1 dia" : `${payload.daysOff} dias`;
-  const lines = [
-    `Paciente: ${payload.patientName}`,
-    "",
-    `Atesto, para os devidos fins, que o(a) paciente acima necessita de afastamento de suas atividades por ${daysLabel}.`,
-  ];
+  const hasCid = payload.cidPatientAuthorized && payload.cid;
+
+  const intro = hasCid
+    ? `Atesto, a pedido do interessado, inclusive com menção de CID por este(a) solicitada, que o(a) paciente acima necessita de afastamento de suas atividades por ${daysLabel}, em virtude de CID-11 nº ${payload.cid!.code} — ${payload.cid!.label}.`
+    : `Atesto, para os devidos fins, que o(a) paciente acima necessita de afastamento de suas atividades por ${daysLabel}.`;
+
+  const lines = [`Paciente: ${payload.patientName}`, "", intro];
 
   if (payload.reason?.trim()) {
     lines.push("", `Motivo: ${payload.reason.trim()}`);

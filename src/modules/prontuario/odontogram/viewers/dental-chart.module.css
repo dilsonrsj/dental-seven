@@ -1,0 +1,101 @@
+.chartShell {
+  --odonto-bg: #0a0a0b;
+  --odonto-tooth: #9ba3ad;
+  --odonto-tooth-stroke: #6b7280;
+  --odonto-label: #8b919a;
+  --odonto-select: #4490e2;
+  --odonto-select-fill: #eef3f8;
+  --odonto-history: #b3c9d9;
+
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--border, #2a2a2e);
+  background: var(--odonto-bg);
+}
+
+.chartSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 300px;
+}
+
+.chartBackground {
+  fill: var(--odonto-bg);
+  pointer-events: none;
+}
+
+.toothGroup {
+  cursor: pointer;
+  outline: none;
+}
+
+.hitArea {
+  fill: transparent;
+  stroke: none;
+  pointer-events: all;
+}
+
+.toothShape {
+  fill: var(--odonto-tooth);
+  stroke: var(--odonto-tooth-stroke);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+  transition:
+    fill 0.2s ease,
+    stroke 0.2s ease,
+    filter 0.2s ease;
+}
+
+.toothGroup:hover .toothShape {
+  fill: #b8c0c9;
+  stroke: var(--odonto-select);
+  filter: brightness(1.08);
+}
+
+.toothGroup:focus-visible .toothShape {
+  stroke: var(--odonto-select);
+  stroke-width: 1.2;
+}
+
+.toothGroup.hasStatus .toothShape {
+  fill: var(--tooth-status, var(--odonto-tooth));
+  stroke: var(--tooth-status, var(--odonto-tooth-stroke));
+}
+
+.toothGroup.hasHistory:not(.selected):not(.hasStatus) .toothShape {
+  stroke: var(--odonto-select);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 2px rgba(68, 144, 226, 0.25));
+}
+
+.toothGroup.selected .toothShape {
+  fill: var(--odonto-select-fill);
+  stroke: var(--odonto-select);
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0 4px rgba(68, 144, 226, 0.45));
+}
+
+.toothLabel {
+  fill: var(--odonto-label);
+  font-size: 10px;
+  font-weight: 600;
+  pointer-events: none;
+  user-select: none;
+}
+
+.toothLabelSelected {
+  fill: var(--odonto-select);
+  font-weight: 700;
+}
+
+.toothLabelHistory {
+  fill: var(--odonto-history);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toothShape {
+    transition: none;
+  }
+}

@@ -12,6 +12,8 @@ import {
   createAsaasSubscription,
   isAsaasConfigured,
 } from "@/lib/billing/asaas";
+import { isBetaGateEnabled, linkFounderToClinic } from "@/lib/founding/gate";
+import { resolveSignupPlanKey } from "@/lib/auth/signup-plan";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,11 +33,47 @@ export type SignupInput = {
   email: string;
   password: string;
   planKey: PlanKey;
+  acceptedTerms: boolean;
 };
 
 export type SignupResult =
   | { ok: true }
   | { ok: false; error: string };
+
+export type AcceptTermsResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+export async function acceptTerms(input: {
+  acceptedTerms: boolean;
+}): Promise<AcceptTermsResult> {
+  if (!input.acceptedTerms) {
+    return {
+      ok: false,
+      error: "Você precisa aceitar os Termos de Uso e a Política de Privacidade.",
+    };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false, error: "Sessão inválida. Abra o link do convite novamente." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ terms_accepted_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  return { ok: true };
+}
 
 export async function signupClinic(input: SignupInput): Promise<SignupResult> {
   const clinicName = input.clinicName.trim();
@@ -54,6 +92,12 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
   }
   if (password.length < 8) {
     return { ok: false, error: "Senha deve ter pelo menos 8 caracteres." };
+  }
+  if (!input.acceptedTerms) {
+    return {
+      ok: false,
+      error: "Você precisa aceitar os Termos de Uso e a Política de Privacidade.",
+    };
   }
 
   let admin;
@@ -97,6 +141,7 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
 
   const userId = authData.user.id;
   const trialEndsAt = trialEndsAtFromNow(7);
+  const planKey = resolveSignupPlanKey(input.planKey, isBetaGateEnabled());
 
   const { data: clinic, error: clinicError } = await admin
     .from("clinics")
@@ -105,7 +150,7 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
       slug,
       subscription_status: "trialing",
       trial_ends_at: trialEndsAt,
-      plan_key: input.planKey,
+      plan_key: planKey,
     })
     .select("id")
     .single();
@@ -135,12 +180,14 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
     };
   }
 
+  const termsAcceptedAt = new Date().toISOString();
   const { error: profileError } = await admin.from("profiles").insert({
     id: userId,
     role: "clinic_admin",
     clinic_id: clinic.id,
     dentist_id: dentist.id,
     full_name: adminName,
+    terms_accepted_at: termsAcceptedAt,
   });
 
   if (profileError) {
@@ -152,12 +199,12 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
 
   const moduleRows = Array.from(
     new Set(
-      ["agenda", "pacientes", "whatsapp", "ai_agent", "prontuario", "procedimentos", "estoque", "financeiro", "fornecedores"],
+      ["agenda", "pacientes", "whatsapp", "ai_agent", "prontuario", "procedimentos", "estoque", "financeiro", "fornecedores", "convenios"],
     ),
   ).map((moduleKey) => ({
     clinic_id: clinic.id,
     module_key: moduleKey,
-    enabled: defaultModuleEnabled(input.planKey, moduleKey as never),
+    enabled: defaultModuleEnabled(planKey, moduleKey as never),
   }));
 
   const { error: modulesError } = await admin
@@ -182,7 +229,7 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
       if (customerId) {
         const subscriptionId = await createAsaasSubscription({
           customerId,
-          planKey: input.planKey,
+          planKey,
           firstDueDate: trialEndsAt,
         });
         await admin
@@ -211,6 +258,8 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
         "Conta criada, mas falha ao entrar. Use /entrar com seu e-mail e senha.",
     };
   }
+
+  await linkFounderToClinic(email, clinic.id);
 
   revalidatePath("/", "layout");
   return { ok: true };

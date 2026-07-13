@@ -5,13 +5,16 @@ import type { PatientAppointmentWithRelations } from "@/modules/pacientes/types"
 import { ClinicalDocumentForm } from "./clinical-document-form";
 import { ClinicalNotes } from "./clinical-notes";
 import { DocumentList } from "./document-list";
+import { OdontogramSection } from "./odontogram/viewers/odontogram-section";
 import type { PatientClinicalNoteListItem } from "./types";
 import type { PatientDocumentListItem } from "./types";
+import type { PatientToothRecordListItem } from "./types";
 
 type ProntuarioContentProps = {
   patientId: string;
   initialDocuments: PatientDocumentListItem[];
   initialNotes: PatientClinicalNoteListItem[];
+  initialToothRecords: PatientToothRecordListItem[];
   recentAppointments: PatientAppointmentWithRelations[];
   canWrite: boolean;
 };
@@ -20,6 +23,7 @@ export function ProntuarioContent({
   patientId,
   initialDocuments,
   initialNotes,
+  initialToothRecords,
   recentAppointments,
   canWrite,
 }: ProntuarioContentProps) {
@@ -28,6 +32,12 @@ export function ProntuarioContent({
 
   return (
     <div className="space-y-6">
+      <OdontogramSection
+        patientId={patientId}
+        initialRecords={initialToothRecords}
+        initialNotes={initialNotes}
+        canWrite={canWrite}
+      />
       <ClinicalNotes
         patientId={patientId}
         initialNotes={initialNotes}

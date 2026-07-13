@@ -38,6 +38,8 @@ export interface Appointment {
   procedure_id?: string | null;
   procedure_label: string;
   notes: string | null;
+  payment_source?: "particular" | "insurance";
+  insurance_plan_id?: string | null;
 }
 
 export interface WhatsappThread {

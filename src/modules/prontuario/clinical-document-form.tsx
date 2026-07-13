@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, CardContent, Input, toast } from "@/components/ui";
+import { portugueseProseFieldProps } from "@/lib/i18n/prose-field";
 import {
   generateClinicalDocument,
   previewClinicalDocument,
@@ -10,7 +11,11 @@ import {
 import { ClinicalPdfPreviewModal } from "./clinical-pdf-preview-modal";
 import type { PatientDocumentListItem } from "./types";
 import type { ClinicalDocumentTemplate } from "./templates/types";
-import { TEMPLATE_MAP } from "./generate-clinical-pdf";
+import { TEMPLATE_MAP } from "./templates/registry";
+import {
+  formatDentalCidOption,
+  groupDentalCidsByCategory,
+} from "./data/dental-cid-list";
 
 const textareaClassName =
   "flex min-h-[100px] w-full rounded-xl border border-border bg-input px-4 py-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50";
@@ -32,6 +37,8 @@ export function ClinicalDocumentForm({
   const [medications, setMedications] = useState("");
   const [daysOff, setDaysOff] = useState("1");
   const [reason, setReason] = useState("");
+  const [cidPatientAuthorized, setCidPatientAuthorized] = useState(false);
+  const [cidCode, setCidCode] = useState("");
   const [exams, setExams] = useState("");
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -47,6 +54,8 @@ export function ClinicalDocumentForm({
       daysOff: Number(daysOff),
       reason,
       exams,
+      cidPatientAuthorized,
+      cidCode: cidPatientAuthorized ? cidCode : undefined,
     };
   }
 
@@ -126,6 +135,7 @@ export function ClinicalDocumentForm({
             <label className="block space-y-1.5">
               <span className="text-sm text-muted-foreground">Prescrição</span>
               <textarea
+                {...portugueseProseFieldProps}
                 value={medications}
                 onChange={(event) => setMedications(event.target.value)}
                 className={textareaClassName}
@@ -152,11 +162,56 @@ export function ClinicalDocumentForm({
                   required
                 />
               </label>
+              <div className="space-y-2">
+                <label className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={cidPatientAuthorized}
+                    onChange={(event) => {
+                      setCidPatientAuthorized(event.target.checked);
+                      if (!event.target.checked) setCidCode("");
+                    }}
+                    disabled={!canWrite || isBusy}
+                    className="mt-1"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    Paciente autoriza inclusão do CID no atestado
+                  </span>
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Conforme orientação do CFO, o CID só deve constar no atestado com
+                  autorização expressa do paciente.
+                </p>
+              </div>
+              {cidPatientAuthorized && (
+                <label className="block space-y-1.5">
+                  <span className="text-sm text-muted-foreground">CID-10</span>
+                  <select
+                    value={cidCode}
+                    onChange={(event) => setCidCode(event.target.value)}
+                    disabled={!canWrite || isBusy}
+                    required
+                    className="flex h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Selecione o CID</option>
+                    {groupDentalCidsByCategory().map((group) => (
+                      <optgroup key={group.category} label={group.category}>
+                        {group.entries.map((entry) => (
+                          <option key={entry.code} value={entry.code}>
+                            {formatDentalCidOption(entry)}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </label>
+              )}
               <label className="block space-y-1.5">
                 <span className="text-sm text-muted-foreground">
                   Motivo (opcional)
                 </span>
                 <textarea
+                  {...portugueseProseFieldProps}
                   value={reason}
                   onChange={(event) => setReason(event.target.value)}
                   className={textareaClassName}
@@ -173,6 +228,7 @@ export function ClinicalDocumentForm({
                 Exames solicitados
               </span>
               <textarea
+                {...portugueseProseFieldProps}
                 value={exams}
                 onChange={(event) => setExams(event.target.value)}
                 className={textareaClassName}

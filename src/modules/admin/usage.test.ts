@@ -13,15 +13,12 @@ describe("FAIR_USE_CAPS", () => {
     expect(FAIR_USE_CAPS.essencial).toEqual({ whatsapp: null, ai: null });
   });
 
-  it("conecta só whatsapp 1200", () => {
-    expect(FAIR_USE_CAPS.conecta).toEqual({ whatsapp: 1200, ai: null });
+  it("conecta sem caps de whatsapp ou ia", () => {
+    expect(FAIR_USE_CAPS.conecta).toEqual({ whatsapp: null, ai: null });
   });
 
-  it("inteligente whatsapp 1200 e ai 1500", () => {
-    expect(FAIR_USE_CAPS.inteligente).toEqual({
-      whatsapp: 1200,
-      ai: 1500,
-    });
+  it("inteligente sem caps de whatsapp ou ia", () => {
+    expect(FAIR_USE_CAPS.inteligente).toEqual({ whatsapp: null, ai: null });
   });
 
   it("completo whatsapp 2500 e ai 3500", () => {
@@ -33,8 +30,8 @@ describe("FAIR_USE_CAPS", () => {
 });
 
 describe("getFairUseCaps", () => {
-  it("retorna caps do plano", () => {
-    expect(getFairUseCaps("conecta")).toEqual({ whatsapp: 1200, ai: null });
+  it("retorna caps do plano completo", () => {
+    expect(getFairUseCaps("completo")).toEqual({ whatsapp: 2500, ai: 3500 });
   });
 });
 

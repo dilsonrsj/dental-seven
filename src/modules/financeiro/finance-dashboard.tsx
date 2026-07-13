@@ -185,8 +185,8 @@ export function FinanceDashboard({
             </CardContent>
           </Card>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-border">
-            <table className="w-full text-left text-sm">
+          <div className="ds-table-shell">
+            <table className="ds-table">
               <thead className="bg-surface text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Data</th>

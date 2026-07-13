@@ -75,4 +75,36 @@ describe("buildAppointmentInitialForm", () => {
 
     expect(form.patient_id).toBe("patient-1");
   });
+
+  it("pre-selects primary insurance plan for new appointments", () => {
+    const form = buildAppointmentInitialForm(
+      null,
+      new Date("2026-06-11T08:00:00.000Z"),
+      dentists,
+      patients,
+      [],
+      "patient-2",
+      { "patient-2": "plan-primary" },
+      ["plan-primary", "plan-other"],
+    );
+
+    expect(form.payment_source).toBe("insurance");
+    expect(form.insurance_plan_id).toBe("plan-primary");
+  });
+
+  it("keeps particular when primary plan is inactive", () => {
+    const form = buildAppointmentInitialForm(
+      null,
+      new Date("2026-06-11T08:00:00.000Z"),
+      dentists,
+      patients,
+      [],
+      "patient-2",
+      { "patient-2": "plan-inactive" },
+      ["plan-active"],
+    );
+
+    expect(form.payment_source).toBe("particular");
+    expect(form.insurance_plan_id).toBe("");
+  });
 });

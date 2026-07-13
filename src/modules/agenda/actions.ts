@@ -9,6 +9,9 @@ import { type AppointmentStatus } from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/server";
 import { applyStockForAppointmentStatusChange } from "@/modules/estoque/appointment-stock";
 import { applyFinanceForAppointmentStatusChange } from "@/modules/financeiro/appointment-finance";
+import { createClaimForAppointment } from "@/modules/convenios/actions";
+import { assertAppointmentWithinSchedule } from "./operating-hours";
+import { loadOperatingHoursForAppointment } from "./operating-hours-actions";
 import type { AppointmentFormInput, AppointmentWithRelations } from "./types";
 
 export type AppointmentMutationResult = {
@@ -16,6 +19,11 @@ export type AppointmentMutationResult = {
   stockResult?: { applied: boolean; reversed: boolean };
   financeResult?: { applied: boolean; reversed: boolean };
 };
+
+function uuidOrNull(value: string | null | undefined): string | null {
+  if (!value?.trim()) return null;
+  return value.trim();
+}
 
 async function assertWritable() {
   const ctx = await getAuthContext();
@@ -118,16 +126,28 @@ export async function upsertAppointment(
   const duration = Number(input.duration_min);
   const startsAt = parseAgendaDateTime(input.starts_at);
   const endsAt = new Date(startsAt.getTime() + duration * 60 * 1000);
+  const paymentSource = input.payment_source ?? "particular";
+  const insurancePlanId =
+    paymentSource === "insurance"
+      ? uuidOrNull(input.insurance_plan_id)
+      : null;
+
+  if (paymentSource === "insurance" && !insurancePlanId) {
+    throw new Error("Selecione o plano do convênio.");
+  }
+
   const payload = {
     patient_id: input.patient_id,
     dentist_id: input.dentist_id,
     starts_at: startsAt.toISOString(),
     ends_at: endsAt.toISOString(),
     duration_min: duration,
-    procedure_id: input.procedure_id ?? null,
+    procedure_id: uuidOrNull(input.procedure_id ?? undefined),
     procedure_label: input.procedure_label.trim() || "Consulta",
     status: input.status,
     notes: input.notes?.trim() || null,
+    payment_source: paymentSource,
+    insurance_plan_id: insurancePlanId,
   };
 
   if (isDemoMockDataEnabled()) {
@@ -137,6 +157,17 @@ export async function upsertAppointment(
   }
 
   const clinicId = await requireClinicId();
+  const { clinicDay, dentistDay } = await loadOperatingHoursForAppointment(
+    input.dentist_id,
+    startsAt,
+  );
+  assertAppointmentWithinSchedule(
+    startsAt,
+    duration,
+    clinicDay,
+    dentistDay,
+  );
+
   const supabase = await createClient();
   const fullPayload = { ...payload, clinic_id: clinicId };
 
@@ -202,6 +233,10 @@ export async function upsertAppointment(
     );
     if (financeResult.applied || financeResult.reversed) {
       revalidatePath("/financeiro");
+    }
+
+    if (previousStatus !== "completed" && input.status === "completed") {
+      await createClaimForAppointment(data.id);
     }
   }
 
@@ -277,6 +312,10 @@ export async function updateAppointmentStatus(
     );
     if (financeResult.applied || financeResult.reversed) {
       revalidatePath("/financeiro");
+    }
+
+    if (previousStatus !== "completed" && status === "completed") {
+      await createClaimForAppointment(id);
     }
   }
 

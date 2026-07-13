@@ -2,6 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { Button, Input, Modal, toast } from "@/components/ui";
+import {
+  formatIsoDateAsBr,
+  maskBrDateInput,
+  parseBrDateToIso,
+} from "@/lib/date/br-date";
 import { brlInputToCents } from "@/modules/procedimentos/price-utils";
 import { createManualEntry } from "./actions";
 import type { FinancialEntryRow, ManualEntryKind } from "./types";
@@ -20,7 +25,7 @@ export function ManualEntryForm({
   const [kind, setKind] = useState<ManualEntryKind>("revenue");
   const [amountBrl, setAmountBrl] = useState("");
   const [description, setDescription] = useState("");
-  const [entryDate, setEntryDate] = useState(defaultEntryDate(yearMonth));
+  const [entryDate, setEntryDate] = useState(defaultEntryDateBr(yearMonth));
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -32,7 +37,7 @@ export function ManualEntryForm({
         kind,
         amountCents: brlInputToCents(amountBrl),
         description: description.trim(),
-        entryDate,
+        entryDate: parseBrDateToIso(entryDate),
       });
       onSuccess(entry);
       toast.success("Lançamento registrado.");
@@ -83,9 +88,13 @@ export function ManualEntryForm({
           <span className="text-sm font-medium">Data</span>
           <Input
             required
-            type="date"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="dd/mm/aaaa"
             value={entryDate}
-            onChange={(event) => setEntryDate(event.target.value)}
+            onChange={(event) =>
+              setEntryDate(maskBrDateInput(event.target.value))
+            }
           />
         </label>
 
@@ -102,10 +111,10 @@ export function ManualEntryForm({
   );
 }
 
-function defaultEntryDate(yearMonth: string): string {
+function defaultEntryDateBr(yearMonth: string): string {
   const today = new Date().toISOString().slice(0, 10);
-  if (today.startsWith(yearMonth)) return today;
-  return `${yearMonth}-01`;
+  const iso = today.startsWith(yearMonth) ? today : `${yearMonth}-01`;
+  return formatIsoDateAsBr(iso);
 }
 
 function getErrorMessage(error: unknown) {

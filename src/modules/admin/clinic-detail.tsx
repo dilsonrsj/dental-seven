@@ -16,6 +16,7 @@ import {
   updateClinicPlan,
 } from "@/lib/admin/actions";
 import { PLAN_LABELS, type PlanKey } from "@/lib/billing/plans";
+import { portugueseProseFieldProps } from "@/lib/i18n/prose-field";
 import type { SubscriptionStatus } from "@/lib/billing/subscription";
 import type {
   ClinicDetailForAdmin,
@@ -295,6 +296,7 @@ export function ClinicDetail({
             >
               <CardTitle className="text-base">Notas internas DR7</CardTitle>
               <textarea
+                {...portugueseProseFieldProps}
                 name="adminNotes"
                 defaultValue={clinic.admin_notes ?? ""}
                 rows={4}

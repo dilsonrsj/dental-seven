@@ -1,5 +1,6 @@
 import type { PlanKey, ModuleKey } from "@/lib/billing/plans";
 import type { SubscriptionStatus } from "@/lib/billing/subscription";
+import type { FoundingStage } from "./founding-pipeline";
 
 export type { PlanKey };
 
@@ -44,7 +45,14 @@ export type AdminClinicRecord = {
 /** Input mínimo para agregações de dashboard (sem fair use calculado). */
 export type AdminClinicMetricsInput = Pick<
   AdminClinicRecord,
-  "id" | "name" | "slug" | "subscription_status" | "plan_key" | "trial_ends_at" | "deleted_at"
+  | "id"
+  | "name"
+  | "slug"
+  | "subscription_status"
+  | "plan_key"
+  | "trial_ends_at"
+  | "deleted_at"
+  | "created_at"
 >;
 
 export type ClinicListRow = AdminClinicRecord & {
@@ -74,10 +82,76 @@ export type FairUseAlertRow = AdminClinicRecord & {
   fairUseLevel: FairUseLevel;
 };
 
+export type AdminActionKind =
+  | "trial_expiring"
+  | "past_due"
+  | "founder_pending_signup"
+  | "clinic_no_adoption"
+  | "fair_use_alert";
+
+export type AdminActionItem = {
+  id: string;
+  kind: AdminActionKind;
+  title: string;
+  subtitle: string;
+  href: string;
+  sortDate: string;
+};
+
+export type FoundingSummary = {
+  totalFounders: number;
+  newFoundersLast7Days: number;
+  convertedCount: number;
+  conversionRate: number;
+  topInviteRefs: Array<{ ref: string; count: number }>;
+};
+
 export type AdminDashboardData = {
   kpis: DashboardKpis;
   trialsExpiring: AdminClinicMetricsInput[];
   fairUseAlerts: FairUseAlertRow[];
+  actionQueue: AdminActionItem[];
+  recentAudit: AdminAuditLogRow[];
+  newClinics: AdminClinicMetricsInput[];
+  foundingSummary: FoundingSummary;
+};
+
+export type FounderFeedbackStatus = "pending" | "sent" | "follow_up";
+
+export type FounderAdminRow = {
+  id: string;
+  ref_slug: string | null;
+  full_name: string;
+  clinic_name: string;
+  city: string;
+  state: string;
+  whatsapp: string;
+  email: string;
+  invite_ref: string | null;
+  feedback_status: FounderFeedbackStatus;
+  clinic_id: string | null;
+  created_at: string;
+  accessed_at: string | null;
+  signup_completed_at: string | null;
+  patient_count: number;
+  appointment_count: number;
+  referral_count: number;
+  stage: FoundingStage;
+  referral_url: string | null;
+};
+
+export type BetaFeedbackAdminRow = {
+  id: string;
+  created_at: string;
+  clinic_id: string | null;
+  clinic_name: string | null;
+  author_name: string | null;
+  nps: number;
+  top_module: "agenda" | "pacientes" | "prontuario" | "outro";
+  liked_most: string;
+  blocked_or_missing: string;
+  would_use_today: "yes" | "maybe" | "no";
+  notes: string | null;
 };
 
 export type ClinicModuleRow = {

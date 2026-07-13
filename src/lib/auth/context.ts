@@ -8,6 +8,7 @@ import {
 } from "@/modules/admin/impersonation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { CLINIC_LOGO_BUCKET } from "@/lib/clinic/clinic-logo";
 import { cookies } from "next/headers";
 
 export type UserRole = "super_admin" | "clinic_admin" | "dentist";
@@ -27,6 +28,12 @@ export type ClinicContext = {
   subscription_status: SubscriptionStatus;
   trial_ends_at: string | null;
   plan_key: PlanKey;
+  logo_storage_path?: string | null;
+  logo_preview_url?: string | null;
+  contact_whatsapp?: string | null;
+  contact_instagram?: string | null;
+  contact_email?: string | null;
+  contact_address?: string | null;
 };
 
 export type AuthContext = {
@@ -57,12 +64,25 @@ async function loadClinicContext(
   const { data: clinicRow } = await supabase
     .from("clinics")
     .select(
-      "id, name, slug, subscription_status, trial_ends_at, plan_key",
+      "id, name, slug, subscription_status, trial_ends_at, plan_key, logo_storage_path, contact_whatsapp, contact_instagram, contact_email, contact_address",
     )
     .eq("id", clinicId)
     .maybeSingle();
 
-  const clinic = clinicRow ? (clinicRow as ClinicContext) : null;
+  let logoPreviewUrl: string | null = null;
+  if (clinicRow?.logo_storage_path) {
+    const { data: signed } = await supabase.storage
+      .from(CLINIC_LOGO_BUCKET)
+      .createSignedUrl(clinicRow.logo_storage_path, 3600);
+    logoPreviewUrl = signed?.signedUrl ?? null;
+  }
+
+  const clinic = clinicRow
+    ? ({
+        ...(clinicRow as ClinicContext),
+        logo_preview_url: logoPreviewUrl,
+      } as ClinicContext)
+    : null;
 
   const { data: modules } = await supabase
     .from("clinic_modules")

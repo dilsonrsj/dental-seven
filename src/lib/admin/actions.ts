@@ -5,9 +5,16 @@ import { redirect } from "next/navigation";
 import { processFairUseAlertEmails } from "@/lib/email/fair-use-alerts";
 import { logAdminAction } from "@/modules/admin/audit";
 import {
-  computeDashboardKpis,
-  trialsExpiringSoon,
-} from "@/modules/admin/dashboard-metrics";
+  buildRefSlugBase,
+  buildFoundingReferralUrl,
+  resolveUniqueRefSlug,
+} from "@/lib/founding/ref-slug";
+import { getFoundingStage } from "@/modules/admin/founding-pipeline";
+import {
+  buildActionQueue,
+  clinicsCreatedSince,
+  summarizeFounding,
+} from "@/modules/admin/operations-dashboard";
 import {
   startImpersonation,
   stopImpersonation,
@@ -23,10 +30,17 @@ import type {
   AdminClinicListFilters,
   AdminClinicRecord,
   AdminDashboardData,
+  BetaFeedbackAdminRow,
   ClinicDetailForAdmin,
   ClinicListRow,
   FairUseAlertRow,
+  FounderAdminRow,
+  FounderFeedbackStatus,
 } from "@/modules/admin/types";
+import {
+  computeDashboardKpis,
+  trialsExpiringSoon,
+} from "@/modules/admin/dashboard-metrics";
 import {
   buildFairUseStatus,
   getOverallFairUseLevel,
@@ -52,6 +66,7 @@ const ALL_MODULE_KEYS: ModuleKey[] = [
   "estoque",
   "financeiro",
   "fornecedores",
+  "convenios",
 ];
 
 const CLINIC_LIST_SELECT =
@@ -121,6 +136,76 @@ function matchesSearch(clinic: AdminClinicRecord, search?: string): boolean {
   );
 }
 
+async function loadClinicUsageCounts(
+  admin: ReturnType<typeof createAdminClient>,
+): Promise<{
+  patients: Map<string, number>;
+  appointments: Map<string, number>;
+}> {
+  const patients = new Map<string, number>();
+  const appointments = new Map<string, number>();
+
+  const [{ data: patientRows, error: patientError }, { data: appointmentRows, error: appointmentError }] =
+    await Promise.all([
+      admin.from("patients").select("clinic_id"),
+      admin.from("appointments").select("clinic_id"),
+    ]);
+
+  if (patientError) throw new Error(patientError.message);
+  if (appointmentError) throw new Error(appointmentError.message);
+
+  for (const row of patientRows ?? []) {
+    patients.set(
+      row.clinic_id,
+      (patients.get(row.clinic_id) ?? 0) + 1,
+    );
+  }
+
+  for (const row of appointmentRows ?? []) {
+    appointments.set(
+      row.clinic_id,
+      (appointments.get(row.clinic_id) ?? 0) + 1,
+    );
+  }
+
+  return { patients, appointments };
+}
+
+async function ensureFounderRefSlug(
+  admin: ReturnType<typeof createAdminClient>,
+  founder: {
+    id: string;
+    ref_slug: string | null;
+    full_name: string;
+    city: string;
+    state: string;
+  },
+): Promise<string> {
+  if (founder.ref_slug) {
+    return founder.ref_slug;
+  }
+
+  const refSlug = await resolveUniqueRefSlug(
+    buildRefSlugBase(founder.full_name, founder.city, founder.state),
+    async (slug) => {
+      const { data } = await admin
+        .from("beta_founders")
+        .select("id")
+        .eq("ref_slug", slug)
+        .maybeSingle();
+      return Boolean(data && data.id !== founder.id);
+    },
+  );
+
+  const { error } = await admin
+    .from("beta_founders")
+    .update({ ref_slug: refSlug })
+    .eq("id", founder.id);
+
+  if (error) throw new Error(error.message);
+  return refSlug;
+}
+
 export async function getDashboardData(): Promise<AdminDashboardData> {
   const ctx = await requireSuperAdmin();
   const admin = createAdminClient();
@@ -165,10 +250,40 @@ export async function getDashboardData(): Promise<AdminDashboardData> {
       return bMax - aMax;
     });
 
+  const [{ patients, appointments }, foundersResult, recentAudit] =
+    await Promise.all([
+      loadClinicUsageCounts(admin),
+      admin
+        .from("beta_founders")
+        .select(
+          "id, full_name, clinic_name, city, state, created_at, signup_completed_at, invite_ref, clinic_id",
+        )
+        .order("created_at", { ascending: false }),
+      listAdminAuditLog(10),
+    ]);
+
+  if (foundersResult.error) throw new Error(foundersResult.error.message);
+
+  const founders = foundersResult.data ?? [];
+  const adoptionClinics = records.map((clinic) => ({
+    ...clinic,
+    patient_count: patients.get(clinic.id) ?? 0,
+    appointment_count: appointments.get(clinic.id) ?? 0,
+  }));
+
   return {
     kpis: computeDashboardKpis(records),
     trialsExpiring: trialsExpiringSoon(records),
     fairUseAlerts,
+    actionQueue: buildActionQueue({
+      clinics: records,
+      adoptionClinics,
+      founders,
+      fairUseAlerts,
+    }),
+    recentAudit,
+    newClinics: clinicsCreatedSince(records),
+    foundingSummary: summarizeFounding(founders),
   };
 }
 
@@ -859,4 +974,197 @@ export async function setClinicWhatsAppThrottled(
 
   revalidatePath(`/admin/clinicas/${clinicId}`);
   revalidatePath("/admin/clinicas");
+}
+
+const FOUNDER_FEEDBACK_STATUSES: FounderFeedbackStatus[] = [
+  "pending",
+  "sent",
+  "follow_up",
+];
+
+export async function updateFounderFeedbackStatus(
+  founderId: string,
+  status: FounderFeedbackStatus,
+): Promise<void> {
+  const ctx = await requireSuperAdmin();
+  const admin = createAdminClient();
+
+  if (!FOUNDER_FEEDBACK_STATUSES.includes(status)) {
+    throw new Error("Status de feedback inválido.");
+  }
+
+  const { data: current, error: readError } = await admin
+    .from("beta_founders")
+    .select("feedback_status, clinic_id, full_name")
+    .eq("id", founderId)
+    .maybeSingle();
+
+  if (readError || !current) {
+    throw new Error("Founding member não encontrado.");
+  }
+
+  if (current.feedback_status === status) {
+    return;
+  }
+
+  const { error } = await admin
+    .from("beta_founders")
+    .update({ feedback_status: status })
+    .eq("id", founderId);
+
+  if (error) throw new Error(error.message);
+
+  await logAdminAction({
+    actorId: ctx.profile.id,
+    action: "founder.feedback_status_updated",
+    clinicId: current.clinic_id,
+    metadata: {
+      founder_id: founderId,
+      founder_name: current.full_name,
+      from: current.feedback_status,
+      to: status,
+    },
+  });
+
+  revalidatePath("/admin/founding");
+  revalidatePath("/admin");
+}
+
+export async function listFoundersForAdmin(): Promise<FounderAdminRow[]> {
+  await requireSuperAdmin();
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("beta_founders")
+    .select(
+      "id, ref_slug, full_name, clinic_name, city, state, whatsapp, email, invite_ref, feedback_status, clinic_id, created_at, accessed_at, signup_completed_at",
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  const founders = data ?? [];
+  const { patients, appointments } = await loadClinicUsageCounts(admin);
+
+  const referralCounts = new Map<string, number>();
+  for (const founder of founders) {
+    const ref = founder.invite_ref?.trim();
+    if (!ref) continue;
+    referralCounts.set(ref, (referralCounts.get(ref) ?? 0) + 1);
+  }
+
+  const rows: FounderAdminRow[] = [];
+
+  for (const founder of founders) {
+    const refSlug = await ensureFounderRefSlug(admin, founder);
+    const patientCount = founder.clinic_id
+      ? (patients.get(founder.clinic_id) ?? 0)
+      : 0;
+    const appointmentCount = founder.clinic_id
+      ? (appointments.get(founder.clinic_id) ?? 0)
+      : 0;
+
+    rows.push({
+      id: founder.id,
+      ref_slug: refSlug,
+      full_name: founder.full_name,
+      clinic_name: founder.clinic_name,
+      city: founder.city,
+      state: founder.state,
+      whatsapp: founder.whatsapp,
+      email: founder.email,
+      invite_ref: founder.invite_ref,
+      feedback_status: founder.feedback_status,
+      clinic_id: founder.clinic_id,
+      created_at: founder.created_at,
+      accessed_at: founder.accessed_at,
+      signup_completed_at: founder.signup_completed_at,
+      patient_count: patientCount,
+      appointment_count: appointmentCount,
+      referral_count: referralCounts.get(refSlug) ?? 0,
+      stage: getFoundingStage({
+        accessed_at: founder.accessed_at,
+        signup_completed_at: founder.signup_completed_at,
+        clinic_id: founder.clinic_id,
+        patient_count: patientCount,
+        appointment_count: appointmentCount,
+      }),
+      referral_url: buildFoundingReferralUrl(refSlug),
+    });
+  }
+
+  return rows;
+}
+
+export async function listBetaFeedbackForAdmin(): Promise<
+  BetaFeedbackAdminRow[]
+> {
+  await requireSuperAdmin();
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("beta_feedback")
+    .select(
+      "id, created_at, clinic_id, profile_id, nps, top_module, liked_most, blocked_or_missing, would_use_today, notes",
+    )
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) throw new Error(error.message);
+
+  const feedbackRows = data ?? [];
+  const clinicIds = [
+    ...new Set(
+      feedbackRows
+        .map((row) => row.clinic_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const profileIds = [
+    ...new Set(
+      feedbackRows
+        .map((row) => row.profile_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+
+  const clinicNameById = new Map<string, string>();
+  if (clinicIds.length > 0) {
+    const { data: clinics } = await admin
+      .from("clinics")
+      .select("id, name")
+      .in("id", clinicIds);
+    for (const clinic of clinics ?? []) {
+      clinicNameById.set(clinic.id, clinic.name);
+    }
+  }
+
+  const authorNameById = new Map<string, string>();
+  if (profileIds.length > 0) {
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", profileIds);
+    for (const profile of profiles ?? []) {
+      authorNameById.set(profile.id, profile.full_name);
+    }
+  }
+
+  return feedbackRows.map((row) => ({
+    id: row.id,
+    created_at: row.created_at,
+    clinic_id: row.clinic_id,
+    clinic_name: row.clinic_id
+      ? (clinicNameById.get(row.clinic_id) ?? null)
+      : null,
+    author_name: row.profile_id
+      ? (authorNameById.get(row.profile_id) ?? null)
+      : null,
+    nps: row.nps,
+    top_module: row.top_module,
+    liked_most: row.liked_most,
+    blocked_or_missing: row.blocked_or_missing,
+    would_use_today: row.would_use_today,
+    notes: row.notes,
+  }));
 }

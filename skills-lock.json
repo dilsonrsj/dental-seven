@@ -1,11 +1,23 @@
 {
   "version": 1,
   "skills": {
+    "3d-web-experience": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/3d-web-experience/SKILL.md",
+      "computedHash": "87c4b32078381ee1e6df164ddd5c28dd67fc7552431a7415626e63b8cf74b11a"
+    },
     "brainstorming": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/brainstorming/SKILL.md",
       "computedHash": "f483c304fcde060211ffae00f49bb728536e7e7613c99db45b5b924d9fc17243"
+    },
+    "creating-svg-illustrations": {
+      "source": "narumiruna/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/creating-svg-illustrations/SKILL.md",
+      "computedHash": "6cf134e5af4bef83ce0a427f49167841da68049c029609dc2e28f2a178e748f8"
     },
     "dispatching-parallel-agents": {
       "source": "obra/superpowers",
@@ -42,6 +54,12 @@
       "sourceType": "github",
       "skillPath": "skills/subagent-driven-development/SKILL.md",
       "computedHash": "b38be2f3a092d758127f6d47e77c2493885aebf38aae359e4c786df2c343b837"
+    },
+    "svg-animations": {
+      "source": "supermemoryai/skills",
+      "sourceType": "github",
+      "skillPath": "svg-animations/SKILL.md",
+      "computedHash": "f25711af04ba7a0f8e662f41cdf707423102eef303dfd3dc7d48d35bb83c7ec4"
     },
     "systematic-debugging": {
       "source": "obra/superpowers",

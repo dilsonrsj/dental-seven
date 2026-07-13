@@ -20,7 +20,9 @@ export function PatientRecordHeader({
 
   const infoHref = `/pacientes/${patientId}`;
   const prontuarioHref = `/pacientes/${patientId}/prontuario`;
+  const anamneseHref = `/pacientes/${patientId}/anamnese`;
   const isProntuario = pathname.startsWith(prontuarioHref);
+  const isAnamnese = pathname.startsWith(anamneseHref);
 
   return (
     <div className="space-y-4">
@@ -36,9 +38,11 @@ export function PatientRecordHeader({
             {patientName}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {isProntuario
-              ? "Documentos importados e histórico externo do paciente."
-              : "Ficha do paciente e histórico de consultas."}
+            {isAnamnese
+              ? "Questionário de saúde estruturado e alertas clínicos."
+              : isProntuario
+                ? "Documentos importados e histórico externo do paciente."
+                : "Ficha do paciente e histórico de consultas."}
           </p>
         </div>
         <Link
@@ -54,8 +58,11 @@ export function PatientRecordHeader({
           className="flex gap-2 rounded-2xl border border-border bg-surface p-1"
           aria-label="Seções da ficha do paciente"
         >
-          <TabLink href={infoHref} active={!isProntuario}>
+          <TabLink href={infoHref} active={!isProntuario && !isAnamnese}>
             Informações
+          </TabLink>
+          <TabLink href={anamneseHref} active={isAnamnese}>
+            Anamnese
           </TabLink>
           <TabLink href={prontuarioHref} active={isProntuario}>
             Prontuário

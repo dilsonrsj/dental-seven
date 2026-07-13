@@ -3,6 +3,7 @@ import { getAuthContext } from "@/lib/auth/context";
 import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { getPatient, getPatientAppointments } from "@/modules/pacientes/actions";
 import { listPatientClinicalNotes } from "@/modules/prontuario/clinical-notes-actions";
+import { listPatientToothRecords } from "@/modules/prontuario/odontogram/actions/tooth-actions";
 import { ProntuarioContent } from "@/modules/prontuario/prontuario-content";
 import { listPatientDocuments } from "@/modules/prontuario/actions";
 
@@ -24,9 +25,10 @@ export default async function ProntuarioPage({ params }: ProntuarioPageProps) {
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const [documents, notes, appointments] = await Promise.all([
+  const [documents, notes, toothRecords, appointments] = await Promise.all([
     listPatientDocuments(id),
     listPatientClinicalNotes(id),
+    listPatientToothRecords(id),
     getPatientAppointments(id),
   ]);
 
@@ -39,6 +41,7 @@ export default async function ProntuarioPage({ params }: ProntuarioPageProps) {
       patientId={id}
       initialDocuments={documents}
       initialNotes={notes}
+      initialToothRecords={toothRecords}
       recentAppointments={appointments.slice(0, 20)}
       canWrite={canWrite}
     />

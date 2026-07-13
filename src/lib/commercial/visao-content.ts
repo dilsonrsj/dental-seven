@@ -14,44 +14,44 @@ export const MVP_MODULES = [
   {
     title: "WhatsApp",
     description:
-      "Inbox simulada com confirmação, reagendamento e lembrete. Na versão final: número real da clínica.",
+      "Inbox simulada com confirmação, reagendamento e lembrete. Na versão final: número real da clínica (plano Completo).",
     status: "demo" as const,
   },
 ];
 
 export const FUTURE_MODULES = [
   {
-    title: "WhatsApp real",
-    description:
-      "Número da clínica, confirmação e lembrete automáticos, resposta ao paciente pelo app.",
-    plan: "Conecta+",
-  },
-  {
     title: "Prontuário",
     description:
       "Documentos, evolução por consulta, receita, atestado e envio ao paciente.",
-    plan: "Completo",
+    plan: "Conecta+",
   },
   {
     title: "Procedimentos",
     description: "Catálogo da clínica e procedimento vinculado à consulta.",
-    plan: "Completo",
+    plan: "Conecta+",
   },
   {
     title: "Estoque",
     description: "Alertas de insumo e baixa automática ao concluir procedimento.",
-    plan: "Completo",
+    plan: "Inteligente+",
   },
   {
     title: "Financeiro",
     description: "Receita, custos e visão da operação para o dono da clínica.",
+    plan: "Inteligente+",
+  },
+  {
+    title: "WhatsApp real",
+    description:
+      "Número da clínica, confirmação e lembrete automáticos, resposta ao paciente pelo app.",
     plan: "Completo",
   },
   {
     title: "Agente IA",
     description:
       "Secretária virtual 24h no WhatsApp: agenda, responde dúvidas e passa para o dentista quando necessário.",
-    plan: "Inteligente",
+    plan: "Completo",
   },
 ];
 
@@ -84,54 +84,48 @@ export const PLANS: PlanCard[] = [
   {
     name: "Conecta",
     price: "R$ 149",
-    tagline: "Essencial + WhatsApp",
+    tagline: "Clínica digital",
     description:
-      "Centraliza o atendimento ao paciente no WhatsApp da clínica — sem usar o celular pessoal do dentista.",
+      "Prontuário e procedimentos no mesmo sistema da agenda — sem depender de papel ou planilhas.",
     features: [
       "Tudo do plano Essencial",
-      "Inbox WhatsApp unificado por paciente",
-      "Templates: confirmar, reagendar e lembrete",
-      "Resposta manual pelo app",
-      "Número dedicado da clínica (versão final)",
+      "Prontuário eletrônico",
+      "Catálogo de procedimentos",
       "Até 3 dentistas",
     ],
-    addsFromPrevious: "Inclui WhatsApp real da clínica",
+    addsFromPrevious: "Inclui prontuário e procedimentos",
     highlight: false,
   },
   {
     name: "Inteligente",
     price: "R$ 279",
-    tagline: "Conecta + Agente IA",
+    tagline: "Gestão da clínica",
     description:
-      "Secretária virtual no WhatsApp: atende, tira dúvidas e agenda consultas 24h. O dentista assume a conversa quando quiser.",
+      "Estoque e financeiro integrados à rotina clínica — visão da operação para quem administra a clínica.",
     features: [
       "Tudo do plano Conecta",
-      "Agente IA de atendimento e agendamento",
-      "FAQ personalizado da clínica (base de conhecimento)",
-      "Handoff: dentista entra na conversa pelo inbox",
-      "Tom de voz configurável pela clínica",
+      "Controle de estoque com alertas",
+      "Módulo financeiro (receita e operação)",
       "Até 3 dentistas",
     ],
-    addsFromPrevious: "Inclui agente IA no WhatsApp — diferencial DR7",
+    addsFromPrevious: "Inclui estoque e financeiro",
     highlight: true,
   },
   {
     name: "Completo",
     price: "R$ 349",
-    tagline: "Inteligente + gestão da clínica",
+    tagline: "Atendimento completo",
     description:
-      "Clínica ponta a ponta no mesmo sistema: atendimento inteligente, prontuário, insumos e visão financeira.",
+      "WhatsApp da clínica, agente IA e fornecedores — clínica ponta a ponta no mesmo sistema.",
     features: [
       "Tudo do plano Inteligente",
-      "Prontuário eletrônico (documentos, evolução, receita e atestado)",
-      "Catálogo de procedimentos com insumos por procedimento",
-      "Estoque com alertas e baixa automática",
-      "Módulo financeiro (receita e operação)",
+      "Inbox WhatsApp unificado por paciente",
+      "Agente IA de atendimento e agendamento",
+      "Gestão de fornecedores",
       "5 GB de armazenamento de arquivos",
       "Até 3 dentistas",
     ],
-    addsFromPrevious:
-      "Inclui prontuário, procedimentos, estoque e financeiro",
+    addsFromPrevious: "Inclui WhatsApp, IA e fornecedores",
     highlight: false,
   },
 ];
@@ -139,8 +133,8 @@ export const PLANS: PlanCard[] = [
 export const DEMO_VS_PRODUCT = [
   { today: "Senha única de demonstração", future: "Login por clínica (sua conta)" },
   { today: "Dados fictícios (Sorriso Norte)", future: "Dados reais da sua clínica" },
-  { today: "WhatsApp simulado", future: "WhatsApp real da clínica" },
-  { today: "3 módulos para explorar", future: "Até 8 módulos conforme plano" },
+  { today: "WhatsApp simulado", future: "WhatsApp real da clínica (plano Completo)" },
+  { today: "3 módulos para explorar", future: "Até 9 módulos conforme plano" },
 ];
 
 export const DEMO_STEPS = [

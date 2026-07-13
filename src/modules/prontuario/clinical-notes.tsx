@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, CardContent, toast } from "@/components/ui";
+import { portugueseProseFieldProps } from "@/lib/i18n/prose-field";
 import type { PatientAppointmentWithRelations } from "@/modules/pacientes/types";
 import { createPatientClinicalNote } from "./clinical-notes-actions";
 import type { PatientClinicalNoteListItem } from "./types";
@@ -66,6 +67,7 @@ export function ClinicalNotes({
 
           <form onSubmit={(event) => void handleSubmit(event)} className="space-y-3">
             <textarea
+              {...portugueseProseFieldProps}
               value={body}
               onChange={(event) => setBody(event.target.value)}
               placeholder="Descreva a evolução clínica do paciente..."

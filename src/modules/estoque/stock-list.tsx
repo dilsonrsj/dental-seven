@@ -59,8 +59,72 @@ export function StockList({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
-      <table className="w-full text-left text-sm">
+    <>
+      <div className="space-y-3 md:hidden">
+        {items.map((supply) => (
+          <Card
+            key={supply.id}
+            className={rowHighlightClass(supply.alert_level)}
+          >
+            <CardContent className="space-y-3 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium">{supply.name}</p>
+                <AlertBadge level={supply.alert_level} />
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <span>Saldo: {formatQuantity(supply.quantity_on_hand)}</span>
+                <span>{supply.unit_label}</span>
+                <span>
+                  Mín.:{" "}
+                  {supply.min_quantity == null
+                    ? "—"
+                    : formatQuantity(supply.min_quantity)}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {isAdmin ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setMovementModal({ supply, type: "inbound" })}
+                    >
+                      Entrada
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setMovementModal({ supply, type: "outbound" })}
+                    >
+                      Saída
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setMinQuantitySupply(supply)}
+                    >
+                      Mínimo
+                    </Button>
+                  </>
+                ) : null}
+                {fornecedoresEnabled && isAdmin && isStockAlert(supply.alert_level) ? (
+                  <ReorderAction supply={supply} />
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setHistorySupply(supply)}
+                >
+                  Histórico
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="ds-table-shell hidden md:block">
+      <table className="ds-table">
         <thead className="bg-surface text-muted-foreground">
           <tr>
             <th className="px-4 py-3 font-medium">Nome</th>
@@ -168,6 +232,7 @@ export function StockList({
         />
       )}
     </div>
+    </>
   );
 }
 

@@ -277,6 +277,13 @@ type ClinicalGenerationContext = {
   dentistCro: string | null;
   dentistSpecialty: string | null;
   signatureImageBytes: Uint8Array | null;
+  clinicLogoImageBytes: Uint8Array | null;
+  clinicContact: {
+    whatsapp: string | null;
+    instagram: string | null;
+    email: string | null;
+    address: string | null;
+  };
 };
 
 async function resolveClinicalGenerationContext(
@@ -325,6 +332,16 @@ async function resolveClinicalGenerationContext(
     }
   }
 
+  let clinicLogoImageBytes: Uint8Array | null = null;
+  if (ctx.clinic.logo_storage_path) {
+    const { data: logoBlob } = await supabase.storage
+      .from(SIGNATURE_BUCKET)
+      .download(ctx.clinic.logo_storage_path);
+    if (logoBlob) {
+      clinicLogoImageBytes = new Uint8Array(await logoBlob.arrayBuffer());
+    }
+  }
+
   return {
     clinicName: ctx.clinic.name,
     patientName: patient.name,
@@ -332,6 +349,13 @@ async function resolveClinicalGenerationContext(
     dentistCro: dentist.cro,
     dentistSpecialty: dentist.specialty,
     signatureImageBytes,
+    clinicLogoImageBytes,
+    clinicContact: {
+      whatsapp: ctx.clinic.contact_whatsapp ?? null,
+      instagram: ctx.clinic.contact_instagram ?? null,
+      email: ctx.clinic.contact_email ?? null,
+      address: ctx.clinic.contact_address ?? null,
+    },
   };
 }
 

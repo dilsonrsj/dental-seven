@@ -15,17 +15,17 @@ describe("buildFairUseAlertKey", () => {
 describe("detectFairUseEmailAlerts", () => {
   const yearMonth = "2026-07";
 
-  it("detects 80% whatsapp alert for conecta plan", () => {
+  it("detects 80% whatsapp alert for completo plan", () => {
     const clinics = [
       {
         id: "c1",
         name: "Clínica A",
-        plan_key: "conecta" as const,
+        plan_key: "completo" as const,
         deleted_at: null,
       },
     ];
     const usageMap = new Map([
-      ["c1", { whatsapp_conversations: 960, ai_responses: 0 }],
+      ["c1", { whatsapp_conversations: 2000, ai_responses: 0 }],
     ]);
 
     const alerts = detectFairUseEmailAlerts(
@@ -48,12 +48,12 @@ describe("detectFairUseEmailAlerts", () => {
       {
         id: "c1",
         name: "Clínica A",
-        plan_key: "conecta" as const,
+        plan_key: "completo" as const,
         deleted_at: null,
       },
     ];
     const usageMap = new Map([
-      ["c1", { whatsapp_conversations: 1200, ai_responses: 0 }],
+      ["c1", { whatsapp_conversations: 2500, ai_responses: 0 }],
     ]);
 
     const alerts = detectFairUseEmailAlerts(
@@ -85,17 +85,35 @@ describe("detectFairUseEmailAlerts", () => {
     ).toHaveLength(0);
   });
 
-  it("skips already sent alerts", () => {
+  it("skips conecta plan without whatsapp cap", () => {
     const clinics = [
       {
         id: "c1",
-        name: "Clínica A",
+        name: "Clínica C",
         plan_key: "conecta" as const,
         deleted_at: null,
       },
     ];
     const usageMap = new Map([
-      ["c1", { whatsapp_conversations: 960, ai_responses: 0 }],
+      ["c1", { whatsapp_conversations: 9999, ai_responses: 0 }],
+    ]);
+
+    expect(
+      detectFairUseEmailAlerts(clinics, usageMap, yearMonth, new Set()),
+    ).toHaveLength(0);
+  });
+
+  it("skips already sent alerts", () => {
+    const clinics = [
+      {
+        id: "c1",
+        name: "Clínica A",
+        plan_key: "completo" as const,
+        deleted_at: null,
+      },
+    ];
+    const usageMap = new Map([
+      ["c1", { whatsapp_conversations: 2000, ai_responses: 0 }],
     ]);
     const sent = new Set([buildFairUseAlertKey("c1", yearMonth, "whatsapp", "80")]);
 

@@ -1,5 +1,7 @@
 # Dental Seven MVP — Design Spec
 
+> **Roadmap consolidado e status:** `docs/superpowers/GUIA-MASTER.md` §3. Este documento é referência histórica da v1 e visão inicial.
+
 **Versão:** 1.4  
 **Data:** 2026-06-15  
 **Autor:** DR7 Performance (brainstorming com cliente)  

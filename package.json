@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -H 0.0.0.0",
+    "dev:tunnel": "npx localtunnel --port 3000",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",

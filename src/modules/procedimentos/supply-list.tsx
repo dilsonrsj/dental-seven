@@ -23,6 +23,11 @@ type SupplyFormState = {
 
 const unitSuggestions = ["un", "cx", "par", "ml", "g"];
 
+function unitOptionsFor(current: string): string[] {
+  if (!current || unitSuggestions.includes(current)) return unitSuggestions;
+  return [...unitSuggestions, current];
+}
+
 export function SupplyList({ supplies }: SupplyListProps) {
   const [items, setItems] = useState(supplies);
   const [modalOpen, setModalOpen] = useState(false);
@@ -114,8 +119,57 @@ export function SupplyList({ supplies }: SupplyListProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border">
-          <table className="w-full text-left text-sm">
+        <>
+          <div className="space-y-3 md:hidden">
+            {items.map((supply) => (
+              <Card key={supply.id}>
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium">{supply.name}</p>
+                    <Badge
+                      className={
+                        supply.is_active
+                          ? "shrink-0 border-primary/30 text-primary"
+                          : "shrink-0 border-muted-foreground/30 text-muted-foreground"
+                      }
+                    >
+                      {supply.is_active ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <span>{supply.unit_label}</span>
+                    <span>
+                      {supply.unit_cost_cents === null
+                        ? "Sem custo"
+                        : formatBrlFromCents(supply.unit_cost_cents)}
+                    </span>
+                    {supply.sku ? <span>SKU: {supply.sku}</span> : null}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      disabled={isSaving}
+                      onClick={() => openEdit(supply)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isSaving}
+                      onClick={() => void handleToggleActive(supply)}
+                    >
+                      {supply.is_active ? "Desativar" : "Ativar"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="ds-table-shell hidden md:block">
+            <table className="ds-table">
             <thead className="bg-surface text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Nome</th>
@@ -173,6 +227,7 @@ export function SupplyList({ supplies }: SupplyListProps) {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <Modal
@@ -195,9 +250,8 @@ export function SupplyList({ supplies }: SupplyListProps) {
 
           <label className="block space-y-1.5">
             <span className="text-sm font-medium">Unidade</span>
-            <Input
+            <select
               required
-              list="supply-unit-suggestions"
               value={form.unit_label}
               onChange={(event) =>
                 setForm((current) => ({
@@ -205,13 +259,14 @@ export function SupplyList({ supplies }: SupplyListProps) {
                   unit_label: event.target.value,
                 }))
               }
-              placeholder="un"
-            />
-            <datalist id="supply-unit-suggestions">
-              {unitSuggestions.map((unit) => (
-                <option key={unit} value={unit} />
+              className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {unitOptionsFor(form.unit_label).map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
               ))}
-            </datalist>
+            </select>
           </label>
 
           <label className="block space-y-1.5">

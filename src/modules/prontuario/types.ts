@@ -31,3 +31,17 @@ export type PatientClinicalNoteListItem = PatientClinicalNote & {
   author_name: string | null;
   appointment_label: string | null;
 };
+
+export type PatientToothRecord = {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  tooth_number: number;
+  status: string;
+  faces: string[];
+  note: string | null;
+  updated_by: string | null;
+  updated_at: string;
+};
+
+export type PatientToothRecordListItem = PatientToothRecord;

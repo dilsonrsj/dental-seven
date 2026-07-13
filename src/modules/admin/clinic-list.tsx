@@ -33,6 +33,7 @@ const MODULE_LABELS: Record<ModuleKey, string> = {
   estoque: "Estoque",
   financeiro: "Financeiro",
   fornecedores: "Fornecedores",
+  convenios: "Convênios",
 };
 
 const PLAN_OPTIONS = Object.entries(PLAN_LABELS) as [PlanKey, string][];

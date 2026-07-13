@@ -10,6 +10,22 @@ import { PLAN_LABELS, PLAN_PRICES } from "@/lib/billing/plans";
 import { isSubscriptionBlocking } from "@/lib/billing/subscription";
 import { getDentistProfile } from "@/modules/configuracoes/dentist-profile-actions";
 import { DentistProfileForm } from "@/modules/configuracoes/dentist-profile-form";
+import {
+  getClinicContactSettings,
+} from "@/modules/configuracoes/clinic-contact-actions";
+import { ClinicContactForm } from "@/modules/configuracoes/clinic-contact-form";
+import {
+  getClinicLogoSettings,
+} from "@/modules/configuracoes/clinic-logo-actions";
+import { ClinicLogoForm } from "@/modules/configuracoes/clinic-logo-form";
+import {
+  getClinicOperatingHours,
+  getDentistOperatingHours,
+} from "@/modules/agenda/operating-hours-actions";
+import { ClinicHoursForm } from "@/modules/configuracoes/clinic-hours-form";
+import { DentistHoursForm } from "@/modules/configuracoes/dentist-hours-form";
+import { getClinicTeam } from "@/modules/configuracoes/team-actions";
+import { ClinicTeamForm } from "@/modules/configuracoes/clinic-team-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EncerramentoForm } from "./encerramento-form";
@@ -34,6 +50,21 @@ export default async function ConfiguracoesPage() {
   const dentistProfile = canManageDentistProfile
     ? await getDentistProfile(targetDentistId)
     : null;
+  const clinicContacts =
+    canManageBilling && clinic ? await getClinicContactSettings() : null;
+  const clinicLogo =
+    canManageBilling && clinic ? await getClinicLogoSettings() : null;
+  const clinicHours =
+    canManageBilling && clinic ? await getClinicOperatingHours() : null;
+  const dentistHours =
+    canManageDentistProfile && targetDentistId
+      ? await getDentistOperatingHours(targetDentistId)
+      : null;
+  const clinicTeam =
+    canManageBilling && clinic ? await getClinicTeam() : null;
+  const canWriteTeam =
+    !!clinic &&
+    !isSubscriptionBlocking(clinic.subscription_status, ctx.profile.role);
   const canWriteDentistProfile =
     !!clinic &&
     !isSubscriptionBlocking(clinic.subscription_status, ctx.profile.role);
@@ -84,12 +115,59 @@ export default async function ConfiguracoesPage() {
             </form>
           </div>
         )}
-        {canManageBilling && !asaasReady && (
-          <p className="text-xs text-muted-foreground">
-            Configure ASAAS_API_KEY para ativar cobrança automática no 8º dia.
-          </p>
-        )}
       </Card>
+
+      {clinicContacts && (
+        <Card className="space-y-4 p-6">
+          <h2 className="font-display text-lg font-semibold">
+            Contatos no rodapé dos documentos
+          </h2>
+          <ClinicContactForm
+            initial={clinicContacts}
+            canWrite={canManageBilling && !isSubscriptionBlocking(clinic!.subscription_status, ctx.profile.role)}
+          />
+        </Card>
+      )}
+
+      {clinicLogo && (
+        <Card className="space-y-4 p-6">
+          <h2 className="font-display text-lg font-semibold">Logo da clínica</h2>
+          <ClinicLogoForm
+            initial={clinicLogo}
+            canWrite={
+              canManageBilling &&
+              !isSubscriptionBlocking(clinic!.subscription_status, ctx.profile.role)
+            }
+          />
+        </Card>
+      )}
+
+      {clinicHours && (
+        <Card className="space-y-4 p-6">
+          <h2 className="font-display text-lg font-semibold">
+            Horário da clínica
+          </h2>
+          <ClinicHoursForm
+            initialSchedule={clinicHours}
+            canWrite={
+              canManageBilling &&
+              !isSubscriptionBlocking(clinic!.subscription_status, ctx.profile.role)
+            }
+          />
+        </Card>
+      )}
+
+      {clinicTeam && (
+        <Card className="space-y-4 p-6">
+          <h2 className="font-display text-lg font-semibold">Equipe</h2>
+          <ClinicTeamForm
+            members={clinicTeam.members}
+            quota={clinicTeam.quota}
+            planKey={clinicTeam.planKey}
+            canWrite={canWriteTeam}
+          />
+        </Card>
+      )}
 
       {dentistProfile && (
         <Card className="space-y-4 p-6">
@@ -100,6 +178,20 @@ export default async function ConfiguracoesPage() {
             initialProfile={dentistProfile}
             canWrite={canWriteDentistProfile}
           />
+          {dentistHours && targetDentistId && (
+            <div className="border-t border-border pt-6">
+              <h3 className="font-display text-base font-semibold">
+                Meus horários
+              </h3>
+              <div className="mt-4">
+                <DentistHoursForm
+                  dentistId={targetDentistId}
+                  initialSchedule={dentistHours}
+                  canWrite={canWriteDentistProfile}
+                />
+              </div>
+            </div>
+          )}
         </Card>
       )}
 

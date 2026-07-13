@@ -181,13 +181,19 @@ export async function applyFinanceForAppointmentStatusChange(
 
   const { data: appointment, error: appointmentError } = await supabase
     .from("appointments")
-    .select("procedure_id, dentist_id")
+    .select("procedure_id, dentist_id, payment_source")
     .eq("id", appointmentId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
 
   if (appointmentError) throw new Error(appointmentError.message);
   if (!appointment) {
+    return { applied: false, reversed: false };
+  }
+
+  // Convênio: a receita não é reconhecida na conclusão. Uma guia é criada e a
+  // receita entra no ledger apenas quando a guia é marcada como paga.
+  if (appointment.payment_source === "insurance") {
     return { applied: false, reversed: false };
   }
 

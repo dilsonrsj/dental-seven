@@ -5,8 +5,11 @@ const CLINIC_APP_PREFIXES = [
   "/estoque",
   "/financeiro",
   "/fornecedores",
+  "/convenios",
   "/whatsapp",
   "/configuracoes",
+  "/ajuda",
+  "/feedback",
 ] as const;
 
 export function isClinicAppPath(pathname: string): boolean {

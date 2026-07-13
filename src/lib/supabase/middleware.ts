@@ -10,8 +10,18 @@ import {
   defaultAppPathForRole,
   isClinicAppPath,
 } from "@/lib/auth/routes";
+import { FOUNDING_COOKIE } from "@/lib/founding/content";
+import { isBetaGateEnabled, isValidFoundingToken } from "@/lib/founding/gate";
 
-const PUBLIC_PATHS = ["/entrar", "/cadastro", "/visao", "/api/webhooks/asaas"];
+const PUBLIC_PATHS = [
+  "/entrar",
+  "/cadastro",
+  "/founding",
+  "/termos",
+  "/privacidade",
+  "/visao",
+  "/api/webhooks/asaas",
+];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -69,6 +79,14 @@ export async function updateSession(request: NextRequest) {
     Boolean(user) &&
     Boolean(impersonationPayload) &&
     isImpersonationValid(impersonationPayload!, user!.id);
+
+  if (
+    isBetaGateEnabled() &&
+    pathname === "/cadastro" &&
+    !isValidFoundingToken(request.cookies.get(FOUNDING_COOKIE)?.value)
+  ) {
+    return NextResponse.redirect(new URL("/founding", request.url));
+  }
 
   if (user && isAuthPage) {
     return NextResponse.redirect(

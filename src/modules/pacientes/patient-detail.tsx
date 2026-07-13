@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Badge, Button, Card, CardContent, toast } from "@/components/ui";
+import { portugueseProseFieldProps } from "@/lib/i18n/prose-field";
 import type { AppointmentStatus, Patient } from "@/lib/supabase/types";
 import { updatePatientNotes } from "./actions";
 import type { PatientAppointmentWithRelations } from "./types";
@@ -85,6 +86,7 @@ export function PatientDetail({ patient, appointments }: PatientDetailProps) {
               </div>
 
               <textarea
+                {...portugueseProseFieldProps}
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 rows={7}

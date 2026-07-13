@@ -13,7 +13,10 @@ export type AdminAuditAction =
   | "clinic.impersonation_started"
   | "clinic.impersonation_stopped"
   | "clinic.whatsapp_throttle_set"
-  | "fair_use.email_sent";
+  | "fair_use.email_sent"
+  | "dentist.invited"
+  | "dentist.extra_added"
+  | "founder.feedback_status_updated";
 
 export type LogAdminActionInput = {
   actorId: string;

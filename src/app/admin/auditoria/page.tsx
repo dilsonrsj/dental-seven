@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { listAdminAuditLog } from "@/lib/admin/actions";
 import { getAuthContext } from "@/lib/auth/context";
+import { adminAuditActionLabel } from "@/modules/admin/admin-audit-labels";
 import type { AdminAuditLogFilters } from "@/modules/admin/types";
 
 type AuditoriaPageProps = {
@@ -24,21 +25,7 @@ function formatDate(iso: string): string {
 }
 
 function actionLabel(action: string): string {
-  const labels: Record<string, string> = {
-    "clinic.plan_changed": "Plano alterado",
-    "clinic.trial_extended": "Trial estendido",
-    "clinic.suspended": "Clínica suspensa",
-    "clinic.reactivated": "Clínica reativada",
-    "clinic.module_toggled": "Módulo alterado",
-    "clinic.export_requested": "Export LGPD solicitado",
-    "clinic.notes_updated": "Notas internas atualizadas",
-    "clinic.provisioned": "Clínica provisionada",
-    "clinic.impersonation_started": "Impersonação iniciada",
-    "clinic.impersonation_stopped": "Impersonação encerrada",
-    "clinic.whatsapp_throttle_set": "WhatsApp throttle alterado",
-    "fair_use.email_sent": "E-mail fair use enviado",
-  };
-  return labels[action] ?? action;
+  return adminAuditActionLabel(action);
 }
 
 export default async function AdminAuditoriaPage({

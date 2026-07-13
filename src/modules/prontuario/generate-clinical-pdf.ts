@@ -1,27 +1,20 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { atestadoTemplate, buildAtestadoLines } from "./templates/atestado";
-import { buildGuiaLines, guiaTemplate } from "./templates/guia";
-import { buildReceitaLines, receitaTemplate } from "./templates/receita";
-import type {
-  ClinicalDocumentTemplate,
-  ClinicalPdfPayload,
-  ClinicalTemplateDefinition,
-} from "./templates/types";
+import { isPngImage } from "@/lib/clinic/clinic-logo";
+import { buildAtestadoLines } from "./templates/atestado";
+import { buildGuiaLines } from "./templates/guia";
+import { buildReceitaLines } from "./templates/receita";
+import { TEMPLATE_MAP } from "./templates/registry";
+import type { ClinicalPdfPayload } from "./templates/types";
+import {
+  FOOTER_MIN_BODY_Y,
+  MARGIN_X,
+  PAGE_HEIGHT,
+  PAGE_WIDTH,
+  drawClinicalPdfFooter,
+  embedFooterAssets,
+} from "./pdf/clinical-pdf-footer";
 
-const PAGE_WIDTH = 595.28;
-const PAGE_HEIGHT = 841.89;
-const MARGIN_X = 50;
 const LINE_HEIGHT = 16;
-const FOOTER_Y = 120;
-
-const TEMPLATE_MAP: Record<
-  ClinicalDocumentTemplate,
-  ClinicalTemplateDefinition
-> = {
-  receita: receitaTemplate,
-  atestado: atestadoTemplate,
-  guia: guiaTemplate,
-};
 
 function formatIssuedAt(date: Date): string {
   return date.toLocaleDateString("pt-BR", {
@@ -30,16 +23,6 @@ function formatIssuedAt(date: Date): string {
     year: "numeric",
   });
 }
-
-function dentistFooterLines(payload: ClinicalPdfPayload): string[] {
-  const lines = [payload.dentistName];
-  if (payload.dentistCro?.trim()) lines.push(`CRO: ${payload.dentistCro.trim()}`);
-  if (payload.dentistSpecialty?.trim()) {
-    lines.push(payload.dentistSpecialty.trim());
-  }
-  return lines;
-}
-
 function bodyLinesForPayload(payload: ClinicalPdfPayload): string[] {
   switch (payload.template) {
     case "receita":
@@ -104,17 +87,40 @@ export async function buildClinicalPdf(
   const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   const regular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const footerAssets = await embedFooterAssets(pdfDoc);
 
   let cursorY = PAGE_HEIGHT - 70;
 
-  page.drawText(payload.clinicName, {
-    x: MARGIN_X,
-    y: cursorY,
-    size: 14,
-    font: bold,
-    color: rgb(0.1, 0.1, 0.1),
-  });
-  cursorY -= 24;
+  if (payload.clinicLogoImageBytes && payload.clinicLogoImageBytes.length > 0) {
+    const logoImage = isPngImage(payload.clinicLogoImageBytes)
+      ? await pdfDoc.embedPng(payload.clinicLogoImageBytes)
+      : await pdfDoc.embedJpg(payload.clinicLogoImageBytes);
+    const maxWidth = 120;
+    const maxHeight = 48;
+    const scale = Math.min(
+      maxWidth / logoImage.width,
+      maxHeight / logoImage.height,
+      1,
+    );
+    const logoWidth = logoImage.width * scale;
+    const logoHeight = logoImage.height * scale;
+    page.drawImage(logoImage, {
+      x: MARGIN_X,
+      y: cursorY - logoHeight + 12,
+      width: logoWidth,
+      height: logoHeight,
+    });
+    cursorY -= logoHeight + 16;
+  } else {
+    page.drawText(payload.clinicName, {
+      x: MARGIN_X,
+      y: cursorY,
+      size: 14,
+      font: bold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+    cursorY -= 24;
+  }
 
   page.drawText(template.documentTitle, {
     x: MARGIN_X,
@@ -135,7 +141,7 @@ export async function buildClinicalPdf(
   cursorY -= 28;
 
   for (const line of wrapText(bodyLinesForPayload(payload).join("\n"))) {
-    if (cursorY < FOOTER_Y + 40) break;
+    if (cursorY < FOOTER_MIN_BODY_Y) break;
     page.drawText(line, {
       x: MARGIN_X,
       y: cursorY,
@@ -146,38 +152,19 @@ export async function buildClinicalPdf(
     cursorY -= LINE_HEIGHT;
   }
 
-  let footerY = FOOTER_Y;
-  for (const line of dentistFooterLines(payload)) {
-    page.drawText(line, {
-      x: MARGIN_X,
-      y: footerY,
-      size: 11,
-      font: regular,
-      color: rgb(0.15, 0.15, 0.15),
-    });
-    footerY -= 14;
-  }
-
-  if (payload.signatureImageBytes?.length) {
-    try {
-      const signature = await pdfDoc.embedPng(payload.signatureImageBytes);
-      const maxWidth = 160;
-      const scale = Math.min(1, maxWidth / signature.width);
-      const width = signature.width * scale;
-      const height = signature.height * scale;
-
-      page.drawImage(signature, {
-        x: PAGE_WIDTH - MARGIN_X - width,
-        y: FOOTER_Y - height + 20,
-        width,
-        height,
-      });
-    } catch {
-      // Assinatura inválida não bloqueia o PDF.
-    }
-  }
+  await drawClinicalPdfFooter(
+    page,
+    pdfDoc,
+    {
+      dentistName: payload.dentistName,
+      dentistCro: payload.dentistCro,
+      dentistSpecialty: payload.dentistSpecialty,
+      clinicContact: payload.clinicContact,
+      signatureImageBytes: payload.signatureImageBytes,
+    },
+    regular,
+    footerAssets,
+  );
 
   return pdfDoc.save();
 }
-
-export { TEMPLATE_MAP };

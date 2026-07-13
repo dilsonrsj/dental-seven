@@ -105,6 +105,10 @@
   }
 
   body {
+    overflow-x: clip;
+  }
+
+  body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
@@ -116,6 +120,52 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+}
+
+/* Tabelas responsivas — rolagem horizontal no tablet; cards no mobile */
+.ds-table-shell {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+
+.ds-table-shell::after {
+  content: "";
+  position: sticky;
+  right: 0;
+  top: 0;
+  float: right;
+  width: 1.5rem;
+  height: 100%;
+  margin-left: -1.5rem;
+  pointer-events: none;
+  background: linear-gradient(
+    to left,
+    color-mix(in oklab, var(--background) 92%, transparent),
+    transparent
+  );
+}
+
+@media (min-width: 768px) {
+  .ds-table-shell::after {
+    display: none;
+  }
+}
+
+.ds-table {
+  min-width: 36rem;
+  width: 100%;
+  text-align: left;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
 /* Tech grid background */

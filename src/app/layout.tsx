@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -8,6 +8,12 @@ export const metadata: Metadata = {
     icon: "/brand/dental-seven-icon-on-dark-v2.png",
     apple: "/brand/dental-seven-icon-on-dark-v2.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

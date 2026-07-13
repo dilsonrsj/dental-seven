@@ -22,6 +22,9 @@ export default async function AdminPage() {
           <Link href="/admin/clinicas" className="text-primary hover:underline">
             Clínicas
           </Link>
+          <Link href="/admin/founding" className="text-primary hover:underline">
+            Founding
+          </Link>
           <Link href="/admin/auditoria" className="text-primary hover:underline">
             Auditoria
           </Link>

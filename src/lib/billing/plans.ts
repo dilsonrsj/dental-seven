@@ -9,7 +9,8 @@ export type ModuleKey =
   | "procedimentos"
   | "estoque"
   | "financeiro"
-  | "fornecedores";
+  | "fornecedores"
+  | "convenios";
 
 export const PLAN_PRICES: Record<PlanKey, number> = {
   essencial: 99,
@@ -25,20 +26,36 @@ export const PLAN_LABELS: Record<PlanKey, string> = {
   completo: "Completo",
 };
 
+export const PLAN_TAGLINES: Record<PlanKey, string> = {
+  essencial: "Agenda + Pacientes",
+  conecta: "Prontuário + procedimentos",
+  inteligente: "Estoque + financeiro",
+  completo: "WhatsApp + IA + fornecedores",
+};
+
 export const PLAN_MODULES: Record<PlanKey, ModuleKey[]> = {
   essencial: ["agenda", "pacientes"],
-  conecta: ["agenda", "pacientes", "whatsapp"],
-  inteligente: ["agenda", "pacientes", "whatsapp", "ai_agent"],
+  conecta: ["agenda", "pacientes", "prontuario", "procedimentos"],
+  inteligente: [
+    "agenda",
+    "pacientes",
+    "prontuario",
+    "procedimentos",
+    "estoque",
+    "financeiro",
+    "convenios",
+  ],
   completo: [
     "agenda",
     "pacientes",
-    "whatsapp",
-    "ai_agent",
     "prontuario",
     "procedimentos",
     "estoque",
     "financeiro",
     "fornecedores",
+    "convenios",
+    "whatsapp",
+    "ai_agent",
   ],
 };
 
@@ -48,6 +65,8 @@ export const PLAN_DENTIST_LIMIT: Record<PlanKey, number> = {
   inteligente: 3,
   completo: 3,
 };
+
+export const EXTRA_DENTIST_PRICE = 20;
 
 export function isModuleEnabledForPlan(
   planKey: PlanKey,
@@ -62,14 +81,5 @@ export function defaultModuleEnabled(
 ): boolean {
   if (!isModuleEnabledForPlan(planKey, moduleKey)) return false;
   if (moduleKey === "ai_agent") return false;
-  if (
-    moduleKey === "prontuario" ||
-    moduleKey === "procedimentos" ||
-    moduleKey === "estoque" ||
-    moduleKey === "financeiro" ||
-    moduleKey === "fornecedores"
-  ) {
-    return false;
-  }
   return true;
 }

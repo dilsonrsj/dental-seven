@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Button, Input, Modal, toast } from "@/components/ui";
+import { portugueseProseFieldProps } from "@/lib/i18n/prose-field";
 import { createSupplier, updateSupplier } from "./actions";
 import type { SupplierFormInput, SupplierRow } from "./types";
 
@@ -98,6 +99,7 @@ export function SupplierForm({ supplier, onClose, onSuccess }: SupplierFormProps
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Observações</span>
           <textarea
+            {...portugueseProseFieldProps}
             value={form.notes}
             onChange={(event) =>
               setForm((current) => ({ ...current, notes: event.target.value }))
