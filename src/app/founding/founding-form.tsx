@@ -76,7 +76,7 @@ export function FoundingForm({ initialAccessGranted }: Props) {
       return "Descreva um pouco mais o que atrapalha a rotina (mín. 3 caracteres).";
     }
     if (!acceptedTerms || !marketingConsent) {
-      return "Marque as duas caixas de aceite abaixo para liberar o botão.";
+      return "Marque as duas caixas de aceite para liberar o botão.";
     }
     if (
       whatsapp.replace(/\D/g, "").length > 0 &&
