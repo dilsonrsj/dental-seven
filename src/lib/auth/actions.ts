@@ -13,6 +13,7 @@ import {
 } from "@/lib/billing/asaas";
 import { resolveSignupAccessPeriod } from "@/lib/auth/signup-access";
 import { resolveSignupPlanKey } from "@/lib/auth/signup-plan";
+import { seedClinicDemo } from "@/lib/beta/seed-clinic-demo";
 import { isBetaGateEnabled, linkFounderToClinic } from "@/lib/founding/gate";
 import { BETA_ENDS_AT } from "@/lib/founding/content";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -261,6 +262,17 @@ export async function signupClinic(input: SignupInput): Promise<SignupResult> {
   }
 
   await linkFounderToClinic(email, clinic.id);
+
+  if (isBetaGateEnabled()) {
+    try {
+      const seed = await seedClinicDemo(clinic.id, dentist.id);
+      if (!seed.ok) {
+        console.error("[signup] beta seed failed:", seed.error);
+      }
+    } catch (err) {
+      console.error("[signup] beta seed crashed:", err);
+    }
+  }
 
   revalidatePath("/", "layout");
   return { ok: true };

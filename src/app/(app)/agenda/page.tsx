@@ -13,6 +13,7 @@ import { listActivePlanOptions, listPrimaryEnrollmentPlanByPatient } from "@/mod
 type AgendaPageProps = {
   searchParams?: Promise<{
     patientId?: string | string[];
+    new?: string | string[];
   }>;
 };
 
@@ -21,6 +22,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   const initialPatientId = Array.isArray(params?.patientId)
     ? params?.patientId[0]
     : params?.patientId;
+  const newFlag = Array.isArray(params?.new) ? params?.new[0] : params?.new;
+  const initialOpenNew = newFlag === "1" || newFlag === "true";
 
   const ctx = await getAuthContext();
   const hasProcedimentosModule =
@@ -63,6 +66,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       insurancePlans={insurancePlans}
       primaryPlanByPatient={primaryPlanByPatient}
       initialPatientId={initialPatientId}
+      initialOpenNew={initialOpenNew}
     />
   );
 }

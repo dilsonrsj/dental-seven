@@ -243,6 +243,13 @@ export const demoStore = {
     return withRelations(appointment, dentists, patients);
   },
 
+  deleteAppointment(id: string): void {
+    const { appointments } = getState();
+    const index = appointments.findIndex((a) => a.id === id);
+    if (index < 0) throw new Error("Consulta não encontrada.");
+    appointments.splice(index, 1);
+  },
+
   getThreads(): WhatsappThreadWithPatient[] {
     const { threads, patients } = getState();
     return clone(threads)

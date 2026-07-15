@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button, Card, CardContent, Input, toast } from "@/components/ui";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  SearchableCombobox,
+  toast,
+} from "@/components/ui";
 import {
   brlInputToCents,
   centsToBrlInput,
@@ -25,6 +32,14 @@ export function PriceTable({
   const [planId, setPlanId] = useState(planOptions[0]?.plan_id ?? "");
   const [prices, setPrices] = useState<InsuranceProcedurePriceRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const planComboboxOptions = useMemo(
+    () =>
+      planOptions.map((option) => ({
+        value: option.plan_id,
+        label: `${option.carrier_name} — ${option.plan_name}`,
+      })),
+    [planOptions],
+  );
 
   useEffect(() => {
     if (!planId) return;
@@ -74,20 +89,16 @@ export function PriceTable({
 
   return (
     <div className="space-y-4">
-      <label className="block space-y-1.5">
+      <div className="space-y-1.5 sm:max-w-md">
         <span className="text-sm text-muted-foreground">Plano</span>
-        <select
+        <SearchableCombobox
           value={planId}
-          onChange={(e) => setPlanId(e.target.value)}
-          className="flex h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:max-w-md"
-        >
-          {planOptions.map((option) => (
-            <option key={option.plan_id} value={option.plan_id}>
-              {option.carrier_name} — {option.plan_name}
-            </option>
-          ))}
-        </select>
-      </label>
+          onChange={setPlanId}
+          options={planComboboxOptions}
+          placeholder="Digite a operadora ou plano"
+          aria-label="Buscar plano"
+        />
+      </div>
 
       <Card>
         <CardContent className="space-y-2">

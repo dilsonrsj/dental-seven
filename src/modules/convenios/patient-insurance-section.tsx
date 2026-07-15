@@ -1,7 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { Badge, Button, Card, CardContent, Input, Modal, toast } from "@/components/ui";
+import { useMemo, useState } from "react";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Modal,
+  SearchableCombobox,
+  toast,
+} from "@/components/ui";
 import {
   deletePatientEnrollment,
   savePatientEnrollment,
@@ -128,6 +137,14 @@ function EnrollmentModal({
   const [validUntil, setValidUntil] = useState("");
   const [isPrimary, setIsPrimary] = useState(true);
   const [saving, setSaving] = useState(false);
+  const planComboboxOptions = useMemo(
+    () =>
+      planOptions.map((option) => ({
+        value: option.plan_id,
+        label: `${option.carrier_name} — ${option.plan_name}`,
+      })),
+    [planOptions],
+  );
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -153,20 +170,17 @@ function EnrollmentModal({
   return (
     <Modal open onClose={onClose} title="Vincular plano">
       <form onSubmit={(e) => void submit(e)} className="space-y-3">
-        <label className="block space-y-1.5">
+        <div className="space-y-1.5">
           <span className="text-sm text-muted-foreground">Plano</span>
-          <select
+          <SearchableCombobox
             value={planId}
-            onChange={(e) => setPlanId(e.target.value)}
-            className="flex h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            {planOptions.map((option) => (
-              <option key={option.plan_id} value={option.plan_id}>
-                {option.carrier_name} — {option.plan_name}
-              </option>
-            ))}
-          </select>
-        </label>
+            onChange={setPlanId}
+            options={planComboboxOptions}
+            placeholder="Digite a operadora ou plano"
+            aria-label="Buscar plano"
+            required
+          />
+        </div>
         <label className="block space-y-1.5">
           <span className="text-sm text-muted-foreground">Nº da carteirinha*</span>
           <Input

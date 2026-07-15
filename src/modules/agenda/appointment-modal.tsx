@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Button, Input, Modal } from "@/components/ui";
+import { Button, Input, Modal, SearchableCombobox } from "@/components/ui";
 import { portugueseProseFieldProps } from "@/lib/i18n/prose-field";
 import type { AppointmentStatus, Dentist, Patient } from "@/lib/supabase/types";
 import {
@@ -9,6 +9,10 @@ import {
   resolveAgendaProcedureFields,
   type AgendaCatalogProcedure,
 } from "@/modules/procedimentos/agenda-procedure";
+import {
+  brlInputToCents,
+  centsToBrlInput,
+} from "@/modules/procedimentos/price-utils";
 import type {
   AppointmentFormInput,
   AppointmentWithRelations,
@@ -39,6 +43,7 @@ type AppointmentModalProps = {
   onClose: () => void;
   onSubmit: (input: AppointmentFormInput) => Promise<void>;
   onStatusChange: (id: string, status: AppointmentStatus) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
   isSaving?: boolean;
 };
 
@@ -54,7 +59,18 @@ type FormState = {
   notes: string;
   payment_source: "particular" | "insurance";
   insurance_plan_id: string;
+  charged_amount_brl: string;
 };
+
+function defaultChargeBrl(
+  procedureId: string | null,
+  catalogProcedures: AgendaCatalogProcedure[],
+): string {
+  if (!procedureId) return "";
+  const match = catalogProcedures.find((p) => p.id === procedureId);
+  if (!match) return "";
+  return centsToBrlInput(match.base_price_cents);
+}
 
 export function AppointmentModal({
   open,
@@ -69,12 +85,49 @@ export function AppointmentModal({
   onClose,
   onSubmit,
   onStatusChange,
+  onDelete,
   isSaving = false,
 }: AppointmentModalProps) {
   const hasCatalog = catalogProcedures.length > 0;
   const hasInsurance = insurancePlans.length > 0;
+  const [formError, setFormError] = useState<string | null>(null);
   const activePlanIds = useMemo(
     () => insurancePlans.map((plan) => plan.plan_id),
+    [insurancePlans],
+  );
+  const patientOptions = useMemo(
+    () =>
+      patients.map((patient) => ({
+        value: patient.id,
+        label: patient.name,
+        keywords: `${patient.phone ?? ""} ${patient.whatsapp ?? ""}`.trim(),
+      })),
+    [patients],
+  );
+  const dentistOptions = useMemo(
+    () =>
+      dentists.map((dentist) => ({
+        value: dentist.id,
+        label: dentist.name,
+      })),
+    [dentists],
+  );
+  const procedureOptions = useMemo(
+    () => [
+      ...catalogProcedures.map((procedure) => ({
+        value: procedure.id,
+        label: procedure.name,
+      })),
+      { value: OTHER_PROCEDURE_VALUE, label: "Outro (texto livre)" },
+    ],
+    [catalogProcedures],
+  );
+  const insurancePlanOptions = useMemo(
+    () =>
+      insurancePlans.map((plan) => ({
+        value: plan.plan_id,
+        label: `${plan.carrier_name} — ${plan.plan_name}`,
+      })),
     [insurancePlans],
   );
 
@@ -93,18 +146,18 @@ export function AppointmentModal({
 
   useEffect(() => {
     if (!open) return;
-    setForm(
-      buildAppointmentInitialForm(
-        appointment,
-        selectedDate,
-        dentists,
-        patients,
-        catalogProcedures,
-        initialPatientId,
-        primaryPlanByPatient,
-        activePlanIds,
-      ),
+    const next = buildAppointmentInitialForm(
+      appointment,
+      selectedDate,
+      dentists,
+      patients,
+      catalogProcedures,
+      initialPatientId,
+      primaryPlanByPatient,
+      activePlanIds,
     );
+    setForm(next);
+    setFormError(null);
   }, [
     activePlanIds,
     appointment,
@@ -117,6 +170,24 @@ export function AppointmentModal({
     selectedDate,
   ]);
 
+  const showChargeField =
+    form.status === "completed" &&
+    (!hasInsurance || form.payment_source === "particular");
+
+  function handlePatientChange(patientId: string) {
+    setForm((current) => {
+      if (appointment) {
+        return { ...current, patient_id: patientId };
+      }
+      const insurance = resolvePatientInsuranceDefaults(
+        patientId,
+        primaryPlanByPatient,
+        activePlanIds,
+      );
+      return { ...current, patient_id: patientId, ...insurance };
+    });
+  }
+
   function handleProcedureSelectionChange(selection: string) {
     if (!hasCatalog) return;
 
@@ -125,6 +196,7 @@ export function AppointmentModal({
         ...current,
         procedure_selection: selection,
         procedure_id: null,
+        charged_amount_brl: "",
       }));
       return;
     }
@@ -144,11 +216,21 @@ export function AppointmentModal({
         resolved.duration_min !== undefined
           ? String(resolved.duration_min)
           : current.duration_min,
+      charged_amount_brl: defaultChargeBrl(
+        resolved.procedure_id,
+        catalogProcedures,
+      ),
     }));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setFormError(null);
+
+    if (!form.patient_id) {
+      setFormError("Selecione um paciente na lista.");
+      return;
+    }
 
     let procedureId = form.procedure_id;
     let procedureLabel = form.procedure_label;
@@ -171,6 +253,22 @@ export function AppointmentModal({
           null
         : null;
 
+    let chargedAmountCents: number | null = null;
+    if (showChargeField) {
+      if (!form.charged_amount_brl.trim()) {
+        setFormError("Informe o valor da consulta para concluir.");
+        return;
+      }
+      try {
+        chargedAmountCents = brlInputToCents(form.charged_amount_brl);
+      } catch (error) {
+        setFormError(
+          error instanceof Error ? error.message : "Valor inválido.",
+        );
+        return;
+      }
+    }
+
     await onSubmit({
       id: appointment?.id,
       patient_id: form.patient_id,
@@ -183,6 +281,7 @@ export function AppointmentModal({
       notes: form.notes,
       payment_source: form.payment_source,
       insurance_plan_id: insurancePlanId,
+      charged_amount_cents: chargedAmountCents,
     });
   }
 
@@ -193,56 +292,37 @@ export function AppointmentModal({
       title={appointment ? "Editar consulta" : "Nova consulta"}
       className="max-h-[90vh] overflow-y-auto"
     >
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <label className="block space-y-1.5">
+      <form className="space-y-4" onSubmit={(e) => void handleSubmit(e)}>
+        <div className="space-y-1.5">
           <span className="text-sm font-medium">Paciente</span>
-          <select
-            required
+          <SearchableCombobox
             value={form.patient_id}
-            onChange={(event) => {
-              const patientId = event.target.value;
-              setForm((current) => {
-                if (appointment) {
-                  return { ...current, patient_id: patientId };
-                }
-                const insurance = resolvePatientInsuranceDefaults(
-                  patientId,
-                  primaryPlanByPatient,
-                  activePlanIds,
-                );
-                return { ...current, patient_id: patientId, ...insurance };
-              });
-            }}
-            className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            {patients.map((patient) => (
-              <option key={patient.id} value={patient.id}>
-                {patient.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium">Dentista</span>
-          <select
+            onChange={handlePatientChange}
+            options={patientOptions}
+            placeholder="Digite o nome ou telefone do paciente"
+            aria-label="Buscar paciente"
             required
+          />
+          {!form.patient_id ? (
+            <p className="text-xs text-muted-foreground">
+              Selecione um paciente na lista.
+            </p>
+          ) : null}
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="text-sm font-medium">Dentista</span>
+          <SearchableCombobox
             value={form.dentist_id}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                dentist_id: event.target.value,
-              }))
+            onChange={(dentist_id) =>
+              setForm((current) => ({ ...current, dentist_id }))
             }
-            className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            {dentists.map((dentist) => (
-              <option key={dentist.id} value={dentist.id}>
-                {dentist.name}
-              </option>
-            ))}
-          </select>
-        </label>
+            options={dentistOptions}
+            placeholder="Digite o nome do dentista"
+            aria-label="Buscar dentista"
+            required
+          />
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1.5">
@@ -280,27 +360,18 @@ export function AppointmentModal({
           </label>
         </div>
 
-        <label className="block space-y-1.5">
+        <div className="space-y-1.5">
           <span className="text-sm font-medium">Procedimento</span>
           {hasCatalog ? (
             <div className="space-y-2">
-              <select
-                required
+              <SearchableCombobox
                 value={form.procedure_selection}
-                onChange={(event) =>
-                  handleProcedureSelectionChange(event.target.value)
-                }
-                className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                {catalogProcedures.map((procedure) => (
-                  <option key={procedure.id} value={procedure.id}>
-                    {procedure.name}
-                  </option>
-                ))}
-                <option value={OTHER_PROCEDURE_VALUE}>
-                  Outro (texto livre)
-                </option>
-              </select>
+                onChange={handleProcedureSelectionChange}
+                options={procedureOptions}
+                placeholder="Digite o procedimento"
+                aria-label="Buscar procedimento"
+                required
+              />
 
               {form.procedure_selection === OTHER_PROCEDURE_VALUE ? (
                 <Input
@@ -329,18 +400,25 @@ export function AppointmentModal({
               placeholder="Consulta, limpeza, retorno..."
             />
           )}
-        </label>
+        </div>
 
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Status</span>
           <select
             value={form.status}
-            onChange={(event) =>
+            onChange={(event) => {
+              const status = event.target.value as AppointmentStatus;
               setForm((current) => ({
                 ...current,
-                status: event.target.value as AppointmentStatus,
-              }))
-            }
+                status,
+                charged_amount_brl:
+                  status === "completed" &&
+                  current.payment_source === "particular" &&
+                  !current.charged_amount_brl
+                    ? defaultChargeBrl(current.procedure_id, catalogProcedures)
+                    : current.charged_amount_brl,
+              }));
+            }}
             className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             {statusOptions.map((option) => (
@@ -365,11 +443,22 @@ export function AppointmentModal({
                     payment_source,
                     insurance_plan_id:
                       payment_source === "insurance"
-                        ? resolveInsurancePlanSelection(
-                            current.insurance_plan_id,
+                        ? current.insurance_plan_id ||
+                          resolvePatientInsuranceDefaults(
+                            current.patient_id,
+                            primaryPlanByPatient,
                             activePlanIds,
-                          )
+                          ).insurance_plan_id
                         : "",
+                    charged_amount_brl:
+                      payment_source === "particular" &&
+                      current.status === "completed" &&
+                      !current.charged_amount_brl
+                        ? defaultChargeBrl(
+                            current.procedure_id,
+                            catalogProcedures,
+                          )
+                        : current.charged_amount_brl,
                   }));
                 }}
                 className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -380,29 +469,45 @@ export function AppointmentModal({
             </label>
 
             {form.payment_source === "insurance" && (
-              <label className="block space-y-1.5">
+              <div className="space-y-1.5">
                 <span className="text-sm font-medium">Plano</span>
-                <select
-                  required
+                <SearchableCombobox
                   value={form.insurance_plan_id}
-                  onChange={(event) =>
+                  onChange={(insurance_plan_id) =>
                     setForm((current) => ({
                       ...current,
-                      insurance_plan_id: event.target.value,
+                      insurance_plan_id,
                     }))
                   }
-                  className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  {insurancePlans.map((plan) => (
-                    <option key={plan.plan_id} value={plan.plan_id}>
-                      {plan.carrier_name} — {plan.plan_name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-          </div>
+                  options={insurancePlanOptions}
+                  placeholder="Digite a operadora ou plano"
+                  aria-label="Buscar plano"
+                  required
+                />
+              </div>
+            )}          </div>
         )}
+
+        {showChargeField ? (
+          <label className="block space-y-1.5">
+            <span className="text-sm font-medium">Valor cobrado (R$)</span>
+            <Input
+              required
+              value={form.charged_amount_brl}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  charged_amount_brl: event.target.value,
+                }))
+              }
+              placeholder="0,00"
+              inputMode="decimal"
+            />
+            <p className="text-xs text-muted-foreground">
+              Ao salvar como concluída, este valor vai para o Financeiro.
+            </p>
+          </label>
+        ) : null}
 
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Observações</span>
@@ -418,9 +523,13 @@ export function AppointmentModal({
           />
         </label>
 
+        {formError ? (
+          <p className="text-sm text-destructive">{formError}</p>
+        ) : null}
+
         <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-between">
           {appointment ? (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -437,6 +546,24 @@ export function AppointmentModal({
               >
                 Cancelar
               </Button>
+              {onDelete ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={isSaving}
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "Apagar esta consulta definitivamente? Esta ação não pode ser desfeita.",
+                      )
+                    ) {
+                      void onDelete(appointment.id);
+                    }
+                  }}
+                >
+                  Apagar
+                </Button>
+              ) : null}
             </div>
           ) : (
             <span />
@@ -445,7 +572,7 @@ export function AppointmentModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Fechar
             </Button>
-            <Button type="submit" disabled={isSaving}>
+            <Button type="submit" disabled={isSaving || !form.patient_id}>
               Salvar
             </Button>
           </div>
@@ -490,7 +617,8 @@ export function buildAppointmentInitialForm(
 
   const insuranceDefaults = appointment
     ? {
-        payment_source: appointment.payment_source ?? "particular",
+        payment_source: (appointment.payment_source ??
+          "particular") as FormState["payment_source"],
         insurance_plan_id: appointment.insurance_plan_id ?? "",
       }
     : resolvePatientInsuranceDefaults(
@@ -498,6 +626,8 @@ export function buildAppointmentInitialForm(
         primaryPlanByPatient,
         activePlanIds,
       );
+
+  const resolvedProcedureId = catalogMatch ? catalogMatch.id : null;
 
   return {
     patient_id: patientId,
@@ -513,6 +643,7 @@ export function buildAppointmentInitialForm(
     notes: appointment?.notes ?? "",
     payment_source: insuranceDefaults.payment_source,
     insurance_plan_id: insuranceDefaults.insurance_plan_id,
+    charged_amount_brl: defaultChargeBrl(resolvedProcedureId, catalogProcedures),
   };
 }
 

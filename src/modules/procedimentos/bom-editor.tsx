@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button, Input, toast } from "@/components/ui";
+import { useEffect, useMemo, useState } from "react";
+import { Button, Input, SearchableCombobox, toast } from "@/components/ui";
 import {
   listProcedureBom,
   removeProcedureBomItem,
@@ -22,6 +22,15 @@ export function BomEditor({ procedureId, supplies }: BomEditorProps) {
   const [isSaving, setIsSaving] = useState(false);
 
   const activeSupplies = supplies.filter((supply) => supply.is_active);
+  const supplyOptions = useMemo(
+    () =>
+      activeSupplies.map((supply) => ({
+        value: supply.id,
+        label: supply.name,
+        keywords: supply.unit_label,
+      })),
+    [activeSupplies],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -98,21 +107,16 @@ export function BomEditor({ procedureId, supplies }: BomEditorProps) {
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-        <label className="block flex-1 space-y-1.5">
+        <div className="block flex-1 space-y-1.5">
           <span className="text-xs font-medium">Insumo</span>
-          <select
+          <SearchableCombobox
             value={supplyId}
-            onChange={(event) => setSupplyId(event.target.value)}
-            className="h-11 w-full rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <option value="">Selecione...</option>
-            {activeSupplies.map((supply) => (
-              <option key={supply.id} value={supply.id}>
-                {supply.name} ({supply.unit_label})
-              </option>
-            ))}
-          </select>
-        </label>
+            onChange={setSupplyId}
+            options={supplyOptions}
+            placeholder="Digite o nome do insumo"
+            aria-label="Buscar insumo"
+          />
+        </div>
 
         <label className="block w-full space-y-1.5 sm:w-28">
           <span className="text-xs font-medium">Quantidade</span>

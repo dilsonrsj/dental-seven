@@ -10,6 +10,10 @@ import { createClient } from "@/lib/supabase/server";
 import { applyStockForAppointmentStatusChange } from "@/modules/estoque/appointment-stock";
 import { applyFinanceForAppointmentStatusChange } from "@/modules/financeiro/appointment-finance";
 import { createClaimForAppointment } from "@/modules/convenios/actions";
+import {
+  findDentistScheduleConflict,
+  SCHEDULE_CONFLICT_MESSAGE,
+} from "./appointment-overlap";
 import { assertAppointmentWithinSchedule } from "./operating-hours";
 import { loadOperatingHoursForAppointment } from "./operating-hours-actions";
 import type { AppointmentFormInput, AppointmentWithRelations } from "./types";
@@ -151,6 +155,32 @@ export async function upsertAppointment(
   };
 
   if (isDemoMockDataEnabled()) {
+    if (payload.status !== "cancelled") {
+      const conflict = findDentistScheduleConflict(
+        {
+          id: input.id,
+          dentist_id: payload.dentist_id,
+          starts_at: payload.starts_at,
+          ends_at: payload.ends_at,
+          status: payload.status,
+        },
+        demoStore
+          .getAppointments(
+            "1970-01-01T00:00:00.000Z",
+            "2100-01-01T00:00:00.000Z",
+          )
+          .map((row) => ({
+            id: row.id,
+            dentist_id: row.dentist_id,
+            starts_at: row.starts_at,
+            ends_at: row.ends_at,
+            status: row.status,
+          })),
+      );
+      if (conflict) {
+        throw new Error(SCHEDULE_CONFLICT_MESSAGE);
+      }
+    }
     const data = demoStore.upsertAppointment({ id: input.id, ...payload });
     revalidatePath("/agenda");
     return { appointment: data };
@@ -169,6 +199,39 @@ export async function upsertAppointment(
   );
 
   const supabase = await createClient();
+
+  if (payload.status !== "cancelled") {
+    let conflictQuery = supabase
+      .from("appointments")
+      .select("id, dentist_id, starts_at, ends_at, status")
+      .eq("clinic_id", clinicId)
+      .eq("dentist_id", input.dentist_id)
+      .neq("status", "cancelled")
+      .lt("starts_at", endsAt.toISOString())
+      .gt("ends_at", startsAt.toISOString());
+
+    if (input.id) {
+      conflictQuery = conflictQuery.neq("id", input.id);
+    }
+
+    const { data: conflictRows, error: conflictError } = await conflictQuery;
+    if (conflictError) throw new Error(conflictError.message);
+
+    const conflict = findDentistScheduleConflict(
+      {
+        id: input.id,
+        dentist_id: payload.dentist_id,
+        starts_at: payload.starts_at,
+        ends_at: payload.ends_at,
+        status: payload.status,
+      },
+      conflictRows ?? [],
+    );
+    if (conflict) {
+      throw new Error(SCHEDULE_CONFLICT_MESSAGE);
+    }
+  }
+
   const fullPayload = { ...payload, clinic_id: clinicId };
 
   let previousStatus: AppointmentStatus = "pending";
@@ -230,6 +293,7 @@ export async function upsertAppointment(
       data.id,
       previousStatus,
       input.status,
+      { revenueAmountCents: input.charged_amount_cents },
     );
     if (financeResult.applied || financeResult.reversed) {
       revalidatePath("/financeiro");
@@ -258,6 +322,40 @@ export async function updateAppointmentStatus(
   status: AppointmentStatus,
 ): Promise<AppointmentMutationResult> {
   if (isDemoMockDataEnabled()) {
+    if (status !== "cancelled") {
+      const current = demoStore
+        .getAppointments(
+          "1970-01-01T00:00:00.000Z",
+          "2100-01-01T00:00:00.000Z",
+        )
+        .find((row) => row.id === id);
+      if (current) {
+        const conflict = findDentistScheduleConflict(
+          {
+            id: current.id,
+            dentist_id: current.dentist_id,
+            starts_at: current.starts_at,
+            ends_at: current.ends_at,
+            status,
+          },
+          demoStore
+            .getAppointments(
+              "1970-01-01T00:00:00.000Z",
+              "2100-01-01T00:00:00.000Z",
+            )
+            .map((row) => ({
+              id: row.id,
+              dentist_id: row.dentist_id,
+              starts_at: row.starts_at,
+              ends_at: row.ends_at,
+              status: row.status,
+            })),
+        );
+        if (conflict) {
+          throw new Error(SCHEDULE_CONFLICT_MESSAGE);
+        }
+      }
+    }
     const data = demoStore.updateAppointmentStatus(id, status);
     revalidatePath("/agenda");
     return { appointment: data };
@@ -269,13 +367,41 @@ export async function updateAppointmentStatus(
 
   const { data: existing, error: fetchError } = await supabase
     .from("appointments")
-    .select("status")
+    .select("id, dentist_id, starts_at, ends_at, status")
     .eq("id", id)
     .eq("clinic_id", clinicId)
     .single();
 
   if (fetchError) throw new Error(fetchError.message);
   const previousStatus = existing.status as AppointmentStatus;
+
+  if (status !== "cancelled") {
+    const { data: conflictRows, error: conflictError } = await supabase
+      .from("appointments")
+      .select("id, dentist_id, starts_at, ends_at, status")
+      .eq("clinic_id", clinicId)
+      .eq("dentist_id", existing.dentist_id)
+      .neq("status", "cancelled")
+      .neq("id", id)
+      .lt("starts_at", existing.ends_at)
+      .gt("ends_at", existing.starts_at);
+
+    if (conflictError) throw new Error(conflictError.message);
+
+    const conflict = findDentistScheduleConflict(
+      {
+        id: existing.id,
+        dentist_id: existing.dentist_id,
+        starts_at: existing.starts_at,
+        ends_at: existing.ends_at,
+        status,
+      },
+      conflictRows ?? [],
+    );
+    if (conflict) {
+      throw new Error(SCHEDULE_CONFLICT_MESSAGE);
+    }
+  }
 
   const { data, error } = await supabase
     .from("appointments")
@@ -326,4 +452,43 @@ export async function updateAppointmentStatus(
     stockResult,
     financeResult,
   };
+}
+
+export async function deleteAppointment(id: string): Promise<void> {
+  if (isDemoMockDataEnabled()) {
+    demoStore.deleteAppointment(id);
+    revalidatePath("/agenda");
+    return;
+  }
+
+  await assertWritable();
+  const clinicId = await requireClinicId();
+  const supabase = await createClient();
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("appointments")
+    .select("status")
+    .eq("id", id)
+    .eq("clinic_id", clinicId)
+    .maybeSingle();
+
+  if (fetchError) throw new Error(fetchError.message);
+  if (!existing) throw new Error("Consulta não encontrada.");
+
+  if (existing.status === "completed") {
+    await applyStockForAppointmentStatusChange(id, "completed", "cancelled");
+    await applyFinanceForAppointmentStatusChange(id, "completed", "cancelled");
+  }
+
+  const { error } = await supabase
+    .from("appointments")
+    .delete()
+    .eq("id", id)
+    .eq("clinic_id", clinicId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/agenda");
+  revalidatePath("/estoque");
+  revalidatePath("/financeiro");
 }

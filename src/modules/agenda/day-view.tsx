@@ -17,6 +17,7 @@ type DayViewProps = {
   selectedDate: Date;
   onEditAppointment: (appointment: AppointmentWithRelations) => void;
   onStatusChange: (id: string, status: AppointmentStatus) => void;
+  onDeleteAppointment?: (id: string) => void;
   isSaving?: boolean;
 };
 
@@ -25,6 +26,7 @@ export function DayView({
   selectedDate,
   onEditAppointment,
   onStatusChange,
+  onDeleteAppointment,
   isSaving = false,
 }: DayViewProps) {
   const dayAppointments = getAppointmentsForDate(appointments, selectedDate);
@@ -108,6 +110,24 @@ export function DayView({
                   >
                     Cancelar
                   </Button>
+                  {onDeleteAppointment ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      disabled={isSaving}
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Apagar esta consulta definitivamente? Esta ação não pode ser desfeita.",
+                          )
+                        ) {
+                          onDeleteAppointment(appointment.id);
+                        }
+                      }}
+                    >
+                      Apagar
+                    </Button>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>

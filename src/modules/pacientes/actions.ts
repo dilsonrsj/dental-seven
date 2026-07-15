@@ -26,9 +26,10 @@ export async function isSupabaseConfigured() {
   );
 }
 
-export async function getPatients(search?: string) {
+export async function getPatients(search?: string, limit?: number) {
   if (isDemoMockDataEnabled()) {
-    return demoStore.getPatients(search);
+    const rows = demoStore.getPatients(search);
+    return typeof limit === "number" ? rows.slice(0, limit) : rows;
   }
 
   const clinicId = await requireClinicId();
@@ -47,10 +48,19 @@ export async function getPatients(search?: string) {
     );
   }
 
+  if (typeof limit === "number") {
+    query = query.limit(limit);
+  }
+
   const { data, error } = await query;
   if (error) throw new Error(error.message);
 
   return data ?? [];
+}
+
+/** Typeahead leve para o dropdown de pacientes. */
+export async function searchPatientsLite(search: string, limit = 8) {
+  return getPatients(search, limit);
 }
 
 export async function getPatient(id: string) {

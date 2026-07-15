@@ -46,7 +46,7 @@ export function PatientRecordHeader({
           </p>
         </div>
         <Link
-          href={`/agenda?patientId=${patientId}`}
+          href={`/agenda?patientId=${patientId}&new=1`}
           className="inline-flex h-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,oklch(0.63_0.15_250),oklch(0.55_0.17_250))] px-4 font-display text-sm font-semibold uppercase tracking-wider text-primary-foreground transition-all duration-300 hover:shadow-[0_0_40px_-10px_color-mix(in_oklab,var(--primary)_60%,transparent)]"
         >
           Nova consulta

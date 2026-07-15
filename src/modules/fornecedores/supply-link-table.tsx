@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, toast } from "@/components/ui";
+import { Card, CardContent, SearchableCombobox, toast } from "@/components/ui";
 import { updateSupplyPreferredSupplier } from "./actions";
 import type { SupplierRow, SupplyLinkRow } from "./types";
-
-const selectClassName =
-  "h-11 w-full min-w-[12rem] rounded-xl border border-border bg-input px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
 type SupplyLinkTableProps = {
   supplies: SupplyLinkRow[];
@@ -85,29 +82,28 @@ export function SupplyLinkTable({ supplies, suppliers }: SupplyLinkTableProps) {
               <td className="px-4 py-3 font-medium">{supply.name}</td>
               <td className="px-4 py-3">{supply.unit_label}</td>
               <td className="px-4 py-3">
-                <select
+                <SearchableCombobox
                   value={supply.preferred_supplier_id ?? ""}
                   disabled={savingSupplyId === supply.id}
-                  onChange={(event) => {
-                    const value = event.target.value;
+                  allowEmpty
+                  emptyOptionLabel="Nenhum"
+                  placeholder="Digite o fornecedor"
+                  aria-label={`Fornecedor preferencial de ${supply.name}`}
+                  options={selectableSuppliers(
+                    suppliers,
+                    supply.preferred_supplier_id,
+                  ).map((supplier) => ({
+                    value: supplier.id,
+                    label: `${supplier.name}${!supplier.is_active ? " (inativo)" : ""}`,
+                    keywords: `${supplier.phone ?? ""} ${supplier.email ?? ""}`.trim(),
+                  }))}
+                  onChange={(value) => {
                     void handleSupplierChange(
                       supply.id,
                       value === "" ? null : value,
                     );
                   }}
-                  className={selectClassName}
-                >
-                  <option value="">Nenhum</option>
-                  {selectableSuppliers(
-                    suppliers,
-                    supply.preferred_supplier_id,
-                  ).map((supplier) => (
-                    <option key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                      {!supplier.is_active ? " (inativo)" : ""}
-                    </option>
-                  ))}
-                </select>
+                />
               </td>
             </tr>
           ))}

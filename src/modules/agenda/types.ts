@@ -23,6 +23,8 @@ export type AppointmentFormInput = {
   notes?: string | null;
   payment_source?: "particular" | "insurance";
   insurance_plan_id?: string | null;
+  /** Valor cobrado (centavos) ao concluir particular — alimenta o financeiro. */
+  charged_amount_cents?: number | null;
 };
 
 export type InsurancePlanChoice = {

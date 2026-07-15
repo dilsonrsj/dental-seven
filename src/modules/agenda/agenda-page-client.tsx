@@ -5,6 +5,7 @@ import { Card, CardContent, toast } from "@/components/ui";
 import { useDentistFilter } from "@/contexts/dentist-filter-context";
 import type { AppointmentStatus } from "@/lib/supabase/types";
 import {
+  deleteAppointment,
   getAppointments,
   updateAppointmentStatus,
   upsertAppointment,
@@ -33,6 +34,7 @@ type AgendaPageClientProps = AgendaInitialData & {
   insurancePlans?: InsurancePlanChoice[];
   primaryPlanByPatient?: Record<string, string>;
   initialPatientId?: string;
+  initialOpenNew?: boolean;
 };
 
 export function AgendaPageClient({
@@ -45,6 +47,7 @@ export function AgendaPageClient({
   primaryPlanByPatient = {},
   configureMessage,
   initialPatientId,
+  initialOpenNew = false,
 }: AgendaPageClientProps) {
   const [appointments, setAppointments] =
     useState<AppointmentWithRelations[]>(initialAppointments);
@@ -52,7 +55,7 @@ export function AgendaPageClient({
   const [mode, setMode] = useState<AgendaViewMode>("day");
   const [editingAppointment, setEditingAppointment] =
     useState<AppointmentWithRelations | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(initialOpenNew);
   const [isSaving, setIsSaving] = useState(false);
   const { selectedDentistId } = useDentistFilter();
 
@@ -179,6 +182,25 @@ export function AgendaPageClient({
     }
   }
 
+  async function handleDelete(id: string) {
+    try {
+      setIsSaving(true);
+      await deleteAppointment(id);
+      setAppointments((current) =>
+        current.filter((appointment) => appointment.id !== id),
+      );
+      if (editingAppointment?.id === id) {
+        setEditingAppointment(null);
+        setModalOpen(false);
+      }
+      toast.success("Consulta apagada.");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   if (configureMessage) {
     return (
       <div className="space-y-4">
@@ -227,6 +249,7 @@ export function AgendaPageClient({
           selectedDate={selectedDate}
           onEditAppointment={openEditAppointment}
           onStatusChange={handleStatusChange}
+          onDeleteAppointment={(id) => void handleDelete(id)}
           isSaving={isSaving}
         />
       )}
@@ -244,6 +267,7 @@ export function AgendaPageClient({
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
         onStatusChange={handleStatusChange}
+        onDelete={handleDelete}
         isSaving={isSaving}
       />
     </div>

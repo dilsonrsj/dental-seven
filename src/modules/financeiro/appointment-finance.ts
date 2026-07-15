@@ -101,6 +101,7 @@ export async function applyFinanceForAppointmentStatusChange(
   appointmentId: string,
   previousStatus: AppointmentStatus,
   newStatus: AppointmentStatus,
+  options?: { revenueAmountCents?: number | null },
 ): Promise<{ applied: boolean; reversed: boolean }> {
   const ctx = await getAuthContext();
   if (!ctx?.clinic || !ctx.profile.clinic_id) {
@@ -181,7 +182,7 @@ export async function applyFinanceForAppointmentStatusChange(
 
   const { data: appointment, error: appointmentError } = await supabase
     .from("appointments")
-    .select("procedure_id, dentist_id, payment_source")
+    .select("procedure_id, dentist_id, payment_source, procedure_label")
     .eq("id", appointmentId)
     .eq("clinic_id", clinicId)
     .maybeSingle();
@@ -211,6 +212,7 @@ export async function applyFinanceForAppointmentStatusChange(
   const procedureId = appointment.procedure_id ?? null;
   const dentistId = appointment.dentist_id ?? null;
   const drafts: AutoFinanceEntryDraft[] = [];
+  const overrideCents = options?.revenueAmountCents;
 
   if (procedureId) {
     const { data: procedure, error: procedureError } = await supabase
@@ -225,7 +227,10 @@ export async function applyFinanceForAppointmentStatusChange(
       drafts.push(
         buildRevenueEntryDraft({
           procedureName: procedure.name,
-          basePriceCents: procedure.base_price_cents,
+          basePriceCents:
+            overrideCents != null && overrideCents >= 0
+              ? overrideCents
+              : procedure.base_price_cents,
         }),
       );
     }
@@ -253,6 +258,13 @@ export async function applyFinanceForAppointmentStatusChange(
     });
 
     drafts.push(...buildVariableCostDrafts(bomItems));
+  } else if (overrideCents != null && overrideCents >= 0) {
+    drafts.push(
+      buildRevenueEntryDraft({
+        procedureName: appointment.procedure_label || "Consulta",
+        basePriceCents: overrideCents,
+      }),
+    );
   }
 
   if (drafts.length === 0) {

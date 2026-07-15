@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
-import { Button, Card, CardContent, Input } from "@/components/ui";
+import { Card, CardContent } from "@/components/ui";
 import type { Patient } from "@/lib/supabase/types";
+import { PatientSearchField } from "./patient-search-field";
 
 type PatientListProps = {
   patients: Patient[];
@@ -16,20 +19,12 @@ export function PatientList({ patients, search = "" }: PatientListProps) {
             Pacientes
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Busque por nome, telefone ou WhatsApp para abrir a ficha.
+            Digite para ver sugestões ou busque por nome, telefone ou WhatsApp.
           </p>
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row sm:items-center">
-          <form className="flex flex-1 gap-2" action="/pacientes">
-            <Input
-              name="search"
-              defaultValue={search}
-              placeholder="Buscar paciente"
-              aria-label="Buscar paciente"
-            />
-            <Button type="submit">Buscar</Button>
-          </form>
+          <PatientSearchField initialSearch={search} />
           <Link
             href="/pacientes/novo"
             className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"

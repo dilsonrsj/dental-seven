@@ -109,6 +109,7 @@ Ordem obrigatória:
 | 4b | Cadastro beta + banner + guia + sidebar sticky | ✅ | `specs/2026-07-13-beta-shell-ajuda-design.md` · `2026-07-11-cadastro-beta-design.md` | `plans/2026-07-13-beta-shell-ajuda.md` |
 | 4c | Fim beta 07/08 + formulário `/feedback` + admin | ✅ | `specs/2026-07-13-beta-feedback-design.md` | `plans/2026-07-13-beta-feedback.md` |
 | 4d | Retomada Founding → `/entrar` (já criou clínica) | ✅ | `specs/2026-07-13-founding-resume-login-design.md` | `plans/2026-07-13-founding-resume-login.md` |
+| 4e | UX beta: busca live, Nova Consulta→modal, overlap agenda, seed demo | ✅ | `specs/2026-07-14-beta-ux-search-agenda-seed-design.md` | `plans/2026-07-14-beta-ux-search-agenda-seed.md` |
 | 5 | Deploy beta (MVP → beta no domínio oficial) | ✅ | `docs/beta-tester-roadmap.md` · §8 | — |
 | — | Super Admin Onda 1 (cockpit beta + founding) | ✅ | `specs/2026-07-11-admin-onda1-design.md` | `plans/2026-07-11-admin-onda1.md` |
 
@@ -239,3 +240,4 @@ Checklist (não executar até item 3 ✅ + commit aprovado):
 | 2026-07-13 | Odontograma 3D aprovado; cadastro beta + banner âmbar + guia `/ajuda` + sidebar sticky ✅ |
 | 2026-07-13 | Fim beta 07/08 + formulário `/feedback` (`beta_feedback`) + admin ✅ |
 | 2026-07-13 | Deploy: substituir MVP por beta em dental-seven-self.vercel.app; `/visao` pós-beta |
+| 2026-07-14 | UX beta: autocomplete pacientes, Nova Consulta abre modal, bloqueio overlap, seed cadastro ✅ |
