@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   assertAmountCents,
-  assertEntryDescription,
   assertYearMonth,
   toExpenseAmountCents,
 } from "./validation";

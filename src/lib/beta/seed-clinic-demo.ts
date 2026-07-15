@@ -570,13 +570,6 @@ export async function seedClinicDemo(
     }
   }
 
-  let appointmentRows: Array<{
-    id: string;
-    procedure_id: string | null;
-    status: string;
-    starts_at: string;
-  }> = [];
-
   if (
     appointmentCount < BETA_SEED_COUNTS.appointments &&
     patientRows.length >= 5 &&
@@ -619,7 +612,7 @@ export async function seedClinicDemo(
     const { data, error } = await admin
       .from("appointments")
       .insert(appointmentInserts)
-      .select("id, procedure_id, status, starts_at");
+      .select("id");
 
     if (error || !data?.length) {
       return {
@@ -627,7 +620,6 @@ export async function seedClinicDemo(
         error: error?.message ?? "Falha ao criar consultas demo.",
       };
     }
-    appointmentRows = data;
     appointmentCount += data.length;
     didSeed = true;
   }

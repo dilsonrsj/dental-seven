@@ -8,6 +8,7 @@ const catalogProcedure = {
   id: "proc-1",
   name: "Limpeza",
   default_duration_min: 45,
+  base_price_cents: 22000,
 };
 
 describe("resolveAgendaProcedureFields", () => {

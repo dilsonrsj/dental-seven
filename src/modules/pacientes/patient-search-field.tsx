@@ -82,7 +82,7 @@ export function PatientSearchField({
             className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-64 overflow-auto rounded-xl border border-border bg-surface py-1 shadow-lg"
           >
             {matches.map((patient) => (
-              <li key={patient.id} role="option">
+              <li key={patient.id} role="option" aria-selected={false}>
                 <Link
                   href={`/pacientes/${patient.id}`}
                   className="block px-3 py-2 text-sm hover:bg-primary/10"

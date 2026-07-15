@@ -4,6 +4,7 @@ export type AgendaCatalogProcedure = {
   id: string;
   name: string;
   default_duration_min: number;
+  base_price_cents: number;
 };
 
 export function resolveAgendaProcedureFields(

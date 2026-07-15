@@ -104,6 +104,7 @@ export function SearchableCombobox({
               <button
                 type="button"
                 role="option"
+                aria-selected={value === ""}
                 className="flex w-full px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted/40"
                 onClick={() => {
                   onChange("");
