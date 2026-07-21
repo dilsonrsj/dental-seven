@@ -212,87 +212,85 @@ export function FoundingForm({ initialAccessGranted }: Props) {
       </div>
 
       <Card className="border-primary/40 bg-primary/5">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle className="text-base text-primary">
             {FOUNDING_PRICING_COPY.title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="-mx-1 overflow-x-auto px-1 pb-1">
-            <div className="grid min-w-[960px] grid-cols-4 gap-3 lg:min-w-0">
-              {PRICING_PLAN_ROWS.map((row) => {
-                const highlighted =
-                  row.key === FOUNDING_PRICING_COPY.highlightPlan;
-                return (
-                  <div
-                    key={row.key}
-                    className={
-                      highlighted
-                        ? "flex min-w-[220px] flex-col gap-3 rounded-xl border-2 border-primary bg-primary/10 p-4"
-                        : "flex min-w-[220px] flex-col gap-3 rounded-xl border border-border/60 bg-[#12161f] p-4"
-                    }
-                  >
-                    <div>
-                      <p className="font-display text-sm font-semibold text-foreground">
-                        {row.name}
-                        {highlighted ? " ★" : ""}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">
-                          {row.listLabel}
-                        </span>
-                        <span className="text-xs">/mês</span>
-                      </p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                        Fundadores (12×)
-                      </p>
-                      {row.foundingInstallmentLabel ? (
-                        <>
-                          <p className="text-sm font-semibold text-primary">
-                            12× {row.foundingInstallmentLabel}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {row.foundingTotalLabel}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">—</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                        Economia
-                      </p>
-                      {row.annualSavingsLabel ? (
-                        <p className="text-sm font-semibold text-emerald-400">
-                          {row.annualSavingsLabel}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">—</p>
-                      )}
-                    </div>
-
-                    <div className="mt-auto border-t border-border/50 pt-3">
-                      <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                        Inclui
-                      </p>
-                      <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        {row.includes.map((item) => (
-                          <li key={item} className="flex gap-1.5">
-                            <span className="text-primary">·</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+        <CardContent className="pt-4 sm:pt-5">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {PRICING_PLAN_ROWS.map((row) => {
+              const highlighted =
+                row.key === FOUNDING_PRICING_COPY.highlightPlan;
+              return (
+                <div
+                  key={row.key}
+                  className={
+                    highlighted
+                      ? "flex flex-col gap-3 rounded-xl border-2 border-primary bg-primary/10 p-4"
+                      : "flex flex-col gap-3 rounded-xl border border-border/60 bg-[#12161f] p-4"
+                  }
+                >
+                  <div>
+                    <p className="font-display text-sm font-semibold text-foreground">
+                      {row.name}
+                      {highlighted ? " ★" : ""}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">
+                        {row.listLabel}
+                      </span>
+                      <span className="text-xs">/mês</span>
+                    </p>
                   </div>
-                );
-              })}
-            </div>
+
+                  <div className="min-h-[3.5rem] space-y-1">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Fundadores (12×)
+                    </p>
+                    {row.foundingInstallmentLabel ? (
+                      <>
+                        <p className="text-sm font-semibold text-primary">
+                          12× {row.foundingInstallmentLabel}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {row.foundingTotalLabel}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">—</p>
+                    )}
+                  </div>
+
+                  <div className="min-h-[2.75rem] space-y-1">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Economia
+                    </p>
+                    {row.annualSavingsLabel ? (
+                      <p className="text-sm font-semibold text-emerald-400">
+                        {row.annualSavingsLabel}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">—</p>
+                    )}
+                  </div>
+
+                  <div className="border-t border-border/50 pt-3">
+                    <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Inclui
+                    </p>
+                    <ul className="space-y-1.5 text-xs text-muted-foreground">
+                      {row.includes.map((item) => (
+                        <li key={item} className="flex gap-1.5">
+                          <span className="text-primary">·</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
