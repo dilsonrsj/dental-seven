@@ -30,7 +30,7 @@ export function BetaBanner() {
           </span>
           <span className="mt-1 block text-amber-100/80 sm:mt-0 sm:inline">
             {" "}
-            Founding: Conecta+ com{" "}
+            Fundadores: Conecta+ com{" "}
             <strong className="font-semibold text-amber-200">
               25% off em 12×
             </strong>

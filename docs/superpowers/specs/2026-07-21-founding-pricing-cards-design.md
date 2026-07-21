@@ -13,8 +13,8 @@ Substituir a **tabela** por **4 cards lado a lado** (largura igual).
 |------|---------|
 | Layout | Grid 4 colunas no desktop; scroll horizontal no mobile (`min-width` ~240px) |
 | Destaque | Conecta com borda primary + ★ (âncora) |
-| Label | **Economia** (antes “Ganho anual”) |
-| Conteúdo do card | Nome · lista/mês · Founding 12× (ou —) · Economia (ou —) · lista **Inclui** completa (`PRICING_PLAN_ROWS.includes`) |
+| Label | **Economia** (antes “Ganho anual”); **Fundadores (12×)** (antes Founding) |
+| Conteúdo do card | Nome · lista/mês · Fundadores 12× (ou —) · Economia (ou —) · lista **Inclui** completa e cumulativa (sem “Tudo do…”) |
 | Dados | Continuar em `pricing-phases.ts` — sem mudar números |
 
 ## Fora de escopo

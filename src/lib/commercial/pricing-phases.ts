@@ -8,14 +8,14 @@ export type PricingPlanRow = {
   name: string;
   /** Valor de tabela (mensal) — coluna "Valores" */
   listLabel: string;
-  /** Oferta founding: 12× com −25% da lista (só Conecta+) */
+  /** Oferta fundadores: 12× com −25% da lista (só Conecta+) */
   foundingInstallmentLabel: string | null;
   foundingTotalLabel: string | null;
   /** Economia vs pagar a lista 12 meses */
   annualSavingsLabel: string | null;
   /** Oferta de lançamento = mensal (landing oficial, pós-beta) */
   launchOfferLabel: string;
-  /** O que o plano oferece (vitrine cliente) */
+  /** O que o plano oferece (vitrine cliente) — lista completa, sem “Tudo do…” */
   includes: string[];
 };
 
@@ -51,7 +51,10 @@ export const PRICING_PLAN_ROWS: PricingPlanRow[] = [
     annualSavingsLabel: "R$ 561,00",
     launchOfferLabel: "R$ 150,00",
     includes: [
-      "Tudo do Essencial",
+      "Agenda e pacientes",
+      "Prontuário + odontograma 2D + anamnese",
+      "Financeiro básico",
+      "Site da clínica (subdomínio)",
       "Procedimentos + BOM",
       "Confirmações WhatsApp (até 300/mês)",
       "Agendamento rápido por voz (IA)",
@@ -68,11 +71,17 @@ export const PRICING_PLAN_ROWS: PricingPlanRow[] = [
     annualSavingsLabel: "R$ 1.047,00",
     launchOfferLabel: "R$ 279,00",
     includes: [
-      "Tudo do Conecta",
+      "Agenda e pacientes",
+      "Prontuário + odontograma 2D + anamnese",
+      "Financeiro básico",
+      "Site da clínica (subdomínio)",
+      "Procedimentos + BOM",
+      "Agendamento rápido por voz (IA)",
       "Estoque + fornecedores",
       "Financeiro avançado",
       "Convênios",
       "Confirmações WhatsApp (até 600/mês)",
+      "Até 3 dentistas",
       "Chat de suporte na plataforma",
     ],
   },
@@ -85,7 +94,15 @@ export const PRICING_PLAN_ROWS: PricingPlanRow[] = [
     annualSavingsLabel: "R$ 1.311,00",
     launchOfferLabel: "R$ 349,00",
     includes: [
-      "Tudo do Inteligente",
+      "Agenda e pacientes",
+      "Prontuário + odontograma 2D + anamnese",
+      "Financeiro básico",
+      "Site da clínica (subdomínio)",
+      "Procedimentos + BOM",
+      "Agendamento rápido por voz (IA)",
+      "Estoque + fornecedores",
+      "Financeiro avançado",
+      "Convênios",
       "Inbox WhatsApp + IA",
       "Confirmações WhatsApp (uso clínico típico)",
       "Até 3 dentistas",
@@ -95,7 +112,7 @@ export const PRICING_PLAN_ROWS: PricingPlanRow[] = [
 ];
 
 export const FOUNDING_PRICING_COPY = {
-  title: "Planos e condição Founding Members",
+  title: "Planos e condição de Fundadores",
   highlightPlan: "conecta" as const,
 } as const;
 

@@ -247,7 +247,7 @@ export function FoundingForm({ initialAccessGranted }: Props) {
 
                     <div className="space-y-1">
                       <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                        Founding (12×)
+                        Fundadores (12×)
                       </p>
                       {row.foundingInstallmentLabel ? (
                         <>
