@@ -28,9 +28,17 @@ export function BetaBanner() {
             </strong>
             .
           </span>
-          <span className="mt-1 hidden text-amber-100/80 sm:mt-0 sm:inline">
+          <span className="mt-1 block text-amber-100/80 sm:mt-0 sm:inline">
             {" "}
-            {BETA_POST_END_MESSAGE}
+            Founding: Conecta+ com{" "}
+            <strong className="font-semibold text-amber-200">
+              25% off em 12×
+            </strong>
+            .{" "}
+            <Link href="/founding" className="underline hover:text-amber-50">
+              Ver precificação
+            </Link>
+            . {BETA_POST_END_MESSAGE}
           </span>
         </p>
         <div className="flex items-center justify-center gap-2 sm:shrink-0">

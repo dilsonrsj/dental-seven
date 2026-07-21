@@ -7,7 +7,7 @@ export const BETA_ENDS_SHORT = "07/08/2026";
 
 /** Frase canônica pós-encerramento da beta (banner + founding). */
 export const BETA_POST_END_MESSAGE =
-  "Após essa data, o acesso beta termina e abrimos a condição exclusiva de founding member (desconto nos primeiros meses).";
+  "Após essa data, o acesso beta termina e você usa a condição founding: do Conecta para cima, anual com 25% de desconto em 12× (lista sempre visível).";
 
 export const BRAZILIAN_STATES = [
   { uf: "AC", name: "Acre" },
@@ -62,6 +62,7 @@ export const FOUNDING_CONTENT = {
     comingSoon: [
       "WhatsApp automático com pacientes (produção — após a beta)",
       "Agente de IA no atendimento (produção — após a beta)",
+      "Agendamento rápido por voz (Conecta+)",
     ],
   },
   expectations: {
@@ -75,7 +76,7 @@ export const FOUNDING_CONTENT = {
   },
   benefit: {
     title: "Benefício founding member",
-    body: `Desconto exclusivo nos primeiros meses após o lançamento oficial e aviso com 48h de antecedência antes do público geral. A beta encerra em ${BETA_ENDS_SHORT}. ${BETA_POST_END_MESSAGE}`,
+    body: `Condição founding nos planos Conecta, Inteligente e Completo: 25% de desconto em 12×. Detalhes na tabela de planos abaixo. A beta encerra em ${BETA_ENDS_SHORT}.`,
   },
 
   formTitle: "Confirme seus dados para liberar o acesso",

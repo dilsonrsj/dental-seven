@@ -9,6 +9,10 @@ import {
   FOUNDING_CONTENT,
 } from "@/lib/founding/content";
 import {
+  FOUNDING_PRICING_COPY,
+  PRICING_PLAN_ROWS,
+} from "@/lib/commercial/pricing-phases";
+import {
   resumeFoundingForLogin,
   submitFoundingForm,
 } from "@/lib/founding/actions";
@@ -203,17 +207,92 @@ export function FoundingForm({ initialAccessGranted }: Props) {
                 </li>
               ))}
             </ul>
-            <div className="rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
-              <p className="text-xs font-medium uppercase tracking-wider text-primary">
-                {FOUNDING_CONTENT.benefit.title}
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {FOUNDING_CONTENT.benefit.body}
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-primary/40 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="text-base text-primary">
+            {FOUNDING_PRICING_COPY.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 sm:p-6 sm:pt-0">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-border/60 bg-[#0f1218] text-xs uppercase tracking-wider text-muted-foreground">
+                  <th className="px-3 py-2.5 font-medium sm:px-4">Plano</th>
+                  <th className="px-3 py-2.5 font-medium sm:px-4">Valores</th>
+                  <th className="px-3 py-2.5 font-medium sm:px-4">
+                    Founding (12×)
+                  </th>
+                  <th className="px-3 py-2.5 font-medium sm:px-4">
+                    Ganho anual
+                  </th>
+                  <th className="px-3 py-2.5 font-medium sm:px-4">Inclui</th>
+                </tr>
+              </thead>
+              <tbody>
+                {PRICING_PLAN_ROWS.map((row) => (
+                  <tr
+                    key={row.key}
+                    className={
+                      row.key === FOUNDING_PRICING_COPY.highlightPlan
+                        ? "border-b border-border/40 bg-primary/10 align-top"
+                        : "border-b border-border/40 align-top"
+                    }
+                  >
+                    <td className="px-3 py-3 font-medium text-foreground sm:px-4">
+                      {row.name}
+                      {row.key === FOUNDING_PRICING_COPY.highlightPlan
+                        ? " ★"
+                        : ""}
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground sm:px-4">
+                      <span className="text-foreground">{row.listLabel}</span>
+                      <span className="text-xs">/mês</span>
+                    </td>
+                    <td className="px-3 py-3 text-foreground sm:px-4">
+                      {row.foundingInstallmentLabel ? (
+                        <>
+                          <span className="font-semibold text-primary">
+                            12× {row.foundingInstallmentLabel}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-muted-foreground">
+                            {row.foundingTotalLabel}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 sm:px-4">
+                      {row.annualSavingsLabel ? (
+                        <span className="font-semibold text-emerald-400">
+                          {row.annualSavingsLabel}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground sm:px-4">
+                      <ul className="space-y-1 text-xs sm:text-sm">
+                        {row.includes.map((item) => (
+                          <li key={item} className="flex gap-1.5">
+                            <span className="text-primary">·</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       {accessGranted ? (
         <Card className="border-primary/40 bg-primary/5">
