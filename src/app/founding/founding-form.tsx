@@ -217,67 +217,70 @@ export function FoundingForm({ initialAccessGranted }: Props) {
             {FOUNDING_PRICING_COPY.title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 sm:p-6 sm:pt-0">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-border/60 bg-[#0f1218] text-xs uppercase tracking-wider text-muted-foreground">
-                  <th className="px-3 py-2.5 font-medium sm:px-4">Plano</th>
-                  <th className="px-3 py-2.5 font-medium sm:px-4">Valores</th>
-                  <th className="px-3 py-2.5 font-medium sm:px-4">
-                    Founding (12×)
-                  </th>
-                  <th className="px-3 py-2.5 font-medium sm:px-4">
-                    Ganho anual
-                  </th>
-                  <th className="px-3 py-2.5 font-medium sm:px-4">Inclui</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PRICING_PLAN_ROWS.map((row) => (
-                  <tr
+        <CardContent className="pt-0">
+          <div className="-mx-1 overflow-x-auto px-1 pb-1">
+            <div className="grid min-w-[960px] grid-cols-4 gap-3 lg:min-w-0">
+              {PRICING_PLAN_ROWS.map((row) => {
+                const highlighted =
+                  row.key === FOUNDING_PRICING_COPY.highlightPlan;
+                return (
+                  <div
                     key={row.key}
                     className={
-                      row.key === FOUNDING_PRICING_COPY.highlightPlan
-                        ? "border-b border-border/40 bg-primary/10 align-top"
-                        : "border-b border-border/40 align-top"
+                      highlighted
+                        ? "flex min-w-[220px] flex-col gap-3 rounded-xl border-2 border-primary bg-primary/10 p-4"
+                        : "flex min-w-[220px] flex-col gap-3 rounded-xl border border-border/60 bg-[#12161f] p-4"
                     }
                   >
-                    <td className="px-3 py-3 font-medium text-foreground sm:px-4">
-                      {row.name}
-                      {row.key === FOUNDING_PRICING_COPY.highlightPlan
-                        ? " ★"
-                        : ""}
-                    </td>
-                    <td className="px-3 py-3 text-muted-foreground sm:px-4">
-                      <span className="text-foreground">{row.listLabel}</span>
-                      <span className="text-xs">/mês</span>
-                    </td>
-                    <td className="px-3 py-3 text-foreground sm:px-4">
+                    <div>
+                      <p className="font-display text-sm font-semibold text-foreground">
+                        {row.name}
+                        {highlighted ? " ★" : ""}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        <span className="font-semibold text-foreground">
+                          {row.listLabel}
+                        </span>
+                        <span className="text-xs">/mês</span>
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Founding (12×)
+                      </p>
                       {row.foundingInstallmentLabel ? (
                         <>
-                          <span className="font-semibold text-primary">
+                          <p className="text-sm font-semibold text-primary">
                             12× {row.foundingInstallmentLabel}
-                          </span>
-                          <span className="mt-0.5 block text-xs text-muted-foreground">
+                          </p>
+                          <p className="text-xs text-muted-foreground">
                             {row.foundingTotalLabel}
-                          </span>
+                          </p>
                         </>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <p className="text-xs text-muted-foreground">—</p>
                       )}
-                    </td>
-                    <td className="px-3 py-3 sm:px-4">
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Economia
+                      </p>
                       {row.annualSavingsLabel ? (
-                        <span className="font-semibold text-emerald-400">
+                        <p className="text-sm font-semibold text-emerald-400">
                           {row.annualSavingsLabel}
-                        </span>
+                        </p>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <p className="text-xs text-muted-foreground">—</p>
                       )}
-                    </td>
-                    <td className="px-3 py-3 text-muted-foreground sm:px-4">
-                      <ul className="space-y-1 text-xs sm:text-sm">
+                    </div>
+
+                    <div className="mt-auto border-t border-border/50 pt-3">
+                      <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Inclui
+                      </p>
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
                         {row.includes.map((item) => (
                           <li key={item} className="flex gap-1.5">
                             <span className="text-primary">·</span>
@@ -285,11 +288,11 @@ export function FoundingForm({ initialAccessGranted }: Props) {
                           </li>
                         ))}
                       </ul>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </CardContent>
       </Card>
